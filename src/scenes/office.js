@@ -48,7 +48,8 @@ export class OfficeScene {
     this.minibosses = this.L.minibosses.map((m) => ({
       ...m, x: m.x * t, y: m.y * t, r: this.C.minibosses.radius, hp: this.C.minibosses.hp, maxHp: this.C.minibosses.hp,
       homeX: m.x * t, homeY: m.y * t, walked: 0, moving: false, flip: false, talkT: rand(2, 6), say: null,
-      spawnT: rand(0, 1.5), alive: true, hitFlash: 0, attackT: 0, deadT: 0,
+      // not in the office yet: they appear when the day starts (startWave) — can't be seen, hit or bumped into before
+      spawnT: rand(0, 1.5), alive: false, hitFlash: 0, attackT: 0, deadT: 99,
     }));
     for (const m of this.minibosses) this.obstacleCircles.push(m);
     this.npcs = this.L.friendlyNpcs.map((n) => ({ ...n, x: n.x * t, y: n.y * t, dwell: 0, rearm: 0, cheer: 0, say: null, wasInside: false }));
@@ -541,6 +542,13 @@ export class OfficeScene {
   startWave() {
     this.state = 'wave'; this.stateT = 0;
     this.banner(this.T.waveStart, 3);
+    // the day starts: the minibosses show up in their rooms
+    for (const m of this.minibosses) {
+      m.alive = true; m.deadT = 0; m.hp = m.maxHp; m.x = m.homeX; m.y = m.homeY;
+      m.attackT = 0.6;
+      for (let i = 0; i < 6; i++) this.fx(i % 2 ? 'smoke' : 'star', m.x + rand(-50, 50), m.y - rand(0, 90), 0.7, -50);
+    }
+    this.shake = 0.6;
   }
 
   startBoss() {
