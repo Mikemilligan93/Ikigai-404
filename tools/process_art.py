@@ -47,11 +47,8 @@ def process(path, d):
     if not backup.exists():
         shutil.copy2(path, backup)
     note = d.get('note', '')
-    if 'seamless' in note:
-        im = im.convert('RGB')
-        if note.startswith('seamless tile'):
-            im = make_seamless(im)
-        im = im.resize((tw, th), Image.LANCZOS)
+    if note.startswith('seamless tile'):
+        im = make_seamless(im.convert('RGB')).resize((tw, th), Image.LANCZOS)
     elif d.get('transparent'):
         im = im.convert('RGBA')
         a = im.split()[3].point(lambda v: 0 if v < 24 else v)
