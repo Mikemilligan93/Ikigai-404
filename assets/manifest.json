@@ -292,11 +292,29 @@
       "palette": false,
       "colors": 24
     },
+    "tiles_floor_extra": {
+      "file": "img/tiles_floor_extra.png",
+      "type": "tiles",
+      "cols": 4,
+      "rows": 4,
+      "cell": [24, 24],
+      "palette": false,
+      "colors": 24
+    },
     "tiles_wall": {
       "file": "img/tiles_wall.png",
       "type": "tiles",
       "cols": 4,
       "rows": 4,
+      "cell": [24, 24],
+      "palette": false,
+      "colors": 24
+    },
+    "wall_decor": {
+      "file": "img/wall_decor.png",
+      "type": "tiles",
+      "cols": 4,
+      "rows": 3,
       "cell": [24, 24],
       "palette": false,
       "colors": 24
@@ -363,6 +381,118 @@
       "cols": 3,
       "rows": 2,
       "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_desks_a": {
+      "file": "img/props_desks_a.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_desks_b": {
+      "file": "img/props_desks_b.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_chairs": {
+      "file": "img/props_chairs.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [36, 36],
+      "align": "bottom"
+    },
+    "props_wall_front": {
+      "file": "img/props_wall_front.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_wall_side": {
+      "file": "img/props_wall_side.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_lounge": {
+      "file": "img/props_lounge.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_clutter": {
+      "file": "img/props_clutter.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [36, 36],
+      "align": "bottom"
+    },
+    "props_anim": {
+      "file": "img/props_anim.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "npc_worker_mouse": {
+      "file": "img/npc_worker_mouse.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_worker_beaver": {
+      "file": "img/npc_worker_beaver.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_worker_frog": {
+      "file": "img/npc_worker_frog.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_worker_cat": {
+      "file": "img/npc_worker_cat.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_walker_coffee": {
+      "file": "img/npc_walker_coffee.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_walker_papers": {
+      "file": "img/npc_walker_papers.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
       "align": "bottom"
     },
     "fx_items": {

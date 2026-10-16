@@ -33,10 +33,10 @@ export class EndScene {
     bands.forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(0, i * 180, W, 180); });
 
     if (win) {
-      text(ctx, this.T.winTitle, W / 2, 72, { size: 52, color: PAL.gold });
+      text(ctx, this.T.winTitle, W / 2, 72, { size: 36, color: PAL.gold, display: true });
       text(ctx, this.T.comingSoon, W / 2, 132, { size: 26, color: PAL.cream });
     } else {
-      text(ctx, this.T.burnoutTitle, W / 2, 72, { size: 52, color: PAL.red });
+      text(ctx, this.T.burnoutTitle, W / 2, 72, { size: 36, color: PAL.red, display: true });
       text(ctx, `“${this.quote}”`, W / 2, 136, { size: 30, color: PAL.cream });
     }
 

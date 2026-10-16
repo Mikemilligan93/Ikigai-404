@@ -74,15 +74,22 @@ export const FX = {
 };
 
 // Floor tiles (tiles_floor, 16×16): [col, row]. `ph` = placeholder colour when the sheet is missing.
+// extra: [col, row, chance, sheet?] — random variants mixed in; X = tiles_floor_extra (skipped while that sheet is missing).
+// `sheet` on a type = its base cells come from another sheet.
+const X = 'tiles_floor_extra';
 export const FLOOR = {
-  carpet: { cells: [[0, 0]], extra: [[1, 0, 0.06], [2, 0, 0.03], [3, 0, 0.02]], ph: '#6E9E8E' },
+  carpet: { cells: [[0, 0]], extra: [[0, 0, 0.08, X], [1, 0, 0.02], [2, 0, 0.02], [3, 0, 0.01], [0, 1, 0.006, X], [1, 1, 0.006, X], [3, 1, 0.015, X]], ph: '#6E9E8E' },
   carpetWave: { cells: [[1, 0]], ph: '#77A797' },
   tatami: { cells: [[0, 1], [2, 1]], checker: true, extra: [[3, 1, 0.04]], ph: '#C9B77A' },
   tatamiEdge: { cells: [[1, 1]], ph: '#B7A266' },
-  kitchen: { cells: [[0, 2]], extra: [[3, 2, 0.05], [2, 2, 0.02]], ph: '#E4DAC4' },
-  lobby: { cells: [[1, 2]], ph: '#EFE5CF' },
-  server: { cells: [[0, 3]], extra: [[2, 3, 0.15]], ph: '#8E8A84' },
+  kitchen: { cells: [[1, 2]], extra: [[3, 2, 0.04], [2, 2, 0.03], [1, 3, 0.015, X]], ph: '#E4DAC4' },        // plain cream tiles (the checker was too busy)
+  lobby: { cells: [[1, 2]], extra: [[0, 2, 0.35, X], [1, 2, 0.3, X]], ph: '#EFE5CF' },
+  wood: { sheet: X, cells: [[2, 2]], extra: [[3, 2, 0.12, X]], ph: '#A0723F' },          // meeting room floorboards
+  server: { cells: [[0, 3]], extra: [[2, 3, 0.08], [2, 3, 0.05, X]], ph: '#8E8A84' },
   archive: { cells: [[1, 3]], ph: '#9C978D' },
+  archiveStripe: { sheet: X, cells: [[3, 3]], ph: '#C9A43A' },                            // safety line in front of the machines
+  wornH: { sheet: X, cells: [[2, 0]], ph: '#668F80' },                                   // worn carpet along the walkers' routes
+  wornV: { sheet: X, cells: [[3, 0]], ph: '#668F80' },
   rug: { cells: [[3, 3]], ph: '#3A3F78' },
 };
 
@@ -92,6 +99,12 @@ export const WALL = {
   door: [0, 1], noren: [1, 1], shoji: [2, 1], notice: [3, 1],
   partH: [0, 2], partV: [1, 2], partCorner: [2, 2], partEnd: [3, 2],
   cap: [0, 3], capInner: [1, 3], capOuter: [2, 3], pillar: [3, 3],
+};
+// Things hanging on walls (wall_decor): full wall-face tiles, used in the level's face list like the WALL keys.
+export const WALL_DECOR = {
+  clock: [0, 0], calendar: [1, 0], extinguisher: [2, 0], aircon: [3, 0],
+  poster: [0, 1], photo: [1, 1], switch: [2, 1], exit: [3, 1],
+  tv: [0, 2], hangplant: [1, 2], hooks: [2, 2], safety: [3, 2],
 };
 
 // Props: sheet + cell, footprint in tiles (w, h — the solid part at the bottom of the picture),
@@ -117,10 +130,10 @@ export const PROPS = {
   bonsai_big: P('props_manager', 2, 0, 1, 1, '#3E6B4F'),
   maneki: P('props_manager', 0, 1, 1, 1, '#E8B84A'),
   trophies: P('props_manager', 1, 1, 2, 1, '#B97A2E'),
-  aquarium: P('props_manager', 2, 1, 2, 1, '#9CC3E6'),
+  aquarium: P('props_manager', 2, 1, 2, 1, '#9CC3E6', { anim: { sheet: 'props_anim', frames: [[0, 0], [1, 0], [2, 0], [3, 0]], fps: 3 } }),
   // kitchen
   coffee_good: P('props_kitchen', 0, 0, 2, 1, '#8C2A2A', { label: 'Coffee' }),
-  water_cooler: P('props_kitchen', 1, 0, 1, 1, '#9CC3E6'),
+  water_cooler: P('props_kitchen', 1, 0, 1, 1, '#9CC3E6', { anim: { sheet: 'props_anim', frames: [[0, 1], [1, 1], [2, 1], [3, 1]], fps: 2, pause: 4 } }),
   fridge: P('props_kitchen', 2, 0, 2, 1, '#F2E8D5'),
   kitchen_table: P('props_kitchen', 0, 1, 3, 2, '#6B4226'),
   vending: P('props_kitchen', 1, 1, 2, 1, '#D9412B'),
@@ -143,7 +156,7 @@ export const PROPS = {
   rack: P('props_server', 0, 0, 2, 1, '#1B1A2E'),
   rack_open: P('props_server', 1, 0, 2, 1, '#26295A'),
   cables: P('props_server', 2, 0, 2, 1, '#5C5A63', { solid: false }),
-  fan: P('props_server', 0, 1, 1, 1, '#9CC3E6'),
+  fan: P('props_server', 0, 1, 1, 1, '#9CC3E6', { anim: { sheet: 'props_anim', frames: [[0, 2], [1, 2], [2, 2], [3, 2]], fps: 10 } }),
   towers: P('props_server', 1, 1, 2, 1, '#F0C9A0'),
   kamidana: P('props_server', 2, 1, 2, 1, '#6B4226'),
   // misc
@@ -153,7 +166,67 @@ export const PROPS = {
   bonsai: P('props_misc', 0, 1, 1, 1, '#3E6B4F'),
   lantern: P('props_misc', 1, 1, 1, 1, '#D9412B'),
   lift_door: P('props_misc', 2, 1, 3, 3, '#E8B84A', { solid: false, label: 'LIFT' }),
+
+  // ---- office decor v2
+  // open island desks (no chairs; chairs are their own props). up = the worker sits below and faces up.
+  desk_up_tidy: P('props_desks_a', 0, 0, 3, 1, '#A39E93'),
+  desk_up_messy: P('props_desks_a', 1, 0, 3, 1, '#A9A293'),
+  desk_up_cactus: P('props_desks_a', 2, 0, 3, 1, '#8FA88F'),
+  desk_down_tidy: P('props_desks_a', 0, 1, 3, 1, '#A39E93'),
+  desk_down_messy: P('props_desks_a', 1, 1, 3, 1, '#A9A293'),
+  desk_down_cactus: P('props_desks_a', 2, 1, 3, 1, '#8FA88F'),
+  // side desks: the worker sits to the RIGHT and faces left (flip = sits left, faces right)
+  desk_left_tidy: P('props_desks_b', 0, 0, 2, 2, '#A39E93'),
+  desk_left_messy: P('props_desks_b', 1, 0, 2, 2, '#A9A293'),
+  desk_left_cactus: P('props_desks_b', 2, 0, 2, 2, '#8FA88F'),
+  chief_desk: P('props_desks_b', 0, 1, 3, 1, '#6B4226'),
+  screen: P('props_desks_b', 1, 1, 2, 1, '#A39E93'),
+  planter: P('props_desks_b', 2, 1, 3, 1, '#3E6B4F'),
+  // chairs: the direction the sitter faces (left + flip = right)
+  chair_up: P('props_chairs', 0, 0, 1, 1, '#26295A'),
+  chair_down: P('props_chairs', 1, 0, 1, 1, '#26295A'),
+  chair_left: P('props_chairs', 2, 0, 1, 1, '#26295A'),
+  chair_out: P('props_chairs', 3, 0, 1, 1, '#26295A'),
+  mchair_up: P('props_chairs', 0, 1, 1, 1, '#6B4226'),
+  mchair_down: P('props_chairs', 1, 1, 1, 1, '#6B4226'),
+  mchair_left: P('props_chairs', 2, 1, 1, 1, '#6B4226'),
+  stool: P('props_chairs', 3, 1, 1, 1, '#6B4226'),
+  // against a wall. wall: which wall it must touch ('top' = the wall above it, 'right' = the wall to its right; flip → 'left')
+  bookshelf: P('props_wall_front', 0, 0, 2, 1, '#6B4226', { wall: 'top' }),
+  lockers: P('props_wall_front', 1, 0, 2, 1, '#5C5A63', { wall: 'top' }),
+  recycling: P('props_wall_front', 2, 0, 2, 1, '#5468A8', { wall: 'top' }),
+  sink: P('props_wall_front', 0, 1, 3, 1, '#A39E93', { wall: 'top' }),
+  cabinet: P('props_wall_front', 1, 1, 2, 1, '#6B4226', { wall: 'top' }),
+  copier: P('props_wall_front', 2, 1, 2, 1, '#F2E8D5', { wall: 'top' }),
+  bookshelf_side: P('props_wall_side', 0, 0, 1, 2, '#6B4226', { wall: 'right' }),
+  lockers_side: P('props_wall_side', 1, 0, 1, 2, '#5C5A63', { wall: 'right' }),
+  recycling_side: P('props_wall_side', 2, 0, 1, 2, '#5468A8', { wall: 'right' }),
+  sink_side: P('props_wall_side', 0, 1, 1, 2, '#A39E93', { wall: 'right' }),
+  cabinet_side: P('props_wall_side', 1, 1, 1, 2, '#6B4226', { wall: 'right' }),
+  copier_side: P('props_wall_side', 2, 1, 1, 2, '#F2E8D5', { wall: 'right' }),
+  // lobby + manager
+  reception: P('props_lounge', 0, 0, 3, 1, '#6B4226'),
+  bench: P('props_lounge', 1, 0, 2, 1, '#6B4226'),
+  palm: P('props_lounge', 2, 0, 1, 1, '#3E6B4F'),
+  putting: P('props_lounge', 0, 1, 3, 1, '#3E6B4F', { solid: false, flat: true }),
+  coffee_table: P('props_lounge', 1, 1, 2, 1, '#6B4226'),
+  sofa: P('props_lounge', 2, 1, 2, 1, '#8C2A2A'),
 };
+
+// Clutter on the floor (props_clutter): drawn flat under everything, walk over it. Placed at random by the level.
+// [col, row, scale] — small things are drawn smaller so they keep their real size next to the furniture.
+export const CLUTTER = {
+  papers: [0, 0, 1.5], cable: [1, 0, 1.5], balls: [2, 0, 1], tie: [3, 0, 1],
+  box: [0, 1, 1.5], slippers: [1, 1, 1], spill: [2, 1, 1], magazines: [3, 1, 1.5],
+};
+
+// Background colleagues (decoration only, no interaction).
+// npc_worker_*: rows = facing up (seen from behind), down, left; cols = typing A, typing B, action 1, action 2.
+export const WORKER_SHEETS = ['npc_worker_mouse', 'npc_worker_beaver', 'npc_worker_frog', 'npc_worker_cat'];
+export const WORKER_ROW = { up: 0, down: 1, left: 2, right: 2 };
+export const WORKER = { type: [0, 1], actions: [2, 3] };
+// npc_walker_*: same layout as the player sheets (rows down/left/up, cols step/stand/step).
+export const WALKER_SHEETS = { coffee: 'npc_walker_coffee', papers: 'npc_walker_papers' };
 
 export const CUBICLE_VARIANTS = [
   'cubicle_tidy', 'cubicle_messy', 'cubicle_overtime', 'cubicle_plants', 'cubicle_empty', 'cubicle_lucky',

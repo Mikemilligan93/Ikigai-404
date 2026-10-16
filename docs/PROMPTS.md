@@ -84,6 +84,22 @@ The frame meanings are also listed in `src/sprites.js` — if ChatGPT puts a pos
 | `props_meeting.png` | 3 × 2 | 48×48 | Office props |
 | `props_server.png` | 3 × 2 | 48×48 | Office props |
 | `props_misc.png` | 3 × 2 | 48×48 | Office props |
+| `tiles_floor_extra.png` | 4 × 4 | 16×16 | Office decor v2 |
+| `wall_decor.png` | 4 × 3 | 16×16 | Office decor v2 |
+| `props_desks_a.png` | 3 × 2 | 48×48 | Office decor v2 |
+| `props_desks_b.png` | 3 × 2 | 48×48 | Office decor v2 |
+| `props_chairs.png` | 4 × 2 | 24×24 | Office decor v2 |
+| `props_wall_front.png` | 3 × 2 | 48×48 | Office decor v2 |
+| `props_wall_side.png` | 3 × 2 | 48×48 | Office decor v2 |
+| `props_lounge.png` | 3 × 2 | 48×48 | Office decor v2 |
+| `props_clutter.png` | 4 × 2 | 24×24 | Office decor v2 |
+| `props_anim.png` | 4 × 3 | 48×48 | Office decor v2 |
+| `npc_worker_mouse.png` | 4 × 3 | 32×32 | Office decor v2 |
+| `npc_worker_beaver.png` | 4 × 3 | 32×32 | Office decor v2 |
+| `npc_worker_frog.png` | 4 × 3 | 32×32 | Office decor v2 |
+| `npc_worker_cat.png` | 4 × 3 | 32×32 | Office decor v2 |
+| `npc_walker_coffee.png` | 3 × 3 | 32×32 | Office decor v2 |
+| `npc_walker_papers.png` | 3 × 3 | 32×32 | Office decor v2 |
 | `fx_items.png` | 4 × 2 | 16×16 | Pickups, projectiles and effects |
 | `metro_back.png` | full scene | 320×180 | background |
 | `metro_platform.png` | full scene | 320×180 | see-through layer |
@@ -749,7 +765,7 @@ Art style: retro 8-bit pixel art, like a Japanese console game from around 1990,
 
 Camera: seen from directly above, completely flat.
 
-Subject: Floor tiles for the different zones of a 1990s Japanese office.
+Subject: Floor tiles for the different zones of a 1990s Japanese office. Make them detailed and realistic for pixel art: a subtle 2–3 tone texture in every tile (carpet pile flecks, tatami straw weave, tile grout lines, metal panel screws), but still calm and low contrast so characters stand out.
 
 Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 4 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell is one square FLOOR TILE drawn at 16×16 pixel-art resolution (each pixel a big visible block), filling its whole cell, seen from directly above, and tiling seamlessly with itself (left edge continues into right, top into bottom). Tiles in the same row belong together and must also fit next to each other. Low contrast so characters stand out. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
 
@@ -769,7 +785,7 @@ Art style: retro 8-bit pixel art, like a Japanese console game from around 1990,
 
 Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: Wall and partition tiles for a 1990s Japanese office.
+Subject: Wall and partition tiles for a 1990s Japanese office. Make them detailed and realistic for pixel art: the cream wall has a faint plaster texture, a dark wooden skirting board along its bottom and a thin shadow line under the ceiling; partitions show a grey woven fabric texture with an aluminium top rail. Every wall-face tile uses exactly the same plain wall, skirting board and height, so they line up.
 
 Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 4 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell is one square WALL or PARTITION tile drawn at 16×16 pixel-art resolution (each pixel a big visible block), filling its whole cell, in the three-quarter top-down view. Neighbouring wall tiles must line up edge to edge. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
 
@@ -926,6 +942,328 @@ Cells, left to right, top to bottom:
 - Row 2: small potted bonsai | red paper lantern on a stand | closed brass art-deco lift door with a floor dial above it
 
 Output: PNG, Wide landscape image, 1536×1024.
+```
+
+## Office decor v2 — tiles
+
+### `tiles_floor_extra.png` — frames 16×16 · grid 4×4
+
+*Make in the same chat as tiles_floor.png so the colours match.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: seen from directly above, completely flat.
+
+Subject: Extra floor tiles that mix in with the existing office floor tiles (same muted colours, same detail level, attach tiles_floor.png if you have it).
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 4 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell is one square FLOOR TILE drawn at 16×16 pixel-art resolution (each pixel a big visible block), filling its whole cell, seen from directly above, and tiling seamlessly with itself (left edge continues into right, top into bottom). Tiles in the same row belong together and must also fit next to each other. Low contrast so characters stand out. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: open-plan carpet, muted celadon green: carpet tile with the pile turned 90° | carpet tile one shade darker | worn walking path running left to right | worn walking path running top to bottom
+- Row 2: open-plan carpet: with a small floor power-outlet box | with a metal air-vent grille | with a grey cable taped down across it | with a few crumbs and a paper clip
+- Row 3: lobby and meeting room: polished cream stone tile with faint veins | the same stone tile with different veins | warm wooden floorboards | wooden floorboards with a knot
+- Row 4: kitchen, server room, archive: cream linoleum with speckles | kitchen floor drain | server-room raised floor panel with round vent holes | grey concrete with a yellow-and-black safety stripe running left to right
+
+Output: PNG, Square image, 1024×1024.
+```
+
+### `wall_decor.png` — frames 16×16 · grid 4×3
+
+*Make in the same chat as tiles_wall.png so the wall matches.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Wall-face tiles with things mounted on the wall. Every cell is the SAME plain cream office wall face as tiles_wall.png (same skirting board, same height, same colours), with one object hanging on it, so they slot into a wall row.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell is one square WALL or PARTITION tile drawn at 16×16 pixel-art resolution (each pixel a big visible block), filling its whole cell, in the three-quarter top-down view. Neighbouring wall tiles must line up edge to edge. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: round wall clock | paper calendar with a red daruma picture | fire extinguisher in a red wall cabinet | split air-conditioner unit high on the wall
+- Row 2: framed motivational poster of a sunrise over a mountain | framed group photo of animal coworkers | light switch and a beige intercom phone | green emergency-exit pictogram sign with a running figure (no letters)
+- Row 3: wall-mounted TV showing a bar chart | hanging plant in a macramé holder | row of coat hooks with a grey jacket | green-cross safety notice board
+
+Output: PNG, Square image, 1024×1024.
+```
+
+## Office decor v2 — props
+
+### `props_desks_a.png` — frames 48×48 · grid 3×2
+
+*Leave the empty floor where the chair would go — no chairs on this sheet.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Open office desks WITHOUT partitions and WITHOUT chairs (chairs and people are added separately), for a Japanese island layout where desks are pushed together facing each other. Grey steel desks with a beige CRT monitor, keyboard, papers and a desk phone.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: desk where the worker faces UP (sits below the desk): we see the desk top and the monitor SCREEN — tidy desk | messy desk with paper piles | desk with a small cactus and a family photo
+- Row 2: the same three desks seen from the OTHER side, where the worker faces DOWN (sits above the desk, facing the viewer): we see the FRONT PANEL of the desk and the BACK of the monitor — tidy | messy | with a cactus
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_desks_b.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: More office furniture in the same style as props_desks_a.png, WITHOUT chairs.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: grey steel desk where the worker faces LEFT (sits to the right of it): monitor seen from the side with its screen pointing right — tidy | messy | with a cactus
+- Row 2: section chief's wider desk at the head of a desk island, worker faces DOWN: back of the monitor, an in-tray and a red hanko stamp | free-standing grey fabric partition screen on two feet | long planter box with green plants used as a room divider
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_chairs.png` — frames 24×24 · grid 4×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Empty office chairs in different directions, same scale as the office props (a person would be about 32 pixels tall).
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: dark navy rolling office chair seen from BEHIND (facing up) | the same chair seen from the FRONT (facing down) | the same chair facing LEFT | the same chair rolled away and turned at an angle
+- Row 2: steel-and-wood meeting chair seen from BEHIND | from the FRONT | facing LEFT | small round folding stool
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_wall_front.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Furniture that stands with its back flat against a wall, seen from the front. The back edge of each object is a straight line at the top so it sits flush against the wall.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: tall bookshelf with binders and a small daruma | grey steel employee lockers | Japanese recycling station: three bins in red, blue and green (no text)
+- Row 2: sink counter with a dish rack and a microwave | low cabinet with a potted plant and a desk phone on top | photocopier with paper stacks and a toner box
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_wall_side.png` — frames 48×48 · grid 3×2
+
+*Mirrored in code for the left wall.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: The SAME six objects as props_wall_front.png (attach it), now standing against a wall on the RIGHT side of the room, so their front faces LEFT. Narrow and deep, seen from the side and slightly above. The right edge of each object is straight so it sits flush against the wall.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: tall bookshelf facing LEFT | steel lockers facing LEFT | recycling station facing LEFT
+- Row 2: sink counter facing LEFT | low cabinet facing LEFT | photocopier facing LEFT
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_lounge.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Furniture for the lift lobby and the manager's corner.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: wooden reception counter with a bell and a small ikebana | waiting bench facing DOWN | big potted kentia palm
+- Row 2: green golf putting mat with a ball and a putter | low coffee table with magazines | two-seat leather sofa facing DOWN
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_clutter.png` — frames 24×24 · grid 4×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Small flat things lying on an office floor, seen from above. Low and flat, so a character can walk over them.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: scattered papers | tangled power cable with a power strip | crumpled paper balls | a dropped tie and a sticky note
+- Row 2: an open cardboard box with stuff | a pair of office slippers | a toppled paper coffee cup with a small brown spill | a stack of magazines tied with string
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_anim.png` — frames 48×48 · grid 4×3
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Three animated office props, 4 animation frames each. The object stays EXACTLY the same size and place in every frame of a row; only the moving part changes.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: small koi aquarium on a cabinet: frame 1 | frame 2 | frame 3 | frame 4 (the orange koi swim slowly from left to right, bubbles rise)
+- Row 2: water cooler with a big blue bottle: frame 1 | frame 2 | frame 3 | frame 4 (a big air bubble rises up through the bottle)
+- Row 3: big standing electric fan: frame 1 | frame 2 | frame 3 | frame 4 (the blades turn a quarter turn each frame)
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+## Office decor v2 — colleagues at their desks (decoration)
+
+### `npc_worker_mouse.png` — frames 32×32 · grid 4×3
+
+*Typing = hands forward at keyboard height, arms move between A and B.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: a small grey mouse office worker in a white shirt and a thin black tie, SITTING on a dark navy rolling office chair (the chair is part of the picture and identical in every cell). Draw ONLY the person and the chair: NO desk, NO computer.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: seen from BEHIND (facing UP, working at a desk above them): typing A | typing B | sipping from a teacup | rubbing his tired eyes
+- Row 2: facing DOWN (towards the viewer): typing A | typing B | sipping from a teacup | rubbing his tired eyes
+- Row 3: facing LEFT (side profile): typing A | typing B | sipping from a teacup | rubbing his tired eyes
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `npc_worker_beaver.png` — frames 32×32 · grid 4×3
+
+*Typing = hands forward at keyboard height, arms move between A and B.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: a stocky beaver office worker in a mustard cardigan and glasses, SITTING on a dark navy rolling office chair (the chair is part of the picture and identical in every cell). Draw ONLY the person and the chair: NO desk, NO computer.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: seen from BEHIND (facing UP, working at a desk above them): typing A | typing B | talking on a beige desk phone | stretching both arms up
+- Row 2: facing DOWN (towards the viewer): typing A | typing B | talking on a beige desk phone | stretching both arms up
+- Row 3: facing LEFT (side profile): typing A | typing B | talking on a beige desk phone | stretching both arms up
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `npc_worker_frog.png` — frames 32×32 · grid 4×3
+
+*Typing = hands forward at keyboard height, arms move between A and B.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: a green frog office worker in a short-sleeved shirt with a pocket of pens, SITTING on a dark navy rolling office chair (the chair is part of the picture and identical in every cell). Draw ONLY the person and the chair: NO desk, NO computer.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: seen from BEHIND (facing UP, working at a desk above them): typing A | typing B | stamping a paper with a red hanko | dozing off, head nodding
+- Row 2: facing DOWN (towards the viewer): typing A | typing B | stamping a paper with a red hanko | dozing off, head nodding
+- Row 3: facing LEFT (side profile): typing A | typing B | stamping a paper with a red hanko | dozing off, head nodding
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `npc_worker_cat.png` — frames 32×32 · grid 4×3
+
+*Typing = hands forward at keyboard height, arms move between A and B.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: a calico cat office worker in a cream blouse with a hair bun, SITTING on a dark navy rolling office chair (the chair is part of the picture and identical in every cell). Draw ONLY the person and the chair: NO desk, NO computer.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: seen from BEHIND (facing UP, working at a desk above them): typing A | typing B | writing on a notepad | yawning
+- Row 2: facing DOWN (towards the viewer): typing A | typing B | writing on a notepad | yawning
+- Row 3: facing LEFT (side profile): typing A | typing B | writing on a notepad | yawning
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+## Office decor v2 — colleagues walking around (decoration)
+
+### `npc_walker_coffee.png` — frames 32×32 · grid 3×3
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: a hurried weasel office worker in a grey suit, carrying a paper cup of coffee in one hand.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: facing DOWN (towards the viewer): left foot forward | standing still | right foot forward
+- Row 2: facing LEFT (side profile): left foot forward | standing still | right foot forward
+- Row 3: facing UP (back to the viewer): left foot forward | standing still | right foot forward
+
+Output: PNG, Square image, 1024×1024.
+```
+
+### `npc_walker_papers.png` — frames 32×32 · grid 3×3
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: a slow old tortoise office worker in a brown vest, carrying a tall stack of papers in both arms.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: facing DOWN (towards the viewer): left foot forward | standing still | right foot forward
+- Row 2: facing LEFT (side profile): left foot forward | standing still | right foot forward
+- Row 3: facing UP (back to the viewer): left foot forward | standing still | right foot forward
+
+Output: PNG, Square image, 1024×1024.
 ```
 
 ## Pickups, projectiles and effects

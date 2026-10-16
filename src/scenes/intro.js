@@ -1,4 +1,4 @@
-import { W, H, PX, PAL, COLORS, FONT, clamp, lerp, text, dialogueBox, drawFrame, windowBox } from '../engine.js';
+import { W, H, PX, PAL, COLORS, FONT, fontOf, clamp, lerp, text, dialogueBox, drawFrame, windowBox } from '../engine.js';
 import { SIDE, IDLE, WAKE, FLAT_PROP, METRO_PROP, DEBRIS, PETALS, PETAL_ON_GROUND, STREET_PROP, BEGGAR, loop } from '../sprites.js';
 
 // Side-view intro: home → metro (ticket inspector) → office entrance.
@@ -383,18 +383,18 @@ export class IntroScene {
 
   // Pixel speech bubble above the bunny (world coordinates).
   drawBubble(ctx, say, x, headY) {
-    ctx.font = `16px ${FONT}`;
+    ctx.font = fontOf(18);
     const words = say.text.split(' '), lines = [];
     let line = '';
     for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > 320 && line) { lines.push(line); line = w; } else line = t; }
     if (line) lines.push(line);
-    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 28, h = lines.length * 22 + 18;
+    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 28, h = lines.length * 24 + 18;
     const bx = clamp(Math.round(x - w / 2), this.camX + 8, this.camX + W - w - 8), by = Math.round(headY - h);
     ctx.globalAlpha = clamp(say.t * 2, 0, 1);
     ctx.fillStyle = PAL.ink; ctx.fillRect(bx - 3, by - 3, w + 6, h + 6); ctx.fillRect(x - 6, by + h, 12, 9);
     ctx.fillStyle = PAL.cream; ctx.fillRect(bx, by, w, h); ctx.fillRect(x - 3, by + h, 6, 6);
     ctx.fillStyle = PAL.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    lines.forEach((l, i) => ctx.fillText(l, bx + 14, by + 20 + i * 22));
+    lines.forEach((l, i) => ctx.fillText(l, bx + 14, by + 21 + i * 24));
     ctx.globalAlpha = 1;
   }
 
@@ -486,7 +486,7 @@ export class IntroScene {
       ctx.fillStyle = `rgba(27,26,46,${clamp(k, 0, 1)})`; ctx.fillRect(0, 0, W, H);
       if (this.t >= D * 0.8 && this.t < D + C + D * 0.3) {
         const street = this.doorTo === 'street';
-        text(ctx, this.T.locations[street ? 'office' : 'metro'], W / 2, H / 2 - 10, { size: 44, color: PAL.gold });
+        text(ctx, this.T.locations[street ? 'office' : 'metro'], W / 2, H / 2 - 14, { size: 36, color: PAL.gold, display: true });
         text(ctx, street ? this.T.streetCardSub : this.T.flat.cardSub, W / 2, H / 2 + 44, { size: 20, color: PAL.cream });
       }
     } else if (this.phase === 'dialogue') {

@@ -4,7 +4,8 @@ import {
 } from '../engine.js';
 import { OFFICE } from '../levels/office.js';
 import {
-  FLOOR, WALL, PROPS, FX, ACTION, IDLE, BOSS, STAND, MINIBOSS, MINION, NPC, walkFrame, loop, dirOf, rowOf,
+  FLOOR, WALL, WALL_DECOR, PROPS, CLUTTER, WORKER_SHEETS, WORKER_ROW, WORKER, WALKER_SHEETS,
+  FX, ACTION, IDLE, BOSS, STAND, MINIBOSS, MINION, NPC, walkFrame, loop, dirOf, rowOf,
 } from '../sprites.js';
 
 const MB_COLORS = { client: PAL.moss, printer: PAL.cream, coffee: PAL.wood, ac: PAL.sky };
@@ -101,10 +102,13 @@ export class OfficeScene {
     // props
     this.props = [];
     this.special = {};
-    for (const [name, x, y, id] of L.props) {
+    for (const [name, x, y, o] of L.props) {
       const def = PROPS[name];
       if (!def) { console.warn('unknown prop', name); continue; }
-      const p = { name, def, x, y, id, rect: { x: x * t + 4, y: y * t + 4, w: def.w * t - 8, h: def.h * t - 8 } };
+      const opt = typeof o === 'object' ? o : { id: o };
+      const id = opt.id;
+      const p = { name, def, x, y, id, flip: !!opt.flip, seat: opt.seat, rect: { x: x * t + 4, y: y * t + 4, w: def.w * t - 8, h: def.h * t - 8 } };
+      this.checkWall(p);
       this.props.push(p);
       if (id) this.special[id] = p;
       if (def.solid) {
@@ -112,7 +116,89 @@ export class OfficeScene {
         for (let yy = y; yy < y + def.h; yy++) for (let xx = x; xx < x + def.w; xx++) if (xx >= 0 && yy >= 0 && xx < L.MAP_W && yy < L.MAP_H) this.blocked[at(xx, yy)] = 1;
       }
     }
+    this.buildDecor();
     this.renderStatic();
+  }
+
+  // Furniture that belongs against a wall must touch it (warns in the console while laying out the level).
+  checkWall(p) {
+    const side = p.def.wall === 'right' && p.flip ? 'left' : p.def.wall;
+    if (!side) return;
+    const W1 = (x, y) => x < 0 || y < 0 || x >= this.L.MAP_W || y >= this.L.MAP_H || this.wall[this.at(x, y)] === 1;
+    let ok = true;
+    if (side === 'top') for (let x = p.x; x < p.x + p.def.w; x++) ok = ok && W1(x, p.y - 1);
+    if (side === 'right') for (let y = p.y; y < p.y + p.def.h; y++) ok = ok && W1(p.x + p.def.w, y);
+    if (side === 'left') for (let y = p.y; y < p.y + p.def.h; y++) ok = ok && W1(p.x - 1, y);
+    if (!ok) console.warn(`[office] ${p.name} at ${p.x},${p.y} should stand against the ${side} wall`);
+  }
+
+  // Background life: seated colleagues, walkers, clutter, worn carpet along the walkers' routes.
+  buildDecor() {
+    const L = this.L, t = this.tile;
+    // seated colleagues: typing, now and then an action (sip, call, stretch, doze)
+    this.seats = (L.seats || []).map((s, i) => ({ ...s, act: -1, actT: 2 + hash(i, 7) * 10, phase: hash(i, 3) * 2 }));
+    // walkers
+    this.walkers = (L.walkers || []).map((w) => ({
+      ...w, sheet: WALKER_SHEETS[w.kind], seg: 0, dirN: 1, wait: 0, walked: 0,
+      x: w.route[0][0] * t, y: w.route[0][1] * t, dir: 'down', moving: false,
+    }));
+    this.worn = new Map();
+    for (const w of L.walkers || []) for (let i = 0; i + 1 < w.route.length; i++) {
+      const [ax, ay] = w.route[i], [bx, by] = w.route[i + 1];
+      const horiz = Math.abs(bx - ax) > Math.abs(by - ay);
+      const n = Math.ceil(Math.max(Math.abs(bx - ax), Math.abs(by - ay)));
+      for (let k = 0; k <= n; k++) {
+        const x = Math.floor(ax + (bx - ax) * k / n), y = Math.floor(ay + (by - ay) * k / n);
+        const i2 = this.at(x, y), want = horiz ? 'wornH' : 'wornV';
+        if (this.floor[i2] === 'carpet' && !this.worn.has(i2)) this.worn.set(i2, want);
+      }
+    }
+    // clutter: random free floor tiles, not in doorways, not next to a door, not in the boss arena
+    const kinds = Object.keys(CLUTTER);
+    const nearDoor = (x, y) => L.doors.some(([x0, y0, x1, y1]) => x >= x0 - 2 && x <= x1 + 2 && y >= y0 - 1 && y <= y1 + 1);
+    const used = new Set();
+    this.clutter = [];
+    let seed = 1;
+    for (const z of L.clutter || []) {
+      const [x0, y0, x1, y1] = z.area;
+      for (let k = 0, tries = 0; k < z.n && tries < 200; tries++) {
+        const x = x0 + Math.floor(hash(seed, 11) * (x1 - x0 + 1)), y = y0 + Math.floor(hash(seed, 17) * (y1 - y0 + 1));
+        const list = z.kinds || kinds, kind = list[Math.floor(hash(seed, 23) * list.length)];
+        seed++;
+        const i = this.at(x, y);
+        if (this.blocked[i] || this.wall[i] || used.has(i) || nearDoor(x, y) || this.floor[i] === 'carpetWave' || this.worn.has(i)) continue;
+        used.add(i);
+        this.clutter.push({ kind, x: (x + 0.5) * t + (hash(seed, 5) - 0.5) * 16, y: (y + 0.5) * t + (hash(seed, 9) - 0.5) * 16, flip: hash(seed, 13) < 0.5 });
+        k++;
+      }
+    }
+    // steam above hot drinks
+    this.steamSpots = this.props.filter((p) => p.name === 'coffee_good' || p.name === 'counter').map((p) => ({ x: (p.x + p.def.w / 2) * t, y: p.y * t - 30 }));
+  }
+
+  updateDecor(dt) {
+    const t = this.tile;
+    for (const s of this.seats) {
+      s.actT -= dt;
+      if (s.actT <= 0) {
+        if (s.act >= 0) { s.act = -1; s.actT = 4 + Math.random() * 10; }
+        else { s.act = WORKER.actions[Math.floor(Math.random() * WORKER.actions.length)]; s.actT = 1.5 + Math.random() * 2.5; }
+      }
+    }
+    for (const w of this.walkers) {
+      w.moving = false;
+      if (w.wait > 0) { w.wait -= dt; continue; }
+      const next = w.seg + w.dirN;
+      const [tx, ty] = w.route[next];
+      const dx = tx * t - w.x, dy = ty * t - w.y, d = Math.hypot(dx, dy), step = w.speed * dt;
+      if (d <= step) {
+        w.x = tx * t; w.y = ty * t; w.seg = next;
+        if (next === 0 || next === w.route.length - 1) { w.dirN = -w.dirN; w.wait = w.pause; w.dir = 'down'; }
+      } else {
+        w.x += dx / d * step; w.y += dy / d * step; w.walked += step; w.moving = true;
+        w.dir = dirOf(dx, dy, w.dir);
+      }
+    }
   }
 
   // Obstacles near a circle (walls + solid props), from the tile buckets.
@@ -143,21 +229,27 @@ export class OfficeScene {
     c.width = L.width; c.height = L.height;
     const ctx = c.getContext('2d');
     ctx.imageSmoothingEnabled = false;
-    const floorImg = a.get('tiles_floor'), wallImg = a.get('tiles_wall');
+    const floorImg = a.get('tiles_floor'), wallImg = a.get('tiles_wall'), decorImg = a.get('wall_decor');
+    const sheetImg = (k) => (k ? a.get(k) : floorImg);
     const faces = new Map(L.faces.map(([x, y, k]) => [this.at(x, y), k]));
     const ts = a.cell('tiles_floor')[0];
     const tileAt = (img, col, row, x, y) => ctx.drawImage(img, col * ts, row * ts, ts, ts, x * t, y * t, t, t);
 
     for (let y = 0; y < L.MAP_H; y++) for (let x = 0; x < L.MAP_W; x++) {
       const i = this.at(x, y);
-      const type = this.floor[i];
+      let type = this.floor[i];
+      if (type && !this.wall[i] && this.worn.has(i)) type = this.worn.get(i);
       if (type && !this.wall[i]) {
         const f = FLOOR[type];
         let [col, row] = f.checker ? f.cells[(x + y) % f.cells.length] : f.cells[0];
+        let img = sheetImg(f.sheet);
         const h = hash(x, y);
         let acc = 0;
-        for (const [ec, er, p] of f.extra || []) { acc += p; if (h < acc) { col = ec; row = er; break; } }
-        if (floorImg) tileAt(floorImg, col, row, x, y);
+        for (const [ec, er, p, sh] of f.extra || []) {
+          acc += p;
+          if (h < acc) { if (!sh || a.get(sh)) { col = ec; row = er; img = sheetImg(sh); } break; }
+        }
+        if (img) tileAt(img, col, row, x, y);
         else {
           ctx.fillStyle = f.ph; ctx.fillRect(x * t, y * t, t, t);
           ctx.fillStyle = 'rgba(27,26,46,0.12)';
@@ -182,6 +274,14 @@ export class OfficeScene {
         const l = x > 0 && this.wall[this.at(x - 1, y)] === 2, r = x + 1 < L.MAP_W && this.wall[this.at(x + 1, y)] === 2;
         key = l && r ? 'partH' : 'partEnd';
       } else key = showsFace ? (faces.get(i) || 'face') : 'cap';
+      if (WALL_DECOR[key]) {
+        if (decorImg) { tileAt(decorImg, ...WALL_DECOR[key], x, y); continue; }
+        if (wallImg) tileAt(wallImg, ...WALL.face, x, y); else this.placeholderWall(ctx, 'face', x * t, y * t, t);
+        ctx.fillStyle = PAL.ink; ctx.fillRect(x * t + 12, y * t + 9, 24, 21);
+        ctx.fillStyle = { extinguisher: PAL.red, exit: PAL.moss, safety: PAL.moss, hangplant: PAL.moss, clock: PAL.cream, tv: PAL.indigo, aircon: PAL.cream }[key] || PAL.ochre;
+        ctx.fillRect(x * t + 15, y * t + 12, 18, 15);
+        continue;
+      }
       if (wallImg && key === 'cap') {
         // wall tops: a calm solid colour reads better than a repeated tile
         ctx.fillStyle = '#3B3A45'; ctx.fillRect(x * t, y * t, t, t);
@@ -194,6 +294,14 @@ export class OfficeScene {
         if (w === 2) tileAt(floorImg || wallImg, ...(floorImg ? FLOOR[this.floor[i] || 'carpet'].cells[0] : WALL.cap), x, y);
         tileAt(wallImg, col, row, x, y);
       } else this.placeholderWall(ctx, key, x * t, y * t, t);
+    }
+    // soft shadow along the foot of walls (things stand IN the room, not on a flat picture)
+    ctx.fillStyle = 'rgba(27,26,46,0.22)';
+    for (let y = 1; y < L.MAP_H; y++) for (let x = 0; x < L.MAP_W; x++) {
+      const i = this.at(x, y);
+      if (this.wall[i] || !this.floor[i]) continue;
+      if (this.wall[this.at(x, y - 1)] === 1) ctx.fillRect(x * t, y * t, t, 9);
+      if (x > 0 && this.wall[this.at(x - 1, y)] === 1) ctx.fillRect(x * t, y * t, 6, t);
     }
     this.staticCanvas = c;
   }
@@ -295,6 +403,7 @@ export class OfficeScene {
     this.particles.forEach((f) => { f.t -= dt; f.y += f.vy * dt; });
     this.particles = this.particles.filter((f) => f.t > 0);
     this.shake = Math.max(0, this.shake - dt * 2);
+    this.updateDecor(dt);
 
     if (this.state === 'email') {
       if (inp.wasPressed('e', ' ', 'Enter') && this.stateT > 0.3) this.startWave();
@@ -485,7 +594,7 @@ export class OfficeScene {
       }
     }
 
-    // mochi
+    // mochi pickups
     for (const m of this.mochi) {
       if (m.respawn > 0) {
         m.respawn -= dt;
@@ -804,6 +913,13 @@ export class OfficeScene {
       ctx.globalAlpha = 1;
     }
 
+    // flat things on the floor: clutter, mats
+    for (const c of this.clutter) if (this.onScreen(c.x, c.y, 40)) {
+      const [col, row, sc] = CLUTTER[c.kind];
+      drawFrame(ctx, a, 'props_clutter', col, row, c.x, c.y + 18, { scale: sc, flip: c.flip, color: PAL.cream, ph: [8, 4], eyes: false });
+    }
+    for (const p of this.props) if (p.def.flat && this.onScreen((p.x + p.def.w / 2) * t, (p.y + 1) * t, 200)) this.drawProp(ctx, p);
+
     // mochi
     for (const m of this.mochi) if (m.respawn <= 0 && this.onScreen(m.x, m.y, 40)) {
       const f = Math.floor(this.time * 3 + m.x) % 4 === 0 ? FX.mochiSparkle : FX.mochi;
@@ -815,16 +931,20 @@ export class OfficeScene {
     // y-sorted world: props, characters
     const list = [];
     for (const p of this.props) {
+      if (p.def.flat) continue;
       const bottom = (p.y + p.def.h) * t;
       if (!this.onScreen((p.x + p.def.w / 2) * t, bottom - 70, 200)) continue;
       list.push({ y: bottom, d: () => this.drawProp(ctx, p) });
     }
     for (const n of this.npcs) if (this.onScreen(n.x, n.y, 120)) list.push({ y: n.y, d: () => this.drawNpc(ctx, n) });
+    for (const s of this.seats) if (s.worker != null && this.onScreen((s.x + 0.5) * t, (s.y + 1) * t, 120)) list.push({ y: (s.y + 1) * t + (s.dir === 'left' || s.dir === 'right' ? 2 : 0), d: () => this.drawSeated(ctx, s) });
+    for (const w of this.walkers) if (this.onScreen(w.x, w.y, 120)) list.push({ y: w.y, d: () => this.drawWalker(ctx, w) });
     for (const m of this.minibosses) if (this.onScreen(m.x, m.y, 160) && (m.alive || m.deadT < 0.6)) list.push({ y: m.y, d: () => this.drawMiniboss(ctx, m) });
     for (const e of this.enemies) if (this.onScreen(e.x, e.y, 80)) list.push({ y: e.y, d: () => this.drawEnemy(ctx, e) });
     if (this.boss) list.push({ y: this.boss.y, d: () => this.drawBoss(ctx) });
     list.push({ y: this.player.y, d: () => this.drawPlayer(ctx) });
     list.sort((p, q) => p.y - q.y).forEach((o) => o.d());
+    this.drawSteam(ctx);
     for (const n of this.npcs) if (n.say && this.onScreen(n.x, n.y, 200)) this.drawBubble(ctx, n, n.y - 80);
     for (const m of this.minibosses) if (m.alive && m.say && this.onScreen(m.x, m.y, 200)) this.drawBubble(ctx, m, m.y - m.r - 116);
     if (this.boss?.alive && this.boss.say) this.drawBubble(ctx, this.boss, this.boss.y + this.boss.r - 200);
@@ -880,12 +1000,52 @@ export class OfficeScene {
 
   drawProp(ctx, p) {
     const t = this.tile, a = this.g.assets, def = p.def;
+    if (p.seat != null && this.seats[p.seat]?.worker != null) return;   // the colleague's sheet brings its own chair
     let d = def, name = p.name;
+    if (def.anim && a.get(def.anim.sheet)) {
+      const an = def.anim, cyc = an.frames.length / an.fps + (an.pause || 0);
+      const k = Math.min(an.frames.length - 1, Math.floor(((this.time + p.x * 0.37) % cyc) * an.fps));
+      const [col, row] = an.frames[k];
+      d = { ...def, sheet: an.sheet, col, row };
+    }
     if (p.id === 'desk') { name = this.state === 'explore' && Math.floor(this.time * 2) % 2 ? 'own_desk_mail' : 'own_desk'; d = PROPS[name]; }
     const x = (p.x + def.w / 2) * t, y = (p.y + def.h) * t;
     const alpha = p.id === 'coffee' && this.coffeeCd > 0 ? 0.75 : 1;
     const ph = [def.w * 16 - 2, def.h * 16 + 6];
-    drawFrame(ctx, a, d.sheet, d.col, d.row, x, y, { scale: def.scale || PX, alpha, color: d.ph, ph, label: d.label, eyes: false });
+    drawFrame(ctx, a, d.sheet, d.col, d.row, x, y, { scale: def.scale || PX, alpha, flip: p.flip, color: d.ph, ph, label: d.label, eyes: false });
+  }
+
+  // A background colleague at a desk (decoration, cannot be talked to).
+  drawSeated(ctx, s) {
+    const t = this.tile, a = this.g.assets;
+    const col = s.act >= 0 ? s.act : loop(WORKER.type, this.time + s.phase, 4);
+    const x = (s.x + 0.5) * t, y = (s.y + 1) * t + (s.baked ? -6 : 0);
+    drawFrame(ctx, a, WORKER_SHEETS[s.worker], col, WORKER_ROW[s.dir], x, y, {
+      flip: s.dir === 'right', kind: 'npc', color: [PAL.grey, PAL.wood, PAL.moss, PAL.peach][s.worker], ph: [12, 16], eyes: s.dir !== 'up',
+    });
+  }
+
+  drawWalker(ctx, w) {
+    const a = this.g.assets;
+    const [row, flip] = rowOf(w.dir);
+    const col = w.moving ? walkFrame(w.walked, this.A.walkStride) : STAND;
+    ctx.fillStyle = 'rgba(27,26,46,0.3)'; ctx.fillRect(w.x - 15, w.y - 3, 30, 6);
+    drawFrame(ctx, a, w.sheet, col, row, w.x, w.y, { flip, kind: 'npc', color: w.kind === 'coffee' ? PAL.grey : PAL.ochre, ph: [12, 22] });
+  }
+
+  // Little pixel puffs of steam rising from the coffee machines and the kettle.
+  drawSteam(ctx) {
+    ctx.fillStyle = PAL.cream;
+    for (const s of this.steamSpots) {
+      if (!this.onScreen(s.x, s.y, 60)) continue;
+      for (let i = 0; i < 3; i++) {
+        const k = (this.time * 0.6 + i / 3) % 1;
+        ctx.globalAlpha = 0.55 * (1 - k);
+        const px = Math.round((s.x + Math.sin((k + i) * 6) * 6) / 3) * 3, py = Math.round((s.y - k * 36) / 3) * 3;
+        ctx.fillRect(px - 3, py, 6, 6);
+      }
+    }
+    ctx.globalAlpha = 1;
   }
 
   drawPlayer(ctx) {

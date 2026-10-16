@@ -27,11 +27,12 @@ export const ZONES = [
   ['carpetWave', 22, 14, 41, 24],   // the open centre = boss arena
   ['kitchen', 1, 2, 14, 11],
   ['tatami', 49, 2, 62, 10],
-  ['lobby', 1, 14, 14, 24],         // meeting room
+  ['wood', 1, 14, 14, 24],          // meeting room
   ['rug', 3, 17, 8, 21],            // rug under the meeting table
   ['lobby', 49, 14, 62, 24],
   ['server', 1, 27, 14, 38],
   ['archive', 49, 27, 62, 38],
+  ['archiveStripe', 49, 29, 58, 29], // safety line in front of the print machines
 ];
 
 // Walls: [x0, y0, x1, y1] inclusive. Horizontal inner walls are 2 tiles thick so their front face shows.
@@ -54,52 +55,130 @@ const DOORS = [
 // Low cubicle partitions (grey fabric, waist high): [x0, x1, y] horizontal runs. Solid like walls.
 const PARTITIONS = [[17, 21, 25], [42, 46, 25], [17, 21, 13], [42, 46, 13]];
 
-// Decorations on visible wall faces: [x, y, WALL key from sprites.js]. Faces without an entry are plain.
+// Things on visible wall faces: [x, y, key] — keys from WALL or WALL_DECOR in sprites.js. Faces without an entry are plain.
 function faceDecor() {
   const d = [];
-  for (let x = 17; x <= 46; x += 3) d.push([x, 1, 'window']);           // open-plan windows over Tokyo
-  d.push([3, 1, 'dawnWindow'], [7, 1, 'scroll'], [11, 1, 'dawnWindow']); // kitchen
+  for (let x = 17; x <= 44; x += 3) d.push([x, 1, 'window']);           // open-plan windows over Tokyo
+  d.push([22, 1, 'calendar'], [28, 1, 'aircon'], [34, 1, 'clock'], [40, 1, 'aircon'], [46, 1, 'exit'], [19, 1, 'extinguisher']);
+  d.push([3, 1, 'clock'], [7, 1, 'dawnWindow'], [10, 1, 'dawnWindow'], [14, 1, 'calendar']);  // kitchen: windows over the counter and sink
   for (const x of [50, 51, 52, 60, 61, 62]) d.push([x, 1, 'shoji']);    // manager's shoji screens
-  d.push([56, 1, 'scroll']);
-  d.push([4, 13, 'notice'], [10, 13, 'window']);                          // meeting room
-  d.push([51, 13, 'noren'], [60, 13, 'scroll']);                          // lobby (lift drawn on top at 55-56)
-  d.push([7, 26, 'door']);                                                // server closet
-  d.push([52, 26, 'notice'], [58, 26, 'notice']);                         // archive
+  d.push([56, 1, 'scroll'], [54, 1, 'photo'], [58, 1, 'poster']);
+  d.push([4, 13, 'notice'], [7, 13, 'clock'], [10, 13, 'tv'], [12, 13, 'window']);   // meeting room
+  d.push([51, 13, 'noren'], [60, 13, 'scroll'], [53, 13, 'exit'], [58, 13, 'hangplant'], [62, 13, 'hooks']);  // lobby (lift at 55-57)
+  d.push([3, 26, 'extinguisher'], [7, 26, 'door'], [11, 26, 'safety'], [13, 26, 'switch']);            // server closet
+  d.push([50, 26, 'switch'], [52, 26, 'notice'], [55, 26, 'calendar'], [58, 26, 'notice'], [61, 26, 'extinguisher']);  // archive
   return d;
 }
 
-// Props: [prop name from PROPS in sprites.js, x, y] = top-left of its footprint. Optional 4th item = id.
+// Props: [prop name from PROPS in sprites.js, x, y, opts] = top-left of its footprint.
+// opts: an id string, or { id, flip } (flip mirrors it: side desks / side wall furniture for the LEFT wall).
+// Seats: { x, y, dir, worker } — where a background colleague sits (tile of the chair; dir = where they face).
+// A chair prop with a colleague on it is not drawn (the colleague sheet includes the chair).
+const SEATS = [];
+let seatN = 0;
+// About 2 of 3 seats are taken; worker = which of the 4 colleague sheets (null = empty seat).
+const taken = () => { const n = seatN++; return n % 3 === 2 ? null : (n * 5 + 1) % 4; };
+function seat(p, chair, x, y, dir, opts) {
+  const worker = taken();
+  p.push([chair, x, y, { ...opts, seat: SEATS.length }]);
+  SEATS.push({ x, y, dir, worker });
+}
+
+// A Japanese desk island: a row of desks facing down (top) pushed against a row facing up (bottom), chairs on both sides.
+const DESK_LOOKS = ['tidy', 'messy', 'cactus'];
+function island(p, x0, y, n, look = 0) {
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * 3, l = DESK_LOOKS[(look + i) % 3], l2 = DESK_LOOKS[(look + i + 1) % 3];
+    p.push([`desk_down_${l}`, x, y], [`desk_up_${l2}`, x, y + 1]);
+    seat(p, 'chair_down', x + 1, y - 1, 'down');
+    seat(p, 'chair_up', x + 1, y + 2, 'up');
+  }
+}
+// The section chief at the head of an island: side desk, sits on the right facing left (flip: sits left, faces right).
+function chief(p, x, y, flip = false) {
+  p.push(['desk_left_tidy', x, y, { flip }]);
+  seat(p, 'chair_left', flip ? x - 1 : x + 2, y + 1, flip ? 'right' : 'left', { flip });
+}
+
 function props() {
   const p = [];
-  // --- open plan: blocks of 2×2 cubicles back to back, 2-tile aisles between them
-  const cols = [17, 20, 25, 28, 33, 36, 41, 44];
   let n = 0;
   const pick = () => CUBICLE_VARIANTS[(n++ * 7 + 3) % CUBICLE_VARIANTS.length];
-  for (const y of [3, 5, 9, 11, 27, 29]) for (const x of cols) p.push([pick(), x, y]);
-  for (const x of [25, 28, 33, 36, 41, 44]) p.push([pick(), x, 34]);
-  p.push(['own_desk_mail', 18, 34, 'desk']);
+  // partitioned cubicles (3×2, the chair is in the picture, the worker faces up): a colleague may sit in some
+  const cubicle = (x, y) => {
+    const v = pick();
+    p.push([v, x, y]);
+    if (v !== 'cubicle_empty' && v !== 'cubicle_island') SEATS.push({ x: x + 1, y: y + 1, dir: 'up', worker: taken(), baked: true });
+  };
+
+  // ================= open plan, top half (y 2-12)
+  // against the window wall
+  p.push(['bookshelf', 17, 2], ['copier', 20, 2], ['recycling', 23, 2], ['lockers', 26, 2]);
+  p.push(['cabinet', 34, 2], ['bookshelf', 37, 2], ['lockers', 40, 2], ['cabinet', 43, 2]);
+  // the department head sits with his back to the windows, overseeing everyone
+  p.push(['chief_desk', 30, 3]);
+  seat(p, 'chair_down', 31, 2, 'down');
+  island(p, 19, 5, 3, 0);  chief(p, 28, 5);          // island A, its chief on the right
+  island(p, 34, 5, 3, 1);  chief(p, 43, 5);          // island B
+  // a row of partitioned cubicles
+  for (const x of [17, 20, 25, 28, 33, 36, 41, 44]) cubicle(x, 9);
+  p.push(['lockers_side', 16, 10, { flip: true }]);
+
+  // ================= open plan, middle (the arena stays clear)
   p.push(['bonsai', 22, 14], ['bonsai', 41, 14], ['lantern', 22, 24], ['lantern', 41, 24]);
-  p.push(['water_cooler', 31, 32], ['coat_rack', 16, 37], ['umbrellas', 16, 36]);
-  // --- kitchen
-  p.push(['coffee_good', 2, 2], ['water_cooler', 5, 2], ['fridge', 7, 2], ['counter', 10, 2]);
-  p.push(['kitchen_table', 5, 6], ['vending', 12, 9], ['bonsai', 1, 10]);
-  // --- manager's corner
-  p.push(['manager_desk', 54, 5], ['manager_chair', 55, 3], ['bonsai_big', 49, 2], ['maneki', 62, 2]);
-  p.push(['trophies', 58, 2], ['aquarium', 49, 9]);
-  // --- meeting room
-  p.push(['whiteboard', 2, 14], ['clock', 7, 14], ['meeting_table', 4, 18]);
-  p.push(['meeting_chair', 3, 18], ['meeting_chair', 7, 19], ['projector', 11, 15], ['plant_tall', 13, 24]);
-  // --- lift lobby
+  p.push(['copier_side', 16, 22, { flip: true }], ['recycling_side', 47, 22], ['planter', 17, 15], ['palm', 47, 16]);
+
+  // ================= open plan, bottom half (y 26-38)
+  for (const x of [17, 20, 25, 28, 33, 36, 41, 44]) cubicle(x, 27);
+  island(p, 24, 31, 3, 2); chief(p, 33, 31);          // island C
+  island(p, 37, 31, 3, 0);                            // island D (no room for a chief by the door)
+  p.push(['own_desk_mail', 18, 34, 'desk']);
+  for (const x of [25, 28]) cubicle(x, 35);
+  p.push(['screen', 31, 36], ['water_cooler', 47, 36], ['plant_tall', 47, 38], ['coat_rack', 16, 37], ['umbrellas', 16, 36]);
+  p.push(['bookshelf_side', 47, 26], ['chair_out', 34, 35]);
+
+  // ================= kitchen: everything along the window wall, table in the middle
+  p.push(['coffee_good', 1, 2], ['water_cooler', 3, 2], ['fridge', 4, 2], ['counter', 6, 2], ['sink', 9, 2], ['vending', 12, 2]);
+  p.push(['kitchen_table', 5, 6], ['recycling_side', 1, 8, { flip: true }], ['bonsai', 13, 10], ['stool', 9, 7]);
+
+  // ================= manager's corner
+  p.push(['manager_desk', 54, 5], ['manager_chair', 55, 4], ['bonsai_big', 49, 2], ['maneki', 62, 2]);
+  p.push(['trophies', 58, 2], ['aquarium', 49, 9], ['putting', 50, 7], ['sofa', 58, 7], ['coffee_table', 58, 8]);
+
+  // ================= meeting room: chairs all around the table, facing it
+  p.push(['whiteboard', 2, 14], ['meeting_table', 4, 18], ['projector', 11, 15], ['plant_tall', 13, 24], ['cabinet', 8, 14]);
+  // (the table picture already has its chairs) spare chairs along the wall, a stool by the projector
+  p.push(['mchair_down', 1, 22], ['mchair_down', 2, 22], ['stool', 10, 16]);
+
+  // ================= lift lobby
   p.push(['lift_door', 55, 11, 'lift'], ['umbrellas', 49, 14], ['coat_rack', 50, 14], ['shoe_locker', 61, 14], ['coffee_good', 59, 14, 'coffee']);
-  p.push(['lantern', 52, 24], ['lantern', 59, 24], ['bonsai', 62, 20]);
-  // --- server closet
+  p.push(['lantern', 52, 24], ['lantern', 59, 24], ['bonsai', 62, 20], ['reception', 57, 18], ['bench', 54, 23], ['palm', 49, 23]);
+  seat(p, 'chair_down', 58, 17, 'down');
+
+  // ================= server closet
   for (const x of [1, 4, 7, 10]) p.push(['rack', x, 28]);
   p.push(['rack_open', 12, 28], ['cables', 5, 32], ['fan', 13, 34], ['towers', 1, 37], ['kamidana', 6, 27], ['bonsai', 13, 38]);
-  // --- archive / print room
-  p.push(['cabinets', 49, 27], ['cabinets', 51, 27], ['binders', 59, 27], ['binders', 61, 27]);
-  p.push(['shredder', 49, 37], ['printer', 52, 37], ['fax', 55, 37], ['boxes', 61, 37], ['boxes', 61, 35]);
+
+  // ================= archive / print room: the machines stand against the back wall
+  p.push(['cabinets', 49, 27], ['cabinets', 51, 27], ['printer', 53, 27], ['fax', 55, 27], ['shredder', 56, 27], ['cabinet', 57, 27]);
+  p.push(['binders', 59, 27], ['binders', 61, 27], ['copier_side', 62, 31], ['boxes', 61, 37], ['boxes', 61, 35], ['boxes', 49, 37]);
   return p;
 }
+const PROP_LIST = props();
+
+// Background colleagues walking fixed routes (tile centres, straight lines). They pause at both ends and walk back.
+// Their routes also wear a path into the carpet.
+const WALKERS = [
+  { kind: 'coffee', speed: 95, pause: 3, route: [[40.5, 8.5], [16.5, 8.5], [14, 8.5], [14, 4.5], [2.5, 4.5]] },
+  { kind: 'papers', speed: 38, pause: 5, route: [[54, 28.7], [54, 32.5], [46.5, 32.5], [46.5, 29.5], [23.5, 29.5]] },
+];
+
+// Clutter on the floor: how many per zone (placed at random on free floor, never in doorways or the arena).
+const CLUTTER_ZONES = [
+  { area: [16, 2, 47, 12], n: 7 }, { area: [16, 26, 47, 38], n: 7 }, { area: [1, 2, 14, 11], n: 3, kinds: ['spill', 'slippers', 'balls'] },
+  { area: [1, 14, 14, 24], n: 2, kinds: ['papers', 'balls'] }, { area: [1, 27, 14, 38], n: 3, kinds: ['cable', 'box', 'papers'] },
+  { area: [49, 27, 62, 38], n: 4, kinds: ['papers', 'box', 'magazines', 'balls'] }, { area: [49, 2, 62, 10], n: 1, kinds: ['magazines'] },
+];
 
 export const OFFICE = {
   T, MAP_W, MAP_H,
@@ -110,7 +189,10 @@ export const OFFICE = {
   doors: DOORS,
   partitions: PARTITIONS,
   faces: faceDecor(),
-  props: props(),
+  props: PROP_LIST,
+  seats: SEATS,
+  walkers: WALKERS,
+  clutter: CLUTTER_ZONES,
   playerStart: { x: 22.5, y: 37 },
   arenaCentre: { x: 32, y: 19.5 },
   // the boss walks out of the lift through these points before fighting
@@ -126,10 +208,10 @@ export const OFFICE = {
 
   // the team's colleagues (types + effects in config.json → friendlyNpcs)
   friendlyNpcs: [
-    { type: 'dog', x: 24, y: 8 },
+    { type: 'dog', x: 31, y: 8.6 },
     { type: 'expert', x: 39.5, y: 8 },
     { type: 'bestie', x: 32, y: 25.5 },
-    { type: 'karen', x: 28, y: 32.5 },
+    { type: 'karen', x: 36, y: 37.5 },
     { type: 'baker', x: 3, y: 9.5 },
     { type: 'meeting_saver', x: 12.5, y: 17 },
     { type: 'shouter', x: 52, y: 8 },

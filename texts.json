@@ -3,7 +3,7 @@
   "title": {
     "gameName": "Ikigai 404",
     "subtitle": "Purpose not found",
-    "namePrompt": "Enter your name for the leaderboard hey:",
+    "namePrompt": "Enter your name for the leaderboard:",
     "startHint": "Press ENTER to clock in",
     "leaderboardTitle": "Hall of the Still Employed",
     "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · ESC skip"

@@ -56,7 +56,7 @@ export class TitleScene {
     // without the title art, a bunny walks in place at the bottom (the art has its own bunny)
     if (!bg) drawFrame(ctx, a, 'player_ok', walkFrame(this.t * 60, 22), 1, 180, 690, { flip: true, scale: PX * 2, kind: 'player', ph: [16, 26] });
 
-    text(ctx, T.gameName, W / 2, 110, { size: 96, color: PAL.gold });
+    text(ctx, T.gameName, W / 2, 110, { size: 72, color: PAL.gold, display: true });
     text(ctx, T.subtitle, W / 2, 182, { size: 28, color: PAL.cream });
 
     // name entry
