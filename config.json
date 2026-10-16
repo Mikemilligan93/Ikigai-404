@@ -16,7 +16,6 @@
     "floaterLife": 1.6,
     "floaterRise": 28
   },
-
   "animation": {
     "_comment": "walkStride = pixels walked per walk frame (frames follow distance, so feet never slide). fps = frames per second. idleBreath = seconds per breathing step.",
     "walkStride": 20,
@@ -165,7 +164,9 @@
     "pointsLostPerMentalDamage": 1,
     "timeBonusBase": 3000,
     "timeBonusLostPerSecond": 10,
-    "burnoutKeepsScore": true
+    "burnoutKeepsScore": true,
+    "selfCarePoints": 25,
+    "_selfCare": "selfCarePoints: points for every coffee break, mochi and helpful colleague (shown as 'Self-care' on the end screen)."
   },
   "intro": {
     "walkSpeed": 260,

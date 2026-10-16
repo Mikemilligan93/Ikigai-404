@@ -6,7 +6,8 @@
     "namePrompt": "Enter your name for the leaderboard hey:",
     "startHint": "Press ENTER to clock in",
     "leaderboardTitle": "Hall of the Still Employed",
-    "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · P pause · ESC skip"
+    "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · P pause · ESC skip",
+    "subtitleAfterWin": "Purpose: loading…"
   },
   "intro": {
     "nightmare": "…the deadline… it was yesterday…",
@@ -41,7 +42,8 @@
           "You look… employed.",
           "Ikigai: still 404.",
           "Smile. HR is watching.",
-          "One more day. You've got this. Probably."
+          "One more day. You've got this. Probably.",
+          "You're allowed to be more than your job title."
         ],
         "plant": [
           "At least someone here is growing.",
@@ -65,7 +67,9 @@
       "Spare a minute? Not yen — a minute. You don't have one, do you?",
       "My calendar is completely empty. Envy me.",
       "The petals fall whether you are on time or not.",
-      "I used to have a corner office. Now I have the whole corner."
+      "I used to have a corner office. Now I have the whole corner.",
+      "Freedom is just a boundary you kept.",
+      "The blossoms don't hurry. They still arrive on time."
     ],
     "_beggarNote": "Placeholder beggar lines by Claude (one from the PO's brief) — team to rewrite freely.",
     "_inspectorNote": "Inspector lines by Claude — team to rewrite freely."
@@ -220,7 +224,31 @@
         "YOU'RE ABOUT TO EXPERIENCE MY PREMIUM COOLING PACKAGE!"
       ]
     },
-    "_copySource": "npcLines and bossLines come from the team's ideas.xlsx → Enemies tab (Copy columns)."
+    "_copySource": "npcLines and bossLines come from the team's ideas.xlsx → Enemies tab (Copy columns).",
+    "mochiLines": [
+      "You ate lunch away from your desk.",
+      "You drank water. Revolutionary.",
+      "You looked out of the window. The world is still there.",
+      "Snack break. The inbox didn't even notice.",
+      "You breathed out. Fully. First time today.",
+      "Sugar is not a strategy. But a break is.",
+      "You stood up and stretched. Your spine says thanks."
+    ],
+    "coffeeLines": [
+      "Break taken. The emails survived without you.",
+      "Five minutes off. Nothing caught fire.",
+      "Coffee with a colleague. Turns out they're nice.",
+      "You didn't check your phone. Growth.",
+      "Pause is a feature, not a bug."
+    ],
+    "helpLines": [
+      "Asking for help: still legal.",
+      "Someone noticed you. It helps.",
+      "You're not alone on this floor.",
+      "A shared problem is half a problem.",
+      "Kindness: the only KPI that compounds."
+    ],
+    "_positivityNote": "mochiLines / coffeeLines / helpLines: small sincere line under the reward (Claude drafts, team to rewrite freely)."
   },
   "lift": {
     "title": "The Lift",
@@ -228,22 +256,79 @@
     "lines": [
       {
         "who": "boss",
-        "text": "PLACEHOLDER — Oh. You're still here."
+        "text": "Oh. You're still here. It's 16:58."
       },
       {
         "who": "player",
-        "text": "PLACEHOLDER — I defeated the CEO."
+        "text": "The CEO is… handled. So are the printer, the client and the coffee machine."
       },
       {
         "who": "boss",
-        "text": "PLACEHOLDER — Great. That means you have his tasks now."
+        "text": "I saw. The whole floor saw. HR is already drafting a memo about the noise."
       },
       {
         "who": "player",
-        "text": "…"
+        "text": "Of course they are."
+      },
+      {
+        "who": "boss",
+        "text": "…Can I tell you something? Off the record."
+      },
+      {
+        "who": "player",
+        "text": "Is anything ever off the record in this building?"
+      },
+      {
+        "who": "boss",
+        "text": "I haven't seen my kids awake since March. I answer emails in the shower."
+      },
+      {
+        "who": "boss",
+        "text": "Health Week gave me a stress ball. I squeezed it until it popped. Then I emailed facilities about the stress ball."
+      },
+      {
+        "who": "player",
+        "text": "…That's the most honest thing anyone has said here all year."
+      },
+      {
+        "who": "boss",
+        "text": "I used to think tired meant important. It doesn't. It just means tired."
+      },
+      {
+        "who": "boss",
+        "text": "So here is the plan. Tomorrow you take your full lunch break. Away from the desk. Somewhere with sky."
+      },
+      {
+        "who": "boss",
+        "text": "At 17:00 you go home. The laptop stays. Notifications off. The emails will still be here. That's the problem with emails."
+      },
+      {
+        "who": "player",
+        "text": "Is that an order?"
+      },
+      {
+        "who": "boss",
+        "text": "It's the only order I've ever meant."
+      },
+      {
+        "who": "player",
+        "text": "And you?"
+      },
+      {
+        "who": "boss",
+        "text": "Me? …I'll take the stairs. Slowly. Maybe I'll look at a tree. People say they're nice."
+      },
+      {
+        "who": "player",
+        "text": "They are. Good night, boss."
+      },
+      {
+        "who": "boss",
+        "text": "Ground floor. Go home, bunny. That's how we win."
       }
     ],
-    "continueHint": "E / SPACE to continue · ESC to skip"
+    "continueHint": "E / SPACE to continue · ESC to skip",
+    "_note": "Lift dialogue by Claude (the boss turns out to be tired too) — team to rewrite freely."
   },
   "end": {
     "winTitle": "You survived the day.",
@@ -261,11 +346,22 @@
       "kills": "Defeated work",
       "damage": "Mental damage taken",
       "timeBonus": "Time bonus",
-      "morning": "Morning routine"
+      "morning": "Morning routine",
+      "selfCare": "Self-care"
     },
     "submitting": "Sending score…",
     "localOnly": "(offline — score saved on this computer only)",
-    "playAgain": "Press ENTER to play again"
+    "playAgain": "Press ENTER to play again",
+    "burnoutSincere": [
+      "Burnout isn't a personal failure. Rest. Talk to someone. Try again.",
+      "You're not lazy. You're empty. Refill first, then retry.",
+      "In real life: tell someone you trust how you're really doing.",
+      "Rest is part of the work, not a reward for finishing it.",
+      "Nobody wins by running on empty. Not even the CEO."
+    ],
+    "winClosing": "17:00. You went home on time. Nothing caught fire.",
+    "careLine": "{breaks} breaks · {mochi} mochi · {helped} kind colleagues",
+    "_positivityNote": "burnoutSincere: one sincere line under the joke. winClosing: shown on the win screen. Self-care = breaks + mochi + helpful colleagues (points in config.json → scoring.selfCarePoints)."
   },
   "pause": {
     "title": "Paused",
@@ -301,6 +397,14 @@
         "P / ESC",
         "Pause (ESC skips the intro)"
       ]
+    ],
+    "tips": [
+      "Good. This is what a break looks like.",
+      "Look 20 metres away for 20 seconds. Your eyes will thank you.",
+      "Unclench your jaw. Drop your shoulders. Breathe.",
+      "Drink some water. The game will wait.",
+      "Stand up and stretch. We'll keep your place.",
+      "Real life tip: it's okay to say no to one more thing."
     ]
   }
 }

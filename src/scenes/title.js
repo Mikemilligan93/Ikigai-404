@@ -57,7 +57,8 @@ export class TitleScene {
     if (!bg) drawFrame(ctx, a, 'player_ok', walkFrame(this.t * 60, 22), 1, 180, 690, { flip: true, scale: PX * 2, kind: 'player', ph: [16, 26] });
 
     text(ctx, T.gameName, W / 2, 110, { size: 96, color: PAL.gold });
-    text(ctx, T.subtitle, W / 2, 182, { size: 28, color: PAL.cream });
+    let won = false; try { won = localStorage.getItem('ikigai404.won') === '1'; } catch (e) { /* no storage */ }
+    text(ctx, won && T.subtitleAfterWin ? T.subtitleAfterWin : T.subtitle, W / 2, 182, { size: 28, color: PAL.cream });
 
     // name entry
     ctx.font = font(22);

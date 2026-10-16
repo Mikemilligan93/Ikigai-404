@@ -1,4 +1,4 @@
-import { W, H, PX, PAL, COLORS, text, pick, windowBox, drawFrame } from '../engine.js';
+import { W, H, PX, PAL, COLORS, text, pick, windowBox, drawFrame, fontOf } from '../engine.js';
 import { walkFrame } from '../sprites.js';
 
 // Win ("Level 2 coming soon") or burnout screen + score + leaderboard.
@@ -9,12 +9,14 @@ export class EndScene {
     this.T = game.texts.end;
     this.t = 0;
     this.quote = pick(this.T.burnoutLines);
+    this.sincere = pick(this.T.burnoutSincere || ['']);
     this.scores = null;
     this.myEntry = null;
   }
 
   enter() {
     const win = this.r.outcome === 'win';
+    if (win) { try { localStorage.setItem('ikigai404.won', '1'); } catch (e) { /* not remembered */ } }
     this.g.audio.playMusic('music_end');
     this.g.audio.sfx(win ? 'sfx_win' : 'sfx_burnout');
     this.myEntry = { name: this.g.session.name, score: this.r.score };
@@ -34,10 +36,13 @@ export class EndScene {
 
     if (win) {
       text(ctx, this.T.winTitle, W / 2, 72, { size: 52, color: PAL.gold });
-      text(ctx, this.T.comingSoon, W / 2, 132, { size: 26, color: PAL.cream });
+      text(ctx, this.T.comingSoon, W / 2, 124, { size: 26, color: PAL.cream });
+      text(ctx, this.T.winClosing, W / 2, 162, { size: 18, color: PAL.gold });
     } else {
       text(ctx, this.T.burnoutTitle, W / 2, 72, { size: 52, color: PAL.red });
-      text(ctx, `“${this.quote}”`, W / 2, 136, { size: 30, color: PAL.cream });
+      text(ctx, `“${this.quote}”`, W / 2, 128, { size: 30, color: PAL.cream });
+      // joke first, then one sincere line
+      text(ctx, this.sincere, W / 2, 166, { size: 18, color: PAL.gold });
     }
 
     // the bunny: walking home happily, or sitting there burnt out with smoke
@@ -50,17 +55,23 @@ export class EndScene {
     }
 
     // score panel
-    windowBox(ctx, 120, 190, 460, 270);
+    windowBox(ctx, 120, 190, 460, 278);
     text(ctx, `${this.T.scoreLabel}: ${this.r.score}`, 350, 228, { size: 34, color: PAL.gold });
     const b = this.r.breakdown || {};
-    const rows = [[this.T.breakdown.kills, b.kills], [this.T.breakdown.damage, b.damage], [this.T.breakdown.timeBonus, b.timeBonus]];
+    const rows = [[this.T.breakdown.kills, b.kills], [this.T.breakdown.selfCare, b.selfCare], [this.T.breakdown.damage, b.damage], [this.T.breakdown.timeBonus, b.timeBonus]];
     if (b.morning) rows.unshift([this.T.breakdown.morning, b.morning]);
     rows.forEach(([label, v], i) => {
-      text(ctx, label, 150, 284 + i * 38, { size: 20, align: 'left' });
-      text(ctx, String(v ?? 0), 550, 284 + i * 38, { size: 20, align: 'right' });
+      const care = label === this.T.breakdown.selfCare;
+      text(ctx, label, 150, 274 + i * 32, { size: 19, align: 'left', color: care ? PAL.celadon : PAL.cream });
+      text(ctx, String(v ?? 0), 550, 274 + i * 32, { size: 19, align: 'right', color: care ? PAL.celadon : PAL.cream });
     });
-    const t = Math.round(this.r.seconds || 0);
-    text(ctx, `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`, 350, 284 + rows.length * 38 + 6, { size: 20, color: PAL.grey });
+    // what the self-care was made of, plus the time
+    const c = this.r.care || { mochi: 0, breaks: 0, helped: 0 }, t = Math.round(this.r.seconds || 0);
+    const care = this.T.careLine.replace('{breaks}', c.breaks).replace('{mochi}', c.mochi).replace('{helped}', c.helped);
+    const careText = `${care} · ${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+    let cs = 15; ctx.font = fontOf(cs);
+    while (cs > 11 && ctx.measureText(careText).width > 420) { cs--; ctx.font = fontOf(cs); }
+    text(ctx, careText, 350, 274 + rows.length * 32 + 10, { size: cs, color: PAL.grey, shadow: false });
 
     // leaderboard
     windowBox(ctx, 640, 190, 520, 420);

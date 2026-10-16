@@ -1,4 +1,4 @@
-import { W, H, PAL, text, windowBox } from '../engine.js';
+import { W, H, PAL, text, windowBox, pick } from '../engine.js';
 
 // Pause menu, drawn over the frozen scene. Opened with P (and ESC in the office), or automatically
 // when the browser tab loses focus. Texts: texts.json → pause.
@@ -12,6 +12,7 @@ export class PauseMenu {
     this.view = 'menu';     // 'menu' | 'controls'
     this.confirm = null;    // item id waiting for a second press
     this.t = 0;
+    this.tip = pick(this.T.tips || ['']);
   }
 
   get items() {
@@ -85,5 +86,7 @@ export class PauseMenu {
       text(ctx, it.label, W / 2, iy, { size: 22, color: danger ? PAL.red : sel ? PAL.gold : PAL.cream });
     });
     text(ctx, T.hint, W / 2, y + h - 26, { size: 15, color: PAL.grey, shadow: false });
+    // a small real-life tip under the menu
+    if (this.tip) text(ctx, this.tip, W / 2, y + h + 40, { size: 18, color: PAL.celadon, plate: true });
   }
 }

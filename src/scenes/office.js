@@ -46,7 +46,7 @@ export class OfficeScene {
     this.shake = 0;
     this.boss = null;
     this.defeated = 0;
-    this.stats = { killScore: 0, damageTaken: 0, morning: game.session.morningBonus || 0 };
+    this.stats = { killScore: 0, damageTaken: 0, morning: game.session.morningBonus || 0, mochi: 0, breaks: 0, helped: 0 };
     this.coffeeCd = 0;
 
     this.minibosses = this.L.minibosses.map((m) => ({
@@ -403,14 +403,21 @@ export class OfficeScene {
     this.banners.push({ msg, t, life: t, age: 0 });
   }
   // Floating numbers/labels. Numbers that pop up close together merge (+10 +10 → +20) instead of overlapping.
-  float(x, y, msg, color = COLORS.paper) {
-    const tc = this.C.text || {}, life = tc.floaterLife ?? 1.6;
+  float(x, y, msg, color = COLORS.paper, { life: lifeOverride, small = false } = {}) {
+    const tc = this.C.text || {}, life = lifeOverride ?? tc.floaterLife ?? 1.6;
     const m = /^([+-])(\d+)$/.exec(msg);
     if (m) {
       const near = this.floaters.find((f) => f.num && f.sign === m[1] && f.color === color && f.life - f.t < 0.5 && Math.abs(f.x - x) < 70 && Math.abs(f.y - y) < 70);
       if (near) { near.num += +m[2]; near.msg = m[1] + near.num; near.t = life; return; }
     }
-    this.floaters.push({ x, y, msg, color, t: life, life, num: m ? +m[2] : 0, sign: m ? m[1] : '' });
+    this.floaters.push({ x, y, msg, color, t: life, life, small, num: m ? +m[2] : 0, sign: m ? m[1] : '' });
+  }
+  // A small sincere line under a reward ("You ate lunch away from your desk."). One at a time, rises slowly.
+  kindWord(lines) {
+    if (!lines?.length) return;
+    this.floaters = this.floaters.filter((f) => !f.small);
+    const p = this.player;
+    this.float(p.x, p.y - 140, pick(lines), PAL.cream, { life: 3, small: true });
   }
   fx(kind, x, y, life = 0.25, vy = 0) { this.particles.push({ kind, x, y, t: life, life, vy }); }
 
@@ -605,6 +612,7 @@ export class OfficeScene {
       this.prompt = this.coffeeCd > 0 ? this.T.coffeeCooldown : this.T.coffeePrompt;
       if (inp.wasPressed('e') && this.coffeeCd <= 0) {
         this.restore(rc.coffeeMachine.restore);
+        this.stats.breaks++; this.kindWord(this.T.coffeeLines);
         this.coffeeCd = rc.coffeeMachine.cooldown;
         this.fx('smoke', coffee.rect.x + coffee.rect.w / 2, coffee.rect.y - 30, 0.8, -40);
       }
@@ -626,6 +634,7 @@ export class OfficeScene {
       }
       if (dist(p.x, p.y, m.x, m.y) < p.r + 18) {
         this.restore(rc.mochi.restore, this.T.mochiPickup);
+        this.stats.mochi++; this.kindWord(this.T.mochiLines);
         for (let i = 0; i < 3; i++) this.fx('star', m.x + rand(-16, 16), m.y - rand(10, 30), 0.5, -60);
         m.respawn = rc.mochi.respawnTime;
       }
@@ -651,6 +660,7 @@ export class OfficeScene {
           else if (def.effect === 'drain') this.drain(def.value);
           else p.effects[def.effect] = { t: def.duration, v: def.value };
           if (def.effect !== 'heal') this.float(n.x, n.y - 120, this.T.effects[def.effect], good ? PAL.gold : PAL.red);
+          if (good) { this.stats.helped++; this.kindWord(this.T.helpLines); }
           for (let i = 0; i < 3; i++) this.fx(good ? 'star' : 'smoke', p.x + rand(-20, 20), p.y - rand(40, 80), 0.6, -50);
         }
       } else n.dwell = Math.max(0, n.dwell - dt * 2);
@@ -874,8 +884,10 @@ export class OfficeScene {
     this.cam.y = clamp(p.y - 40 - H / 2, 0, this.L.height - H);
   }
 
+  // looking after yourself is part of the score (config.json → scoring.selfCarePoints per break / mochi / kind colleague)
+  get selfCare() { const st = this.stats; return (st.mochi + st.breaks + st.helped) * (this.C.scoring.selfCarePoints ?? 0); }
   get score() {
-    return Math.max(0, Math.round(this.stats.killScore + this.stats.morning - this.stats.damageTaken * this.C.scoring.pointsLostPerMentalDamage));
+    return Math.max(0, Math.round(this.stats.killScore + this.stats.morning + this.selfCare - this.stats.damageTaken * this.C.scoring.pointsLostPerMentalDamage));
   }
 
   finish(outcome) {
@@ -893,7 +905,9 @@ export class OfficeScene {
         damage: -Math.round(this.stats.damageTaken * sc.pointsLostPerMentalDamage),
         timeBonus,
         morning: this.stats.morning,
+        selfCare: this.selfCare,
       },
+      care: { mochi: this.stats.mochi, breaks: this.stats.breaks, helped: this.stats.helped },
     };
     this.g.session.result = result;
     if (outcome === 'win') this.g.go(this.g.scenes.lift());
@@ -1013,7 +1027,11 @@ export class OfficeScene {
 
     for (const f of this.floaters) {
       ctx.globalAlpha = clamp(f.t / 0.4, 0, 1);   // full strength until the last 0.4 s
-      text(ctx, f.msg, Math.round(f.x), Math.round(f.y / 3) * 3, { size: f.num ? 26 : 22, color: f.color, });
+      if (f.small) {
+        // keep the line on screen even when the bunny is at the edge of the map
+        const fx = clamp(f.x, this.cam.x + 260, this.cam.x + W - 260);
+        text(ctx, f.msg, Math.round(fx), Math.round(f.y / 3) * 3, { size: 17, color: f.color, plate: true });
+      } else text(ctx, f.msg, Math.round(f.x), Math.round(f.y / 3) * 3, { size: f.num ? 26 : 22, color: f.color });
       ctx.globalAlpha = 1;
     }
 
