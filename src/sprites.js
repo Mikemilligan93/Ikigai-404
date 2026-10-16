@@ -11,6 +11,19 @@ export const STAND = 1;
 // player_actions: per direction row → winding up, swing, throw
 export const ACTION = { windup: 0, swing: 1, throw: 2 };
 
+// player_wake (intro, futon + bunny in one sheet): [col, row]; sequence entries are [col, row, seconds]
+export const WAKE = {
+  asleep: [[0, 0], [1, 0]],
+  sequence: [[2, 0, 0.6], [3, 0, 0.6], [0, 1, 0.4], [1, 1, 0.8], [2, 1, 0.6]],   // eyes open, sit up, kneel, stretch, shake
+  emptyFuton: [3, 1],
+};
+// flat_props (intro): mirror / plant / cat, [col, row] per state
+export const FLAT_PROP = {
+  mirror: { idle: [0, 0], used: [1, 0] },
+  plant: { idle: [2, 0], used: [3, 0] },
+  cat: { idle: [0, 1], noticed: [1, 1], used: [2, 1], stretch: [3, 1] },
+};
+
 // player_side (intro): row 0 = 4-frame walk to the right, row 1 = wake-up sequence
 export const SIDE = { walkRow: 0, asleep: [0, 1], startled: [1, 1], shaking: [2, 1], standing: [3, 1] };
 

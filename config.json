@@ -156,7 +156,11 @@
     "walkSpeed": 260,
     "nightmareDuration": 2.2,
     "sunriseDuration": 3,
-    "shakeDuration": 1.2
+    "shakeDuration": 1.2,
+    "doorFade": 0.6,
+    "doorCard": 1.4,
+    "interactBonus": 50,
+    "_comment": "doorFade/doorCard = seconds for the flat → metro transition. interactBonus = score for each thing done in the flat (mirror, plant, cat)."
   },
   "leaderboard": {
     "apiUrl": "/api/scores",

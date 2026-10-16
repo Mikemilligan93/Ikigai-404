@@ -50,16 +50,17 @@ export class EndScene {
     }
 
     // score panel
-    windowBox(ctx, 120, 190, 460, 240);
+    windowBox(ctx, 120, 190, 460, 270);
     text(ctx, `${this.T.scoreLabel}: ${this.r.score}`, 350, 228, { size: 34, color: PAL.gold });
     const b = this.r.breakdown || {};
     const rows = [[this.T.breakdown.kills, b.kills], [this.T.breakdown.damage, b.damage], [this.T.breakdown.timeBonus, b.timeBonus]];
+    if (b.morning) rows.unshift([this.T.breakdown.morning, b.morning]);
     rows.forEach(([label, v], i) => {
       text(ctx, label, 150, 284 + i * 38, { size: 20, align: 'left' });
       text(ctx, String(v ?? 0), 550, 284 + i * 38, { size: 20, align: 'right' });
     });
     const t = Math.round(this.r.seconds || 0);
-    text(ctx, `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`, 350, 404, { size: 20, color: PAL.grey });
+    text(ctx, `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`, 350, 284 + rows.length * 38 + 6, { size: 20, color: PAL.grey });
 
     // leaderboard
     windowBox(ctx, 640, 190, 520, 420);

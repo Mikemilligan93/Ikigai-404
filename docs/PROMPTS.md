@@ -45,6 +45,8 @@ The frame meanings are also listed in `src/sprites.js` — if ChatGPT puts a pos
 | `player_actions.png` | 3 × 3 | 32×32 | Player |
 | `player_side.png` | 4 × 2 | 32×48 | Player |
 | `player_portrait.png` | 2 × 1 | 64×64 | Player |
+| `player_wake.png` | 4 × 2 | 112×72 | Flat |
+| `flat_props.png` | 4 × 2 | 48×72 | Flat |
 | `boss_ceo.png` | 4 × 2 | 64×64 | Bosses |
 | `boss_portrait.png` | 2 × 1 | 64×64 | Bosses |
 | `miniboss_client.png` | 4 × 2 | 48×48 | Minibosses |
@@ -212,6 +214,46 @@ Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single p
 
 Cells, left to right, top to bottom:
 - Row 1: mouth closed | mouth open (talking), otherwise identical
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+## Flat (intro): wake-up and props
+
+### `player_wake.png` — frames 112×72 · grid 4×2
+
+*Attach player_ok.png and add: "Keep the character identical to the attached sprite sheet." The futon must stay in the same place in every cell.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: The main character in his tiny apartment, plain side view: a burnt-out white rabbit office worker with long upright ears (soft pink inside), tired half-closed eyes with red rims, a navy-blue suit, white shirt, vermilion tie and brown shoes, carrying a brown leather briefcase. He fell asleep in his crumpled suit after overtime (tie loosened, his briefcase lying on the floor at the RIGHT end of the futon in every cell). A thin red-and-cream Japanese futon with a cherry-blossom blanket and a small pillow lies on the floor on the LEFT side of every cell, always at exactly the same place and size.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the same little scene drawn at about 112×72 pixel-art resolution (each pixel a big visible square block): the futon is in EXACTLY the same place and size in every cell, touching the left and bottom edges of the cell area; only the character changes. Same character design and size in every cell. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: asleep under the blanket, only the head and ears showing on the pillow | the same, little 'z' shapes above the head | eyes snapped wide open in panic, still under the blanket | sitting up on the futon, blanket slid down to the waist
+- Row 2: kneeling beside the futon, getting up | standing right next to the futon, stretching both arms up with a huge yawn | standing next to the futon, shaking himself awake, ears flapping | ONLY the empty futon, blanket thrown back, no bunny
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `flat_props.png` — frames 48×72 · grid 4×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: Objects in a tiny Tokyo apartment, plain side view, all at the same scale (a standing rabbit character would be about as tall as the mirror).
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 48×72 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: tall standing mirror in a wooden frame | the same mirror with a bright sparkle on the glass | a droopy, thirsty potted plant in a ceramic pot with a wave pattern | the same plant perky and green again, with a few water drops and a little sparkle
+- Row 2: a fat ginger house cat asleep, curled up on a round cushion | the same cat sitting up on the cushion, looking up | the same cat purring with eyes closed and little pink hearts around it | the same cat stretching on the cushion
 
 Output: PNG, Wide landscape image, 1536×1024.
 ```
@@ -921,7 +963,7 @@ Art style: retro 8-bit pixel art, like a Japanese console game from around 1990,
 
 Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
 
-Subject: The inside of a tiny Tokyo apartment at dawn: a futon on the floor on the left, a window in the middle with the sun rising, a door on the right. Keep the bottom sixth of the image as plain floor.
+Subject: The inside of a tiny, cosy Tokyo apartment at dawn: wooden floor, a big window in the middle with the sun rising over the city and Mount Fuji, a bookshelf and a hanging scroll on the left wall, a small kitchenette corner, the front door on the right with a little genkan step and shoes. IMPORTANT: NO bed, NO futon, NO mirror, NO potted plants and NO animals anywhere (they are added separately). Keep the left third of the floor completely empty (a futon will be placed there) and the bottom sixth of the image as plain floor.
 
 Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
 

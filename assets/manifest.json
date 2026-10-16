@@ -51,6 +51,22 @@
       "cell": [96, 96],
       "align": "bottom"
     },
+    "player_wake": {
+      "file": "img/player_wake.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [112, 72],
+      "align": "bottomleft"
+    },
+    "flat_props": {
+      "file": "img/flat_props.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [48, 72],
+      "align": "bottom"
+    },
     "boss_ceo": {
       "file": "img/boss_ceo.png",
       "type": "sheet",

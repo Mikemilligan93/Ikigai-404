@@ -25,7 +25,35 @@
       "Rules are rules. Have a nice day. I won't.",
       "PLACEHOLDER — team to write the misery-starting lines"
     ],
-    "continueHint": "E / SPACE to continue"
+    "continueHint": "E / SPACE to continue",
+    "flat": {
+      "hint": "A / D to walk · E to interact · the door is on the right",
+      "cardSub": "Another day, another commute.",
+      "prompts": {
+        "mirror": "E — look in the mirror",
+        "plant": "E — water the plant",
+        "cat": "E — pet the cat"
+      },
+      "lines": {
+        "mirror": [
+          "You look… employed.",
+          "Ikigai: still 404.",
+          "Smile. HR is watching.",
+          "One more day. You've got this. Probably."
+        ],
+        "plant": [
+          "At least someone here is growing.",
+          "Hydrated. Unlike my soul.",
+          "The plant forgives me. For now."
+        ],
+        "cat": [
+          "Purr. The only one who needs nothing from me.",
+          "The cat approves of my burnout.",
+          "Five more minutes? The cat agrees."
+        ]
+      },
+      "_note": "Placeholder lines by Claude — team to rewrite freely."
+    }
   },
   "office": {
     "levelName": "Level 1 — The Office",
@@ -217,7 +245,8 @@
     "breakdown": {
       "kills": "Defeated work",
       "damage": "Mental damage taken",
-      "timeBonus": "Time bonus"
+      "timeBonus": "Time bonus",
+      "morning": "Morning routine"
     },
     "submitting": "Sending score…",
     "localOnly": "(offline — score saved on this computer only)",

@@ -315,6 +315,8 @@ def process_sheet(name, d, im):
         cx = np.nonzero(a)[1].mean() + 0.5
         dx = int(round(cw / 2 - cx))
         dx = min(max(dx, 0), cw - ow)
+        if align == 'bottomleft':   # scenes with a fixed object on the left (the futon): pin the left edge
+            dx = 0
         if align == 'center':
             cy = np.nonzero(a)[0].mean() + 0.5
             dy = min(max(int(round(ch / 2 - cy)), 0), ch - oh)

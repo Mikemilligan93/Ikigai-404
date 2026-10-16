@@ -42,7 +42,7 @@ export class OfficeScene {
     this.shake = 0;
     this.boss = null;
     this.defeated = 0;
-    this.stats = { killScore: 0, damageTaken: 0 };
+    this.stats = { killScore: 0, damageTaken: 0, morning: game.session.morningBonus || 0 };
     this.coffeeCd = 0;
 
     this.minibosses = this.L.minibosses.map((m) => ({
@@ -740,7 +740,7 @@ export class OfficeScene {
   }
 
   get score() {
-    return Math.max(0, Math.round(this.stats.killScore - this.stats.damageTaken * this.C.scoring.pointsLostPerMentalDamage));
+    return Math.max(0, Math.round(this.stats.killScore + this.stats.morning - this.stats.damageTaken * this.C.scoring.pointsLostPerMentalDamage));
   }
 
   finish(outcome) {
@@ -757,6 +757,7 @@ export class OfficeScene {
         kills: this.stats.killScore,
         damage: -Math.round(this.stats.damageTaken * sc.pointsLostPerMentalDamage),
         timeBonus,
+        morning: this.stats.morning,
       },
     };
     this.g.session.result = result;

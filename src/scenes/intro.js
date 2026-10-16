@@ -1,5 +1,5 @@
-import { W, H, PX, PAL, COLORS, clamp, lerp, text, dialogueBox, drawFrame } from '../engine.js';
-import { SIDE, IDLE, loop } from '../sprites.js';
+import { W, H, PX, PAL, COLORS, FONT, clamp, lerp, text, dialogueBox, drawFrame, windowBox } from '../engine.js';
+import { SIDE, IDLE, WAKE, FLAT_PROP, loop } from '../sprites.js';
 
 // Side-view intro: home → metro (ticket inspector) → office entrance.
 // Backgrounds are 320×180 pixel art drawn at 4x; the bottom sixth of each is the floor.
@@ -7,8 +7,21 @@ const GROUND = 612;
 const SEG = { flat: [0, 1280], metro: [1280, 3840], office: [3840, 5120] };
 const WORLD_W = 5120;
 const INSPECTOR_X = 3440;   // in front of the ticket gates of the second metro screen
-const BED_X = 230;           // on the futon in intro_flat
+const BED_X = 230;           // fallback sleeping spot (old art without player_wake)
 const SIDE_SCALE = 3;        // side-view characters are drawn bigger than in the office (detailed backgrounds)
+const FUTON_X = 40;          // left edge of the futon (player_wake sheet, drawn bottom-left anchored)
+// The flat background is drawn at a closer zoom than the metro (its door is ~320 px ≈ 2 m), so things there are bigger.
+const FLAT_SCALE = 4;        // bunny + futon in the flat (≈1.3 m bunny next to a 2 m door)
+const WAKE_STAND_DX = 264;   // where the bunny stands in the last wake-up frame, measured from FUTON_X (66 sprite px × 4)
+const FLAT_GROUND = 560;     // the flat's floor line: just in front of the wall's skirting board
+const DOOR_X = 1180;         // walking into the flat's front door starts the fade to the metro
+// Things to interact with in the flat (E). x = world position, kind = row/cols in sprites.js → FLAT_PROP.
+// scale = size per prop, so they match real-world sizes (mirror ≈1.5 m, plant ≈0.7 m, cat on cushion ≈0.35 m).
+const FLAT_PROPS = [
+  { kind: 'mirror', x: 525, scale: 4 },
+  { kind: 'cat', x: 690, scale: 2, front: true },     // front: a little closer to the camera, drawn over the bunny
+  { kind: 'plant', x: 845, scale: 3, front: true },
+];
 
 export class IntroScene {
   constructor(game) {
@@ -22,6 +35,13 @@ export class IntroScene {
     this.camX = 0;
     this.inspectorDone = false;
     this.line = 0; this.shown = 0; this.punchT = 0;
+    this.props = FLAT_PROPS.map((p) => ({ ...p, done: false, t: 0 }));
+    this.say = null;          // speech bubble above the bunny { text, t }
+    this.leftFlat = false;
+    this.prompt = null;
+    game.session.morningBonus = 0;
+    this.hasWake = game.assets.has('player_wake');
+    this.wakeTotal = WAKE.sequence.reduce((s, f) => s + f[2], 0);
   }
 
   enter() { this.g.audio.playMusic('music_intro'); }
@@ -33,12 +53,25 @@ export class IntroScene {
 
     if (this.phase === 'nightmare' && this.t > this.cfg.nightmareDuration) { this.phase = 'sunrise'; this.t = 0; }
     else if (this.phase === 'sunrise' && this.t > this.cfg.sunriseDuration) { this.phase = 'shake'; this.t = 0; }
-    else if (this.phase === 'shake' && this.t > this.cfg.shakeDuration) { this.phase = 'walk'; this.t = 0; }
+    else if (this.phase === 'shake' && this.t > (this.hasWake ? this.wakeTotal : this.cfg.shakeDuration)) {
+      this.phase = 'walk'; this.t = 0;
+      if (this.hasWake) this.px = FUTON_X + WAKE_STAND_DX;
+    }
+    else if (this.phase === 'door') {
+      // fade to black → title card → fade in at the metro
+      const D = this.cfg.doorFade, C = this.cfg.doorCard;
+      if (!this.leftFlat && this.t >= D) { this.leftFlat = true; this.px = SEG.metro[0] + 160; this.facing = 1; this.say = null; }
+      if (this.t >= D + C + D) { this.phase = 'walk'; this.t = 0; }
+    }
     else if (this.phase === 'walk') {
       const ax = inp.axis().x;
       this.moving = !!ax;
       if (ax) this.facing = ax;
       let nx = this.px + ax * this.cfg.walkSpeed * dt;
+      // the flat: walking into the front door fades over to the metro; there is no way back
+      if (!this.leftFlat && nx > DOOR_X) { nx = DOOR_X; this.phase = 'door'; this.t = 0; this.moving = false; }
+      if (this.leftFlat) nx = Math.max(nx, SEG.metro[0] + 60);
+      if (!this.leftFlat) this.updateFlat(dt, inp);
       // the inspector blocks the turnstile until the dialogue is done
       if (!this.inspectorDone && nx > INSPECTOR_X - 130) {
         nx = INSPECTOR_X - 130;
@@ -59,7 +92,39 @@ export class IntroScene {
         }
       }
     }
-    this.camX = clamp(this.px - W / 2, 0, WORLD_W - W);
+    if (this.say) { this.say.t -= dt; if (this.say.t <= 0) this.say = null; }
+    for (const p of this.props) p.t -= dt;
+    this.camX = this.leftFlat ? clamp(this.px - W / 2, SEG.metro[0], WORLD_W - W) : 0;
+  }
+
+  // Interactive props in the flat: stand next to one and press E.
+  updateFlat(dt, inp) {
+    this.prompt = null;
+    const near = this.props.filter((p) => Math.abs(p.x - this.px) < 100).sort((a, b) => Math.abs(a.x - this.px) - Math.abs(b.x - this.px))[0];
+    if (!near) return;
+    const F = this.T.flat;
+    this.prompt = near.done ? null : F.prompts[near.kind];
+    if (near.kind === 'cat') near.noticed = true;
+    if (inp.wasPressed('e') && !near.done) {
+      near.done = true; near.t = 2.5;
+      this.facing = near.x < this.px ? -1 : 1;
+      const lines = F.lines[near.kind] || ['…'];
+      this.say = { text: lines[Math.floor(Math.random() * lines.length)], t: 3.5 };
+      this.g.session.morningBonus += this.cfg.interactBonus;
+      this.g.audio.sfx('sfx_pickup');
+    }
+  }
+
+  propFrame(p) {
+    const f = FLAT_PROP[p.kind];
+    if (p.kind === 'mirror') return p.t > 1.5 ? f.used : f.idle;
+    if (p.kind === 'plant') return p.done ? f.used : f.idle;
+    if (p.kind === 'cat') {
+      if (p.t > 0.8) return f.used;                                   // purring with hearts
+      if (p.done) return Math.floor(this.time * 0.5) % 6 === 0 ? f.stretch : f.idle;
+      return p.noticed ? f.noticed : f.idle;
+    }
+    return f.idle;
   }
 
   drawBackground(ctx) {
@@ -105,8 +170,10 @@ export class IntroScene {
         ctx.restore();
       }
       blk(x0 + 897, 144, 6, 228, PAL.wood); blk(x0 + 744, 255, 312, 6, PAL.wood);
-      blk(x0 + 150, GROUND - 42, 390, 42, PAL.cream); blk(x0 + 150, GROUND - 48, 390, 6, PAL.ink);   // futon
-      blk(x0 + 168, GROUND - 66, 96, 24, PAL.cream);                                                 // pillow
+      if (!this.hasWake) {
+        blk(x0 + 150, GROUND - 42, 390, 42, PAL.cream); blk(x0 + 150, GROUND - 48, 390, 6, PAL.ink);   // futon
+        blk(x0 + 168, GROUND - 66, 96, 24, PAL.cream);                                                 // pillow
+      }
       blk(x1 - 150, GROUND - 270, 120, 270, PAL.wood); blk(x1 - 54, GROUND - 150, 12, 12, PAL.gold);
     } else if (key === 'metro') {
       blk(x0, 0, x1 - x0, H, PAL.dgrey);
@@ -125,11 +192,40 @@ export class IntroScene {
     }
   }
 
+  // Pixel speech bubble above the bunny (world coordinates).
+  drawBubble(ctx, say, x, headY) {
+    ctx.font = `16px ${FONT}`;
+    const words = say.text.split(' '), lines = [];
+    let line = '';
+    for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > 320 && line) { lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line);
+    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 28, h = lines.length * 22 + 18;
+    const bx = clamp(Math.round(x - w / 2), this.camX + 8, this.camX + W - w - 8), by = Math.round(headY - h);
+    ctx.globalAlpha = clamp(say.t * 2, 0, 1);
+    ctx.fillStyle = PAL.ink; ctx.fillRect(bx - 3, by - 3, w + 6, h + 6); ctx.fillRect(x - 6, by + h, 12, 9);
+    ctx.fillStyle = PAL.cream; ctx.fillRect(bx, by, w, h); ctx.fillRect(x - 3, by + h, 6, 6);
+    ctx.fillStyle = PAL.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    lines.forEach((l, i) => ctx.fillText(l, bx + 14, by + 20 + i * 22));
+    ctx.globalAlpha = 1;
+  }
+
   draw(ctx) {
     const a = this.g.assets;
     ctx.save();
     ctx.translate(-Math.round(this.camX), 0);
     this.drawBackground(ctx);
+
+    // flat: futon + interactive props
+    if (this.camX < SEG.flat[1]) {
+      for (const p of this.props.filter((q) => !q.front)) {
+        const [col, row] = this.propFrame(p);
+        drawFrame(ctx, a, 'flat_props', col, row, p.x, FLAT_GROUND, { scale: p.scale, kind: 'prop', color: { mirror: PAL.sky, plant: PAL.moss, cat: PAL.ochre }[p.kind], ph: [14, p.kind === 'cat' ? 12 : 26], label: p.kind, eyes: false });
+      }
+      if (this.hasWake && this.phase !== 'nightmare' && this.phase !== 'sunrise' && this.phase !== 'shake') {
+        const [col, row] = WAKE.emptyFuton;
+        drawFrame(ctx, a, 'player_wake', col, row, FUTON_X + (a.cell('player_wake')[0] * FLAT_SCALE) / 2, FLAT_GROUND, { scale: FLAT_SCALE });
+      }
+    }
 
     // inspector (faces left, towards the player)
     let icol = loop(IDLE, this.time, this.A.idleFps);
@@ -146,7 +242,7 @@ export class IntroScene {
       [col, row] = k < 0.3 ? SIDE.startled : SIDE.shaking;
       if (k >= 0.3) flip = Math.floor(this.t * 14) % 2 === 1;                          // shaking it off: quick mirror flips
       x = BED_X + 90;
-    } else if (this.moving) { col = Math.floor(this.walked / this.A.sideWalkStride) % 4; row = SIDE.walkRow; }
+    } else if (this.moving) { col = Math.floor(this.walked / (this.A.sideWalkStride * (this.leftFlat ? 1 : FLAT_SCALE / SIDE_SCALE))) % 4; row = SIDE.walkRow; }
     else if (this.phase === 'walk' || this.phase === 'dialogue') {
       [col, row] = SIDE.standing;
       if (Math.floor(this.time / this.A.idleBreath) % 2) rot = 0;
@@ -154,7 +250,25 @@ export class IntroScene {
     if (!a.has('player_side') && (this.phase === 'nightmare' || this.phase === 'sunrise')) rot = -Math.PI / 2;
     const breathe = !this.moving && this.phase === 'walk' && Math.floor(this.time / this.A.idleBreath) % 2 ? -3 : 0;
     const asleep = this.phase === 'nightmare' || this.phase === 'sunrise';
-    drawFrame(ctx, a, 'player_side', col, row, x, GROUND - (rot ? 30 : 0) - (asleep && a.has('intro_flat') ? 118 : 0) + breathe, { scale: SIDE_SCALE, flip, rot, kind: 'player', ph: [16, 30], label: 'Bunny' });
+    if (this.hasWake && (asleep || this.phase === 'shake')) {
+      // in bed: the wake-up sheet has the futon and the bunny together
+      let f = WAKE.asleep[Math.floor(this.time * 1.2) % 2];
+      if (this.phase === 'nightmare') f = Math.floor(this.t * 6) % 2 ? WAKE.asleep[0] : WAKE.asleep[1];
+      if (this.phase === 'shake') {
+        let acc = 0;
+        for (const fr of WAKE.sequence) { f = fr; acc += fr[2]; if (this.t < acc) break; }
+      }
+      const jitter = this.phase === 'nightmare' && Math.floor(this.t * 12) % 2 ? PX : 0;   // tossing and turning
+      drawFrame(ctx, a, 'player_wake', f[0], f[1], FUTON_X + (a.cell('player_wake')[0] * FLAT_SCALE) / 2 + jitter, FLAT_GROUND, { scale: FLAT_SCALE });
+    } else {
+      const ground = this.leftFlat ? GROUND : FLAT_GROUND;
+      drawFrame(ctx, a, 'player_side', col, row, x, ground - (rot ? 30 : 0) - (asleep && a.has('intro_flat') ? 118 : 0) + breathe, { scale: this.leftFlat ? SIDE_SCALE : FLAT_SCALE, flip, rot, kind: 'player', ph: [16, 30], label: 'Bunny' });
+    }
+    if (!this.leftFlat) for (const p of this.props.filter((q) => q.front)) {
+      const [col, row] = this.propFrame(p);
+      drawFrame(ctx, a, 'flat_props', col, row, p.x, FLAT_GROUND + 18, { scale: p.scale, kind: 'prop', color: { mirror: PAL.sky, plant: PAL.moss, cat: PAL.ochre }[p.kind], ph: [14, p.kind === 'cat' ? 12 : 26], label: p.kind, eyes: false });
+    }
+    if (this.say) this.drawBubble(ctx, this.say, x, (this.leftFlat ? GROUND : FLAT_GROUND) - a.cell('player_side')[1] * (this.leftFlat ? SIDE_SCALE : FLAT_SCALE) + 30);
     ctx.restore();
 
     // screen-space overlays
@@ -165,7 +279,20 @@ export class IntroScene {
       ctx.fillStyle = `rgba(27,26,46,${0.85 * (1 - this.t / this.cfg.sunriseDuration)})`; ctx.fillRect(0, 0, W, H);
       if (this.t < 1) text(ctx, this.T.wakeUp, W / 2, H / 2, { size: 40, color: PAL.cream });
     } else if (this.phase === 'walk') {
-      text(ctx, this.T.walkHint, W / 2, 40, { size: 20, color: PAL.cream });
+      text(ctx, this.leftFlat ? this.T.walkHint : this.T.flat.hint, W / 2, 40, { size: 20, color: PAL.cream });
+      if (this.prompt) {
+        windowBox(ctx, W / 2 - 200, H - 120, 400, 52);
+        text(ctx, this.prompt, W / 2, H - 94, { size: 20 });
+      }
+    } else if (this.phase === 'door') {
+      // fade out, show where we are going, fade in
+      const D = this.cfg.doorFade, C = this.cfg.doorCard;
+      const k = this.t < D ? this.t / D : this.t < D + C ? 1 : 1 - (this.t - D - C) / D;
+      ctx.fillStyle = `rgba(27,26,46,${clamp(k, 0, 1)})`; ctx.fillRect(0, 0, W, H);
+      if (this.t >= D * 0.8 && this.t < D + C + D * 0.3) {
+        text(ctx, this.T.locations.metro, W / 2, H / 2 - 10, { size: 44, color: PAL.gold });
+        text(ctx, this.T.flat.cardSub, W / 2, H / 2 + 44, { size: 20, color: PAL.cream });
+      }
     } else if (this.phase === 'dialogue') {
       dialogueBox(ctx, this.T.inspectorName, this.T.inspectorLines[this.line], this.T.continueHint, { top: true, shown: Math.floor(this.shown) });
     }
