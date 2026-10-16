@@ -3,7 +3,7 @@
   "title": {
     "gameName": "Ikigai 404",
     "subtitle": "Purpose not found",
-    "namePrompt": "Enter your name for the leaderboard:",
+    "namePrompt": "Enter your name for the leaderboard hey:",
     "startHint": "Press ENTER to clock in",
     "leaderboardTitle": "Hall of the Still Employed",
     "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · ESC skip"
@@ -20,10 +20,12 @@
     },
     "inspectorName": "Ticket Inspector",
     "inspectorLines": [
-      "Ticket.",
-      "This ticket expired three seconds ago.",
-      "Rules are rules. Have a nice day. I won't.",
-      "PLACEHOLDER — team to write the misery-starting lines"
+      "Ticket, please.",
+      "Hmm. Valid until 08:59:59. It is now 08:59:58.",
+      "So you are technically on time. 'Technically' — the saddest word in any language.",
+      "Look around. Everyone on this platform has your face. Did you notice?",
+      "Go on. Your inbox has been waiting for you since 3 a.m.",
+      "Have a productive day. That is not a wish. It is a requirement."
     ],
     "continueHint": "E / SPACE to continue",
     "flat": {
@@ -65,7 +67,8 @@
       "The petals fall whether you are on time or not.",
       "I used to have a corner office. Now I have the whole corner."
     ],
-    "_beggarNote": "Placeholder beggar lines by Claude (one from the PO's brief) — team to rewrite freely."
+    "_beggarNote": "Placeholder beggar lines by Claude (one from the PO's brief) — team to rewrite freely.",
+    "_inspectorNote": "Inspector lines by Claude — team to rewrite freely."
   },
   "office": {
     "levelName": "Level 1 — The Office",

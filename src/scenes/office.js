@@ -8,7 +8,10 @@ import {
   FX, ACTION, IDLE, BOSS, STAND, MINIBOSS, MINION, NPC, walkFrame, loop, dirOf, rowOf,
 } from '../sprites.js';
 
+const AURA_GOOD = '#5BC46A';
 const MB_COLORS = { client: PAL.moss, printer: PAL.cream, coffee: PAL.wood, ac: PAL.sky };
+// a fractional amount of things → a whole number, rounding up by chance (2.6 → 2 or 3, 3 on average 60% of the time)
+const chanceRound = (x) => Math.floor(x) + (Math.random() < x - Math.floor(x) ? 1 : 0);
 const hash = (x, y) => { let h = (x * 374761393 + y * 668265263) ^ 0x5bd1e995; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
 export class OfficeScene {
@@ -723,7 +726,7 @@ export class OfficeScene {
       m.spawnT -= dt;
       if (m.spawnT <= 0) {
         m.spawnT = interval; m.attackT = 0.5;
-        for (let i = 0; i < perSpawn; i++) {
+        for (let i = 0, n = chanceRound(perSpawn * (mc.minionAmount ?? 1)); i < n; i++) {
           const a = rand(0, Math.PI * 2);
           this.spawnMinion(m.x + Math.cos(a) * (m.r + 24), m.y + Math.sin(a) * (m.r + 24), strong, mc.minionOf[m.id]);
         }
@@ -769,7 +772,7 @@ export class OfficeScene {
       }
       if (b.summonT <= 0) {
         b.summonT = bc.summon.interval; b.fireAnim = 0.4;
-        for (let i = 0; i < bc.summon.count; i++) {
+        for (let i = 0, n = chanceRound(bc.summon.count * (this.C.minibosses.minionAmount ?? 1)); i < n; i++) {
           const a = rand(0, Math.PI * 2);
           this.spawnMinion(b.x + Math.cos(a) * (b.r + 30), b.y + Math.sin(a) * (b.r + 30), bc.summon.strongChance, bc.minion);
         }
@@ -892,8 +895,12 @@ export class OfficeScene {
     for (const n of this.npcs) {
       if (!this.onScreen(n.x, n.y, fc.auraRadius + 20)) continue;
       const def = fc.types[n.type];
-      const good = def.effect === 'speed' || def.effect === 'damage';
-      const col = good ? PAL.gold : PAL.red;
+      const good = def.group === 'boost';           // green = helps you, red = drains you
+      const col = good ? AURA_GOOD : PAL.red;
+      // soft coloured glow on the floor inside the aura
+      ctx.globalAlpha = n.rearm > 0 ? 0.05 : 0.13 + (Math.floor(this.time * 2) % 2) * 0.03;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.ellipse(n.x, n.y, fc.auraRadius, fc.auraRadius * 0.6, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = col;
       ctx.globalAlpha = n.rearm > 0 ? 0.25 : 0.7;
       const steps = 40, spin = this.time * 0.4;
@@ -1089,6 +1096,18 @@ export class OfficeScene {
       const hover = (Math.floor(e.animT * 4) % 2) * PX;
       drawFrame(ctx, a, key, col, 0, e.x, e.y - 24 - hover, { ...opts, anchor: 'center' });
     } else drawFrame(ctx, a, key, col, 0, e.x, e.y + e.r, opts);
+    const h = a.cell(key)[1] * PX;
+    this.drawEnemyArrow(ctx, e.x, e.kind === 'email' ? e.y - 24 - h / 2 - 6 : e.y + e.r - h * 0.8 - 6, e.x);
+  }
+
+  // A small red pixel arrow bobbing over every enemy's head.
+  drawEnemyArrow(ctx, x, y, seed = 0, size = 1) {
+    const bob = (Math.floor(this.time * 3 + seed * 0.01) % 2) * PX * 2;
+    const u = 3 * size, top = Math.round((y - 18 * size - bob) / 3) * 3, cx = Math.round(x / 3) * 3;
+    ctx.fillStyle = PAL.ink;
+    for (let i = 0; i < 4; i++) ctx.fillRect(cx - (4 - i) * u - u, top + i * u - u, (4 - i) * 2 * u + 2 * u, u + 2 * u);
+    ctx.fillStyle = PAL.red;
+    for (let i = 0; i < 4; i++) ctx.fillRect(cx - (4 - i) * u, top + i * u, (4 - i) * 2 * u, u);
   }
 
   drawMiniboss(ctx, m) {
@@ -1102,7 +1121,10 @@ export class OfficeScene {
     drawFrame(ctx, a, 'miniboss_' + m.id, col, row, m.x, m.y + m.r, {
       alpha, flip: row === MINIBOSS.walkRow && m.flip, flash: m.hitFlash > 0.06, kind: 'miniboss', color: MB_COLORS[m.id], ph: [52, 46], label: this.T.minibossNames[m.id],
     });
-    if (m.alive) bar(ctx, m.x - 48, m.y - m.r - 110, 96, 9, m.hp / m.maxHp, PAL.red);
+    if (m.alive) {
+      bar(ctx, m.x - 48, m.y - m.r - 110, 96, 9, m.hp / m.maxHp, PAL.red);
+      this.drawEnemyArrow(ctx, m.x, m.y - m.r - 118, m.x, 1.5);
+    }
   }
 
   drawBoss(ctx) {
@@ -1120,6 +1142,7 @@ export class OfficeScene {
       flash,
       kind: 'boss', color: enraged ? PAL.dred : PAL.red, ph: [48, 46], label: 'CEO DRAGON',
     });
+    if (b.alive) this.drawEnemyArrow(ctx, b.x, b.y + b.r - hover - a.cell('boss_ceo')[1] * PX - 4, 0, 2);
   }
 
   drawNpc(ctx, n) {
