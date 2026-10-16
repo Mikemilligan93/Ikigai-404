@@ -15,11 +15,13 @@ const FLAT_SCALE = 4;        // bunny + futon in the flat (≈1.3 m bunny next t
 const WAKE_STAND_DX = 264;   // where the bunny stands in the last wake-up frame, measured from FUTON_X (66 sprite px × 4)
 const FLAT_GROUND = 560;     // the flat's floor line: just in front of the wall's skirting board
 const DOOR_X = 1180;         // walking into the flat's front door starts the fade to the metro
+const GATE_EXIT_X = 3700;    // walking through the metro ticket gates starts the fade to the street
 // The metro is built from layers (metro_back repeats with parallax, trains pass in front of it,
 // metro_platform repeats in front of the trains, props are placed, debris is blown by the draft).
 const METRO = {
   parallax: 0.6,            // the back wall + trains scroll slower than the platform → depth
-  trainBottom: 560,         // screen y of the train wheels (on the near rail in metro_back)
+  trainBottom: 590,         // screen y of the train wheels (the platform edge hides them)
+  trainScale: 4,            // train drawn at 4x (2x bigger than the rest of the art)
   trainSpeed: 760,          // px/s
   trainGap: [2.5, 5.5],     // seconds between trains
   trainCars: [3, 5],        // middle cars per train
@@ -53,6 +55,8 @@ export class IntroScene {
     this.props = FLAT_PROPS.map((p) => ({ ...p, done: false, t: 0 }));
     this.say = null;          // speech bubble above the bunny { text, t }
     this.leftFlat = false;
+    this.onStreet = false;      // passed the metro ticket gates
+    this.doorTo = 'metro';      // where the current fade leads
     this.prompt = null;
     game.session.morningBonus = 0;
     this.hasWake = game.assets.has('player_wake');
@@ -77,7 +81,8 @@ export class IntroScene {
     else if (this.phase === 'door') {
       // fade to black → title card → fade in at the metro
       const D = this.cfg.doorFade, C = this.cfg.doorCard;
-      if (!this.leftFlat && this.t >= D) { this.leftFlat = true; this.px = SEG.metro[0] + 160; this.facing = 1; this.say = null; }
+      if (this.doorTo === 'metro' && !this.leftFlat && this.t >= D) { this.leftFlat = true; this.px = SEG.metro[0] + 160; this.facing = 1; this.say = null; this.debris = []; }
+      if (this.doorTo === 'street' && !this.onStreet && this.t >= D) { this.onStreet = true; this.px = SEG.office[0] + 160; this.facing = 1; this.debris = []; this.train = null; this.wind = 0; }
       if (this.t >= D + C + D) { this.phase = 'walk'; this.t = 0; }
     }
     else if (this.phase === 'walk') {
@@ -86,8 +91,10 @@ export class IntroScene {
       if (ax) this.facing = ax;
       let nx = this.px + ax * this.cfg.walkSpeed * dt;
       // the flat: walking into the front door fades over to the metro; there is no way back
-      if (!this.leftFlat && nx > DOOR_X) { nx = DOOR_X; this.phase = 'door'; this.t = 0; this.moving = false; }
-      if (this.leftFlat) nx = Math.max(nx, SEG.metro[0] + 60);
+      if (!this.leftFlat && nx > DOOR_X) { nx = DOOR_X; this.phase = 'door'; this.doorTo = 'metro'; this.t = 0; this.moving = false; }
+      // the metro: walking through the ticket gates fades over to the street (only after the inspector)
+      if (this.leftFlat && !this.onStreet && this.inspectorDone && nx > GATE_EXIT_X) { nx = GATE_EXIT_X; this.phase = 'door'; this.doorTo = 'street'; this.t = 0; this.moving = false; }
+      if (this.leftFlat) nx = Math.max(nx, (this.onStreet ? SEG.office[0] : SEG.metro[0]) + 60);
       if (!this.leftFlat) this.updateFlat(dt, inp);
       // the inspector blocks the turnstile until the dialogue is done
       if (!this.inspectorDone && nx > INSPECTOR_X - 130) {
@@ -112,17 +119,18 @@ export class IntroScene {
     if (this.say) { this.say.t -= dt; if (this.say.t <= 0) this.say = null; }
     this.updateMetro(dt);
     for (const p of this.props) p.t -= dt;
-    this.camX = this.leftFlat ? clamp(this.px - W / 2, SEG.metro[0], WORLD_W - W) : 0;
+    this.camX = this.onStreet ? clamp(this.px - W / 2, SEG.office[0], WORLD_W - W)
+      : this.leftFlat ? clamp(this.px - W / 2, SEG.metro[0], SEG.metro[1] - W) : 0;
   }
 
   // ---------------------------------------------------------------- metro life: trains, draft, debris
   updateMetro(dt) {
     const A = this.g.assets, view = this.camX * METRO.parallax;   // trains live in the parallax (back-wall) space
-    const carW = A.cell('metro_train')[0] * PX;
+    const carW = A.cell('metro_train')[0] * METRO.trainScale;
     // trains: one at a time, alternating directions, a short pause between them
     if (!this.train) {
       this.trainWait -= dt;
-      if (this.trainWait <= 0 && this.leftFlat) {
+      if (this.trainWait <= 0 && this.leftFlat && !this.onStreet) {   // no trains on the street, only the wind
         const cars = 1 + Math.floor(METRO.trainCars[0] + Math.random() * (METRO.trainCars[1] - METRO.trainCars[0] + 1));
         const len = cars * carW, dir = this.trainDir;
         this.train = { dir, cars, len, x: dir < 0 ? view + W + 40 : view - len - 40, sound: false };
@@ -138,7 +146,7 @@ export class IntroScene {
       }
     }
     // wind: strong while a train rushes past, otherwise an occasional light draft
-    const inMetro = this.leftFlat && this.camX + W > SEG.metro[0] && this.camX < SEG.metro[1];
+    const inMetro = this.leftFlat;   // metro platform and the street outside the office: debris blows in both
     const tr = this.train;
     const rushing = tr && tr.x < view + W + 200 && tr.x + tr.len > view - 200;
     this.draftT -= dt;
@@ -188,12 +196,12 @@ export class IntroScene {
     for (let k = -1; k <= 1; k++) ctx.drawImage(back, off + k * W, rumble, W, H);
     // the train, in back-wall space
     if (tr) {
-      const carW = a.cell('metro_train')[0] * PX;
+      const carW = a.cell('metro_train')[0] * METRO.trainScale;
       for (let i = 0; i < tr.cars; i++) {
         const head = tr.dir < 0 ? i === 0 : i === tr.cars - 1;
         const sx = this.camX + (tr.x - view) + i * carW;
         if (sx > this.camX + W || sx + carW < this.camX) continue;
-        drawFrame(ctx, a, 'metro_train', 0, head ? 0 : 1, sx + carW / 2, METRO.trainBottom + rumble, { flip: tr.dir > 0, kind: 'prop', color: PAL.grey, eyes: false });
+        drawFrame(ctx, a, 'metro_train', 0, head ? 0 : 1, sx + carW / 2, METRO.trainBottom + rumble, { scale: METRO.trainScale, flip: tr.dir > 0, kind: 'prop', color: PAL.grey, eyes: false });
       }
     }
     // platform: repeats at full speed, in front of the train
@@ -411,8 +419,9 @@ export class IntroScene {
       const k = this.t < D ? this.t / D : this.t < D + C ? 1 : 1 - (this.t - D - C) / D;
       ctx.fillStyle = `rgba(27,26,46,${clamp(k, 0, 1)})`; ctx.fillRect(0, 0, W, H);
       if (this.t >= D * 0.8 && this.t < D + C + D * 0.3) {
-        text(ctx, this.T.locations.metro, W / 2, H / 2 - 10, { size: 44, color: PAL.gold });
-        text(ctx, this.T.flat.cardSub, W / 2, H / 2 + 44, { size: 20, color: PAL.cream });
+        const street = this.doorTo === 'street';
+        text(ctx, this.T.locations[street ? 'office' : 'metro'], W / 2, H / 2 - 10, { size: 44, color: PAL.gold });
+        text(ctx, street ? this.T.streetCardSub : this.T.flat.cardSub, W / 2, H / 2 + 44, { size: 20, color: PAL.cream });
       }
     } else if (this.phase === 'dialogue') {
       dialogueBox(ctx, this.T.inspectorName, this.T.inspectorLines[this.line], this.T.continueHint, { top: true, shown: Math.floor(this.shown) });
