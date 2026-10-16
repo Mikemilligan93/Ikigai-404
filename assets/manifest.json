@@ -443,6 +443,30 @@
       "palette": false,
       "colors": 48
     },
+    "npc_beggar": {
+      "file": "img/npc_beggar.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [72, 60],
+      "align": "bottom"
+    },
+    "street_props": {
+      "file": "img/street_props.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "street_petals": {
+      "file": "img/street_petals.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [24, 24],
+      "align": "center"
+    },
     "lift_interior": {
       "file": "img/lift_interior.png",
       "type": "background",

@@ -36,6 +36,20 @@ export const DEBRIS = {           // frames to flip between while it tumbles; he
   can: { frames: [[2, 1]], heavy: true, ph: '#B4302A' },
   cup: { frames: [[3, 1]], heavy: true, ph: '#EFE4CC' },
 };
+// Street (intro end): cherry petals in the wind (street_petals), drawn small (scale 1); street only
+export const PETALS = {
+  petal: { sheet: 'street_petals', frames: [[0, 0], [1, 0], [2, 0], [3, 0]], heavy: false, light: true, scale: 1, ph: '#F2A7B8' },
+  cluster: { sheet: 'street_petals', frames: [[0, 1]], heavy: false, light: true, scale: 1, ph: '#F2A7B8' },
+  blossom: { sheet: 'street_petals', frames: [[1, 1]], heavy: false, light: true, scale: 1, ph: '#F2A7B8' },
+  twig: { sheet: 'street_petals', frames: [[3, 1]], heavy: false, light: true, scale: 1, ph: '#6B4226' },
+};
+export const PETAL_ON_GROUND = [2, 1];
+export const STREET_PROP = {
+  postbox: [0, 0], bicycle: [1, 0], lamp: [2, 0],
+  bench: [0, 1], sign: [1, 1], jizo: [2, 1],
+};
+// npc_beggar (street, sitting, faces LEFT): idle A, idle B, talking, laughing
+export const BEGGAR = { idle: [0, 1], talk: [2, 0], laugh: 3 };
 
 // player_side (intro): row 0 = 4-frame walk to the right, row 1 = wake-up sequence
 export const SIDE = { walkRow: 0, asleep: [0, 1], startled: [1, 1], shaking: [2, 1], standing: [3, 1] };

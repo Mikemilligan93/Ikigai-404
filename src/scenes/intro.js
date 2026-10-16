@@ -1,5 +1,5 @@
 import { W, H, PX, PAL, COLORS, FONT, clamp, lerp, text, dialogueBox, drawFrame, windowBox } from '../engine.js';
-import { SIDE, IDLE, WAKE, FLAT_PROP, METRO_PROP, DEBRIS, loop } from '../sprites.js';
+import { SIDE, IDLE, WAKE, FLAT_PROP, METRO_PROP, DEBRIS, PETALS, PETAL_ON_GROUND, STREET_PROP, BEGGAR, loop } from '../sprites.js';
 
 // Side-view intro: home → metro (ticket inspector) → office entrance.
 // Backgrounds are 320×180 pixel art drawn at 4x; the bottom sixth of each is the floor.
@@ -32,6 +32,14 @@ const METRO_PROPS = [       // world x on the platform; kind → METRO_PROP in s
   { kind: 'billboard', x: 2650 }, { kind: 'timetable', x: 3020 }, { kind: 'gates', x: 3580 },
 ];
 
+// Street outside the office: props (world x, scale) and the happy beggar who talks to you.
+const STREET_PROPS = [
+  { kind: 'lamp', x: 3930, scale: 3 }, { kind: 'postbox', x: 4090, scale: 2 }, { kind: 'jizo', x: 4150, scale: 2 },
+  { kind: 'bicycle', x: 4600, scale: 2 }, { kind: 'sign', x: 4760, scale: 2 }, { kind: 'bench', x: 5000, scale: 2 },
+];
+const BEGGAR_X = 4400;       // sits on the pavement, facing the bunny coming from the left
+const BEGGAR_TALK_DIST = 260;
+
 // Things to interact with in the flat (E). x = world position, kind = row/cols in sprites.js → FLAT_PROP.
 // scale = size per prop, so they match real-world sizes (mirror ≈1.5 m, plant ≈0.7 m, cat on cushion ≈0.35 m).
 const FLAT_PROPS = [
@@ -63,6 +71,7 @@ export class IntroScene {
     this.wakeTotal = WAKE.sequence.reduce((s, f) => s + f[2], 0);
     this.train = null; this.trainWait = 1.2; this.trainDir = -1;
     this.debris = []; this.draftT = 3; this.wind = 0;
+    this.beggar = { say: null, talkT: 0, laughT: 0, said: 0 };
   }
 
   enter() { this.g.audio.playMusic('music_intro'); }
@@ -155,6 +164,7 @@ export class IntroScene {
     this.draftT -= dt;
     let target = 0;
     if (rushing) target = tr.dir * 1;
+    else if (this.onStreet) target = 0.3 + Math.max(0, Math.sin(this.time * 0.7)) * 0.35;   // spring breeze, gusting now and then
     else if (this.draftT < 0) { target = this.draftDir * 0.35; if (this.draftT < -2.5) { this.draftT = 4 + Math.random() * 5; this.draftDir = Math.random() < 0.5 ? -1 : 1; } }
     if (!this.draftDir) this.draftDir = 1;
     this.wind += (target - this.wind) * Math.min(1, dt * 2.5);
@@ -162,15 +172,35 @@ export class IntroScene {
     if (inMetro && Math.abs(this.wind) > 0.2 && this.debris.length < 22 && Math.random() < dt * 10 * Math.abs(this.wind)) {
       const kinds = Object.keys(DEBRIS), kind = kinds[Math.floor(Math.random() * kinds.length)];
       const heavy = DEBRIS[kind].heavy;
+      if (this.onStreet && Math.random() < 0.7) { /* on the street most of what flies is petals (spawned below) */ }
+      else
       this.debris.push({
-        kind, heavy, t: 0, life: 7,
+        kind, heavy, t: 0, life: 7, def: DEBRIS[kind],
         x: this.wind > 0 ? this.camX - 40 : this.camX + W + 40,
         y: heavy ? METRO.floorY : METRO.floorY - 20 - Math.random() * 140,
         vx: this.wind * 300, vy: 0, phase: Math.random() * 6, rest: 0,
       });
     }
+    // cherry petals: drift down from the trees and across the street all the time
+    if (this.onStreet && this.debris.length < 60 && Math.random() < dt * 9) {
+      const r = Math.random(), kind = r < 0.8 ? 'petal' : r < 0.9 ? 'cluster' : r < 0.97 ? 'blossom' : 'twig';
+      const fromTop = Math.random() < 0.6;
+      this.debris.push({
+        kind, heavy: false, light: true, t: 0, life: 9, def: PETALS[kind],
+        x: fromTop ? this.camX + Math.random() * W * 0.8 : this.camX - 30,
+        y: fromTop ? 40 + Math.random() * 200 : 80 + Math.random() * 380,
+        vx: this.wind * 200, vy: 20, phase: Math.random() * 6, rest: 0,
+      });
+    }
     for (const d of this.debris) {
       d.t += dt;
+      if (d.light) {   // petals: slow fall, lots of flutter, follow the breeze
+        d.vx += (this.wind * 330 - d.vx) * Math.min(1, dt * 1.5);
+        d.vy += (35 - d.vy) * Math.min(1, dt * 2) + Math.sin(d.t * 3 + d.phase) * 160 * dt;
+        d.x += d.vx * dt; d.y += d.vy * dt;
+        if (d.y >= METRO.floorY + 4) { d.y = METRO.floorY + 4; d.vx *= 0.9; d.rest += dt; d.landed = true; }
+        continue;
+      }
       const push = this.wind * (d.heavy ? 260 : 560);
       d.vx += (push - d.vx) * Math.min(1, dt * (d.heavy ? 1.2 : 2.2));
       if (!d.heavy) {
@@ -183,7 +213,21 @@ export class IntroScene {
       if (d.y >= METRO.floorY) { d.y = METRO.floorY; d.vy = 0; d.vx *= 0.96; }
       if (Math.abs(this.wind) < 0.15 && d.y >= METRO.floorY) d.rest += dt;
     }
-    this.debris = this.debris.filter((d) => d.t < d.life && d.rest < 2.5 && d.x > this.camX - 200 && d.x < this.camX + W + 200);
+    this.debris = this.debris.filter((d) => d.t < d.life && d.rest < (d.light ? 4 : 2.5) && d.x > this.camX - 200 && d.x < this.camX + W + 200);
+    this.updateBeggar(dt);
+  }
+
+  // The happy beggar: talks when you walk past, E for another line.
+  updateBeggar(dt) {
+    const b = this.beggar, lines = this.T.beggarLines || ['…'];
+    if (b.say) { b.say.t -= dt; if (b.say.t <= 0) b.say = null; }
+    b.laughT -= dt; b.talkT -= dt;
+    if (!this.onStreet || this.phase !== 'walk') return;
+    const near = Math.abs(this.px - BEGGAR_X) < BEGGAR_TALK_DIST;
+    this.beggarNear = near;
+    const next = () => { b.say = { text: lines[b.said % lines.length], t: 4.5 }; b.said++; b.talkT = 7; };
+    if (near && !b.say && b.talkT <= 0) next();
+    if (near && this.g.input.wasPressed('e')) { next(); b.laughT = 1.2; }
   }
 
   drawMetro(ctx, x0, x1) {
@@ -216,14 +260,28 @@ export class IntroScene {
     ctx.restore();
   }
 
+  drawStreet(ctx) {
+    const a = this.g.assets;
+    for (const p of STREET_PROPS) {
+      const [col, row] = STREET_PROP[p.kind];
+      drawFrame(ctx, a, 'street_props', col, row, p.x, GROUND, { scale: p.scale, kind: 'prop', label: p.kind, ph: [14, p.kind === 'lamp' ? 40 : 18], eyes: false });
+    }
+    const b = this.beggar;
+    let col = loop(BEGGAR.idle, this.time, this.A.idleFps);
+    if (b.say && b.say.t > 1) col = loop(BEGGAR.talk, this.time, this.A.talkFps / 2);
+    if (b.laughT > 0) col = BEGGAR.laugh;
+    drawFrame(ctx, a, 'npc_beggar', col, 0, BEGGAR_X, GROUND, { scale: 2, kind: 'npc', color: PAL.wood, ph: [30, 26], label: 'beggar' });
+  }
+
   drawDebris(ctx) {
     const a = this.g.assets;
     for (const d of this.debris) {
-      const def = DEBRIS[d.kind];
+      const def = d.def || DEBRIS[d.kind];
       const f = def.frames[Math.floor(d.t * (4 + Math.abs(d.vx) / 40)) % def.frames.length];
       const spin = d.heavy ? Math.round((d.x / 18) % 4) * (Math.PI / 2) : 0;           // cans and cups roll in 90° steps
       const alpha = d.rest > 0 ? clamp(1 - d.rest / 2.5, 0, 1) : clamp((d.life - d.t) / 1, 0, 1);
-      drawFrame(ctx, a, 'metro_debris', f[0], f[1], d.x, d.y - 12, { anchor: 'center', rot: spin, flip: d.vx < 0, alpha, kind: 'fx', color: def.ph, ph: [8, 6], eyes: false });
+      const [fc, fr] = d.landed ? PETAL_ON_GROUND : f;
+      drawFrame(ctx, a, def.sheet || 'metro_debris', fc, fr, d.x, d.y - 12, { anchor: 'center', scale: def.scale, rot: spin, flip: d.vx < 0, alpha, kind: 'fx', color: def.ph, ph: def.light ? [3, 3] : [8, 6], eyes: false });
     }
   }
 
@@ -358,6 +416,8 @@ export class IntroScene {
       }
     }
 
+    if (this.onStreet) this.drawStreet(ctx);
+
     // inspector (faces left, towards the player)
     let icol = loop(IDLE, this.time, this.A.idleFps);
     if (this.phase === 'dialogue') icol = this.punchT > 0 ? 2 : this.shown < this.T.inspectorLines[this.line].length ? loop([3, 0], this.time, this.A.talkFps) : 3;
@@ -396,6 +456,7 @@ export class IntroScene {
       drawFrame(ctx, a, 'player_side', col, row, x, ground - (rot ? 30 : 0) - (asleep && a.has('intro_flat') ? 118 : 0) + breathe, { scale: this.leftFlat ? SIDE_SCALE : FLAT_SCALE, flip, rot, kind: 'player', ph: [16, 30], label: 'Bunny' });
     }
     if (this.leftFlat) this.drawDebris(ctx);
+    if (this.onStreet && this.beggar.say) this.drawBubble(ctx, this.beggar.say, BEGGAR_X, GROUND - a.cell('npc_beggar')[1] * 2 - 4);
     if (!this.leftFlat) for (const p of this.props.filter((q) => q.front)) {
       const [col, row] = this.propFrame(p);
       drawFrame(ctx, a, 'flat_props', col, row, p.x, FLAT_GROUND + 18, { scale: p.scale, kind: 'prop', color: { mirror: PAL.sky, plant: PAL.moss, cat: PAL.ochre }[p.kind], ph: [14, p.kind === 'cat' ? 12 : 26], label: p.kind, eyes: false });
@@ -412,9 +473,11 @@ export class IntroScene {
       if (this.t < 1) text(ctx, this.T.wakeUp, W / 2, H / 2, { size: 40, color: PAL.cream });
     } else if (this.phase === 'walk') {
       text(ctx, this.leftFlat ? this.T.walkHint : this.T.flat.hint, W / 2, 40, { size: 20, color: PAL.cream });
-      if (this.prompt) {
-        windowBox(ctx, W / 2 - 200, H - 120, 400, 52);
-        text(ctx, this.prompt, W / 2, H - 94, { size: 20 });
+      const prompt = this.onStreet && this.beggarNear ? this.T.beggarPrompt : this.prompt;
+      if (prompt) {
+        const py = this.onStreet ? 90 : H - 120;   // on the street the box would cover the beggar
+        windowBox(ctx, W / 2 - 200, py, 400, 52);
+        text(ctx, prompt, W / 2, py + 26, { size: 20 });
       }
     } else if (this.phase === 'door') {
       // fade out, show where we are going, fade in

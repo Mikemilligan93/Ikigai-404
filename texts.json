@@ -54,7 +54,18 @@
       },
       "_note": "Placeholder lines by Claude — team to rewrite freely."
     },
-    "streetCardSub": "08:59. Almost on time."
+    "streetCardSub": "08:59. Almost on time.",
+    "beggarPrompt": "E — listen to the old tanuki",
+    "beggarLines": [
+      "I am freer than you are.",
+      "No boss. No inbox. No deadline. Just the blossoms.",
+      "You run every morning. I sit. Who is winning?",
+      "Spare a minute? Not yen — a minute. You don't have one, do you?",
+      "My calendar is completely empty. Envy me.",
+      "The petals fall whether you are on time or not.",
+      "I used to have a corner office. Now I have the whole corner."
+    ],
+    "_beggarNote": "Placeholder beggar lines by Claude (one from the PO's brief) — team to rewrite freely."
   },
   "office": {
     "levelName": "Level 1 — The Office",

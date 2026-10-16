@@ -41,9 +41,9 @@
       "cooldown": 0.35
     },
     "ranged": {
-      "damage": 1.5,
+      "damage": 50,
       "speed": 560,
-      "cooldown": 0.4,
+      "cooldown": 0.1,
       "lifetime": 1.1,
       "radius": 8
     }

@@ -90,6 +90,9 @@ The frame meanings are also listed in `src/sprites.js` — if ChatGPT puts a pos
 | `metro_train.png` | 1 × 2 | 400×100 | Metro station |
 | `metro_props.png` | 3 × 2 | 72×72 | Metro station |
 | `metro_debris.png` | 4 × 2 | 16×16 | Metro station |
+| `npc_beggar.png` | 4 × 1 | 48×40 | Street outside the office |
+| `street_props.png` | 3 × 2 | 48×48 | Street outside the office |
+| `street_petals.png` | 4 × 2 | 16×16 | Street outside the office |
 | `title_bg.png` | full scene | 320×180 | background |
 | `intro_flat.png` | full scene | 320×180 | background |
 | `intro_metro.png` | full scene | 320×180 | background |
@@ -1035,6 +1038,63 @@ Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single p
 Cells, left to right, top to bottom:
 - Row 1: dry orange maple leaf | the same leaf flipped over, tumbling | a sheet of newspaper (scribbles, no readable text) | the same newspaper crumpled, flapping
 - Row 2: an empty white plastic shopping bag, puffed | the same bag flattened, fluttering | a crushed drink can | a paper coffee cup lying on its side
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+## Street outside the office
+
+### `npc_beggar.png` — frames 48×40 · grid 4×1
+
+*Sitting character; the code shows a speech bubble above him.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: A happy, relaxed old tanuki (Japanese raccoon dog) beggar sitting cross-legged on a flattened cardboard box on the pavement, wearing a patched indigo kimono and a worn straw hat, a dented tin cup in front of him, a few cherry petals on his hat. Plain side view, he faces to the LEFT. He looks completely at peace — much happier than any office worker.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 48×40 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A, eyes closed, smiling | idle B, wiggling his toes, smiling | talking: one paw raised wisely, mouth open | laughing heartily, eyes closed, head tilted back
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `street_props.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: Objects on a Tokyo pavement in front of an office building in spring, plain side view, all at the same scale (a standing person would be about as tall as the street lamp is half).
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: a round red Japanese post box on a short post | a parked city bicycle with a front basket | a tall dark-green street lamp
+- Row 2: a simple stone-and-wood street bench with a few cherry petals on it | a café chalk sandwich board (drawings of a coffee cup and a cake, no text) | a small stone Jizo statue wearing a red knitted bib, with a tiny offering cup
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `street_petals.png` — frames 16×16 · grid 4×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: Cherry blossom petals blown by the wind, soft sakura pink with a slightly darker pink edge and a tiny notch at the tip.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows one small item, centred, drawn at about 16×16 pixel-art resolution so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: one petal seen flat | the same petal tilted | the same petal seen from the side (thin) | the same petal tilted the other way
+- Row 2: a little cluster of three petals | a whole small five-petal blossom | a petal lying flat on the ground | a tiny twig with two blossoms
 
 Output: PNG, Wide landscape image, 1536×1024.
 ```
