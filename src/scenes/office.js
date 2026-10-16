@@ -976,6 +976,8 @@ export class OfficeScene {
     for (const m of this.minibosses) if (m.alive && m.say && this.onScreen(m.x, m.y, 200)) this.drawBubble(ctx, m, m.y - m.r - 116);
     if (this.boss?.alive && this.boss.say) this.drawBubble(ctx, this.boss, this.boss.y + this.boss.r - 200);
 
+    this.drawGuideArrow(ctx);
+
     // your-desk balloon on top of everything
     const desk = this.special.desk;
     if (this.state === 'explore' && desk) {
@@ -1118,6 +1120,37 @@ export class OfficeScene {
     } else drawFrame(ctx, a, key, col, 0, e.x, e.y + e.r, opts);
     const h = a.cell(key)[1] * PX;
     this.drawEnemyArrow(ctx, e.x, e.kind === 'email' ? e.y - 24 - h / 2 - 6 : e.y + e.r - h * 0.8 - 6, e.x);
+  }
+
+  // Golden guide arrow circling the bunny, pointing at where to go next:
+  // your desk before the email is opened, the lift once the CEO is beaten. Hidden when you are already there.
+  drawGuideArrow(ctx) {
+    const t = this.tile, p = this.player;
+    let goal = null;
+    if (this.state === 'explore' && this.special.desk) { const d = this.special.desk; goal = { x: (d.x + d.def.w / 2) * t, y: (d.y + d.def.h + 0.6) * t }; }
+    if (this.state === 'cleared' && this.special.lift) { const l = this.special.lift; goal = { x: (l.x + l.def.w / 2) * t, y: (l.y + l.def.h + 0.6) * t }; }
+    if (!goal) return;
+    const dx = goal.x - p.x, dy = goal.y - p.y, d = Math.hypot(dx, dy);
+    if (d < t * 2.5) return;
+    const ang = Math.atan2(dy, dx), cy = p.y - 40;               // circle around the bunny's middle
+    const pulse = Math.floor(this.time * 4) % 2 ? 6 : 0;          // little push towards the goal
+    const r = 78 + pulse, ax = p.x + Math.cos(ang) * r, ay = cy + Math.sin(ang) * r;
+    // pixel arrow drawn cell by cell on a rotated grid, so it stays chunky at every angle
+    // shape: a short shaft (cols 0-6, middle rows) and a wide triangular head ending in a point at col 14
+    const u = 5, ca = Math.cos(ang), sa = Math.sin(ang), w = 15, h = 11;
+    const inArrow = (i, j) => (i <= 6 ? Math.abs(j - 5) <= 2 : Math.abs(j - 5) <= (14 - i) * 5 / 7 + 0.01);
+    const cells = [];
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (inArrow(i, j)) {
+      const lx = (i - w / 2 + 0.5) * u, ly = (j - h / 2 + 0.5) * u;
+      cells.push([Math.round(ax + lx * ca - ly * sa), Math.round(ay + lx * sa + ly * ca), j]);
+    }
+    ctx.fillStyle = PAL.ink;
+    for (const [x, y] of cells) ctx.fillRect(x - 6, y - 6, 12, 12);              // thick dark outline
+    for (const [x, y, j] of cells) {                                              // gold body, lighter upper half
+      ctx.fillStyle = j < 5 ? '#F7D774' : PAL.gold;
+      ctx.fillRect(x - 3, y - 3, 6, 6);
+    }
+    ctx.fillStyle = '#FFF1B8';                                    // sparkle highlight on the tip half
   }
 
   // A small red pixel arrow bobbing over every enemy's head.
