@@ -147,6 +147,7 @@ export const PROPS = {
   boxes: P('props_archive', 2, 1, 2, 1, '#B97A2E'),
   // meeting room
   meeting_table: P('props_meeting', 0, 0, 3, 2, '#6B4226'),
+  meeting_table_big: P('props_meeting', 0, 0, 6, 3, '#6B4226', { scale: 4 }),   // the same table drawn at double size: one long boardroom table
   meeting_chair: P('props_meeting', 1, 0, 1, 1, '#1B1A2E'),
   whiteboard: P('props_meeting', 2, 0, 2, 1, '#F2E8D5'),
   projector: P('props_meeting', 0, 1, 1, 1, '#5C5A63'),

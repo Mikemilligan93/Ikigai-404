@@ -107,7 +107,7 @@ export class OfficeScene {
       if (!def) { console.warn('unknown prop', name); continue; }
       const opt = typeof o === 'object' ? o : { id: o };
       const id = opt.id;
-      const p = { name, def, x, y, id, flip: !!opt.flip, seat: opt.seat, rect: { x: x * t + 4, y: y * t + 4, w: def.w * t - 8, h: def.h * t - 8 } };
+      const p = { name, def, x, y, id, flip: !!opt.flip, seat: opt.seat, dy: opt.dy || 0, rect: { x: x * t + 4, y: y * t + 4, w: def.w * t - 8, h: def.h * t - 8 } };
       this.checkWall(p);
       this.props.push(p);
       if (id) this.special[id] = p;
@@ -1009,7 +1009,10 @@ export class OfficeScene {
       d = { ...def, sheet: an.sheet, col, row };
     }
     if (p.id === 'desk') { name = this.state === 'explore' && Math.floor(this.time * 2) % 2 ? 'own_desk_mail' : 'own_desk'; d = PROPS[name]; }
-    const x = (p.x + def.w / 2) * t, y = (p.y + def.h) * t;
+    // small free-standing things get a tiny fixed nudge so nothing lines up like a ruler
+    const loose = def.w === 1 && !def.wall && p.seat == null && def.solid;
+    const jx = loose ? Math.round((hash(p.x, p.y) - 0.5) * 6) * PX : 0, jy = loose ? Math.round((hash(p.y, p.x) - 0.5) * 4) * PX : 0;
+    const x = (p.x + def.w / 2) * t + jx, y = (p.y + def.h) * t + jy + p.dy;
     const alpha = p.id === 'coffee' && this.coffeeCd > 0 ? 0.75 : 1;
     const ph = [def.w * 16 - 2, def.h * 16 + 6];
     drawFrame(ctx, a, d.sheet, d.col, d.row, x, y, { scale: def.scale || PX, alpha, flip: p.flip, color: d.ph, ph, label: d.label, eyes: false });
@@ -1019,7 +1022,7 @@ export class OfficeScene {
   drawSeated(ctx, s) {
     const t = this.tile, a = this.g.assets;
     const col = s.act >= 0 ? s.act : loop(WORKER.type, this.time + s.phase, 4);
-    const x = (s.x + 0.5) * t, y = (s.y + 1) * t + (s.baked ? -6 : 0);
+    const x = (s.x + 0.5) * t, y = (s.y + 1) * t + (s.baked ? -6 : s.dy || 0);
     drawFrame(ctx, a, WORKER_SHEETS[s.worker], col, WORKER_ROW[s.dir], x, y, {
       flip: s.dir === 'right', kind: 'npc', color: [PAL.grey, PAL.wood, PAL.moss, PAL.peach][s.worker], ph: [12, 16], eyes: s.dir !== 'up',
     });
