@@ -1,0 +1,16 @@
+// Cloudflare Workers config. Having this file stops Wrangler's auto-detection
+// (it mistook config.json for a Hugo site). No build step: the repo root is served as static assets.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ikigai-404",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  }
+  // Leaderboard storage: create a KV namespace (Workers & Pages → KV → Create),
+  // then uncomment and paste its ID. Until then scores are saved in each player's browser only.
+  // ,"kv_namespaces": [{ "binding": "LEADERBOARD", "id": "PASTE_KV_NAMESPACE_ID_HERE" }]
+}

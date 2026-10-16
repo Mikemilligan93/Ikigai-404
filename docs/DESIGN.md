@@ -26,12 +26,12 @@ Reuse of earlier personal projects (e.g. the top-down tech demo) is allowed.
 - **Engine:** plain JavaScript (ES modules) + HTML5 Canvas, no external dependencies, no build step.
   *(Phaser was the first choice but packages/CDNs are not reachable from the build environment;
   the zero-dependency version also deploys trivially.)*
-- **Hosting:** project folder → GitHub repo → Cloudflare Pages → custom domain later.
-- **Leaderboard backend:** Cloudflare Pages Function (`/functions/api/scores.js`) + KV namespace.
+- **Hosting:** project folder → GitHub repo → Cloudflare Workers (static assets, no build) → custom domain later.
+- **Leaderboard backend:** Cloudflare Worker (`worker/`) + KV namespace, configured in `wrangler.jsonc`.
   Basic checks only (name length/characters, score range). Falls back to browser-local storage
   when the API is not available (e.g. local testing).
 - **Editable data:** `config.json` (all tunable numbers), `texts.json` (all on-screen text).
-- **Assets:** `assets/img/*.png` and `assets/audio/*` — file names fixed in `ASSETS.md`. Missing
+- **Assets:** `assets/img/*.png` and `assets/audio/*` — file names fixed in `assets/manifest.json`. Missing
   files fall back to coloured placeholder shapes, so code never waits for art.
 
 ## 4. Visual style
@@ -93,7 +93,7 @@ palette from night indigo to hopeful golden dawn. *Not final — we try it and p
 
 ## 10. Audio
 
-Soundtrack and SFX provided by the team. File names fixed in `ASSETS.md`; the game runs silently
+Soundtrack and SFX provided by the team. File names fixed in `assets/manifest.json`; the game runs silently
 until the files exist.
 
 ---
@@ -119,7 +119,7 @@ random line · end screen with score · online leaderboard · config.json + text
 | 4 | Write texts (intro, inspector, lift, burnout lines) in `texts.json` | Team | open |
 | 5 | Define NPC types (buff/debuff) | Team | open |
 | 6 | Define enemy / miniboss / boss behaviour | PO + team | open |
-| 7 | GitHub repo + Cloudflare Pages + KV binding | PO | open |
+| 7 | GitHub repo + Cloudflare Workers deploy + KV binding | PO | open |
 | 8 | Scoring rules (after first playtest) | PO | open |
 | 9 | Audio files | Team | open |
 | 10 | Lift dialogue scene | Claude | after texts |

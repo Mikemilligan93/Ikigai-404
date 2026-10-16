@@ -1,5 +1,5 @@
-// Cloudflare Pages Function — leaderboard API.
-// Needs a KV namespace bound as LEADERBOARD (Pages project → Settings → Functions → KV bindings).
+// Leaderboard API (called from worker/index.js).
+// Needs a KV namespace bound as LEADERBOARD (see wrangler.jsonc).
 //   GET  /api/scores  → { scores: [...] }
 //   POST /api/scores  { name, score, outcome, seconds } → { scores: [...] }
 // Basic checks only (internal event): name sanitised, score range-limited, simple per-IP rate limit.

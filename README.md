@@ -42,17 +42,21 @@ src/main.js           boot
 src/leaderboard.js    leaderboard client (API + local fallback)
 src/levels/office.js  level 1 layout
 src/scenes/           title, intro, office, lift, end
-functions/api/scores.js  Cloudflare Pages Function (leaderboard API)
+worker/index.js       Cloudflare Worker entry (serves the game + /api/scores)
+worker/scores.js      leaderboard API
+wrangler.jsonc        Cloudflare config (no build step)
+.assetsignore         files NOT published to the web
 docs/                 DESIGN.md, PROMPTS.md
 ```
 
-## Deploy (GitHub → Cloudflare Pages)
+## Deploy (GitHub → Cloudflare Workers)
 
-1. Push this folder to a GitHub repo.
-2. Cloudflare dashboard → Workers & Pages → Create → Pages → Connect to Git → pick the repo.
-   Framework preset: **None**. Build command: *(empty)*. Output directory: `/`.
-3. Leaderboard: Workers & Pages → KV → create a namespace (e.g. `ikigai404-leaderboard`).
-   Pages project → Settings → Bindings → add **KV namespace**, variable name **`LEADERBOARD`**. Redeploy.
-4. Custom domain: Pages project → Custom domains.
+The Cloudflare project is a **Worker with static assets**, configured by `wrangler.jsonc`
+(no build step — the repo root is the website).
 
-`functions/api/scores.js` becomes `/api/scores` automatically.
+1. Cloudflare → Workers & Pages → the `ikigai-404` project → Settings → Build:
+   Build command **empty**, Deploy command `npx wrangler deploy`. Every push to `main` redeploys.
+2. Leaderboard: Workers & Pages → **KV** → Create namespace (e.g. `ikigai404-leaderboard`), copy its ID.
+   In `wrangler.jsonc` uncomment the `kv_namespaces` line and paste the ID, then commit + push.
+   Until then the leaderboard is saved per browser only.
+3. Custom domain: project → Settings → Domains & Routes.
