@@ -72,6 +72,11 @@ export class OfficeScene {
 
   enter() { this.g.audio.playMusic('music_office'); }
 
+  // pause menu (P or ESC): retry restarts the office day from the start
+  get pausable() { return this.state !== 'burnout'; }
+  get pauseKeys() { return ['p', 'Escape']; }
+  retry() { return this.g.scenes.office(); }
+
   // ---------------------------------------------------------------- map
   buildMap() {
     const L = this.L, t = this.tile;

@@ -6,7 +6,7 @@
     "namePrompt": "Enter your name for the leaderboard hey:",
     "startHint": "Press ENTER to clock in",
     "leaderboardTitle": "Hall of the Still Employed",
-    "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · ESC skip"
+    "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · P pause · ESC skip"
   },
   "intro": {
     "nightmare": "…the deadline… it was yesterday…",
@@ -266,5 +266,41 @@
     "submitting": "Sending score…",
     "localOnly": "(offline — score saved on this computer only)",
     "playAgain": "Press ENTER to play again"
+  },
+  "pause": {
+    "title": "Paused",
+    "resume": "Resume",
+    "controls": "Controls",
+    "music": "Music",
+    "sound": "Sound",
+    "on": "On",
+    "off": "Off",
+    "retry": "Retry level",
+    "quit": "Quit to title",
+    "confirm": "Press again to confirm",
+    "hint": "W / S choose · E select · P resume",
+    "back": "E / P back",
+    "controlLines": [
+      [
+        "W A S D",
+        "Walk"
+      ],
+      [
+        "J / SPACE",
+        "Briefcase strike"
+      ],
+      [
+        "K",
+        "Throw a paper ball"
+      ],
+      [
+        "E",
+        "Talk, use, open email"
+      ],
+      [
+        "P / ESC",
+        "Pause (ESC skips the intro)"
+      ]
+    ]
   }
 }

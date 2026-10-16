@@ -165,11 +165,21 @@ export class Audio {
     this.assets = assets; this.cfg = cfg;
     this.music = null; this.musicKey = null; this.musicSrc = null;
     this.lastSfx = {};
+    // mute switches (pause menu), remembered in this browser
+    this.musicMuted = false; this.sfxMuted = false; this.duck = 1;
+    try { const m = JSON.parse(localStorage.getItem('ikigai404.audio') || '{}'); this.musicMuted = !!m.music; this.sfxMuted = !!m.sfx; } catch (e) { /* storage blocked: start unmuted */ }
     // browsers block sound until the first click / key press: start the music then
     const unlock = () => { if (this.music && this.music.paused) this.music.play().catch(() => {}); };
     window.addEventListener('keydown', unlock);
     window.addEventListener('pointerdown', unlock);
   }
+  setMuted(which, on) {
+    if (which === 'music') this.musicMuted = on; else this.sfxMuted = on;
+    if (this.music) this.music.muted = this.musicMuted;
+    try { localStorage.setItem('ikigai404.audio', JSON.stringify({ music: this.musicMuted, sfx: this.sfxMuted })); } catch (e) { /* not remembered */ }
+  }
+  // quieter music while the game is paused
+  setDuck(k) { this.duck = k; if (this.music) this.music.volume = this.cfg.musicVolume * k; }
   // Scenes that use the same file keep it playing (no restart between title → intro → office).
   playMusic(key) {
     const src = this.assets.sounds[key];
@@ -181,7 +191,8 @@ export class Audio {
     this.musicSrc = src;
     this.music = new window.Audio(src);
     this.music.loop = true;
-    this.music.volume = this.cfg.musicVolume;
+    this.music.volume = this.cfg.musicVolume * this.duck;
+    this.music.muted = this.musicMuted;
     this.music.play().catch(() => {});
   }
   stopMusic() {
@@ -191,7 +202,7 @@ export class Audio {
   // One-shot sound. The same sound can't restart within `gap` seconds (stops 10 hits at once from stacking).
   sfx(key, gap = 0.04) {
     const src = this.assets.sounds[key];
-    if (!src) return;
+    if (!src || this.sfxMuted) return;
     const now = performance.now();
     if (now - (this.lastSfx[key] || 0) < gap * 1000) return;
     this.lastSfx[key] = now;
@@ -394,8 +405,11 @@ export class Game {
     this.scene = null;
     this.fade = 0; this.fadeDir = 0; this.nextScene = null;
     this.session = { name: '', score: null };
+    this.pause = null;   // the open pause menu (scenes with `pausable` set can be paused)
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    // leaving the tab pauses the game, so nobody burns out while looking elsewhere
+    window.addEventListener('blur', () => { if (this.canPause()) this.openPause(); });
   }
 
   resize() {
@@ -428,8 +442,16 @@ export class Game {
     requestAnimationFrame(loop);
   }
 
+  canPause() { return !this.pause && this.fadeDir === 0 && this.scene?.pausable && this.makePause; }
+  openPause() { this.pause = this.makePause(); this.audio.setDuck(0.4); }
+  closePause() { this.pause = null; this.audio.setDuck(1); }
+
   tick(dt) {
-    if (this.fadeDir !== 0) {
+    if (this.pause) {
+      if (!this.pause.update(dt)) this.closePause();
+    } else if (this.fadeDir === 0 && this.canPause() && this.input.wasPressed(...(this.scene.pauseKeys || ['p']))) {
+      this.openPause();
+    } else if (this.fadeDir !== 0) {
       this.fade = clamp(this.fade + this.fadeDir * dt * 3, 0, 1);
       if (this.fade >= 1 && this.nextScene) {
         this.scene?.exit?.();
@@ -445,6 +467,7 @@ export class Game {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, W, H);
     this.scene?.draw(ctx);
+    if (this.pause) { ctx.setTransform(1, 0, 0, 1, 0, 0); this.pause.draw(ctx); }
     if (this.fade > 0) this.drawWipe(ctx);
     this.input.endFrame();
   }

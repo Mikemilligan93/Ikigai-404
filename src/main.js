@@ -5,6 +5,7 @@ import { IntroScene } from './scenes/intro.js';
 import { OfficeScene } from './scenes/office.js';
 import { LiftScene } from './scenes/lift.js';
 import { EndScene } from './scenes/end.js';
+import { PauseMenu } from './scenes/pause.js';
 
 const loadJson = (url) => fetch(url, { cache: 'no-store' }).then((r) => {
   if (!r.ok) throw new Error(`Could not load ${url}`);
@@ -36,6 +37,7 @@ async function boot() {
       lift: () => new LiftScene(game),
       end: (result) => new EndScene(game, result),
     };
+    game.makePause = () => new PauseMenu(game);
     window.game = game; // handy for debugging in the browser console
     boot.remove();
     canvas.focus();

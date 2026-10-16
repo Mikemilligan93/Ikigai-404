@@ -76,6 +76,11 @@ export class IntroScene {
 
   enter() { this.g.audio.playMusic('music_intro'); }
 
+  // pause menu (P; ESC still skips the intro): retry starts the morning again
+  get pausable() { return true; }
+  get pauseKeys() { return ['p']; }
+  retry() { return this.g.scenes.intro(); }
+
   update(dt) {
     const inp = this.g.input;
     this.t += dt; this.time += dt; this.punchT -= dt;
