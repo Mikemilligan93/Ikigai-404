@@ -1,6 +1,6 @@
 import {
   W, H, PX, PAL, COLORS, clamp, dist, rand, pick, fmt, text, bar, wrapLeft, windowBox, drawFrame,
-  resolveCircleRect, circleRectOverlap, FONT, fontOf, textPlate,
+  resolveCircleRect, circleRectOverlap, FONT, font, TEXT_SCALE,
 } from '../engine.js';
 import { OFFICE } from '../levels/office.js';
 import {
@@ -391,32 +391,17 @@ export class OfficeScene {
     return [gx / gd, gy / gd];
   }
 
-  // Banners stay up long enough to read: at least `time`, or minSeconds + perChar × length (config.json → text).
-  banner(msg, time = 2.5) {
-    const tc = this.C.text || {};
-    const t = Math.max(time, (tc.bannerMinSeconds ?? 3) + String(msg).length * (tc.bannerPerChar ?? 0.05));
-    this.banners.push({ msg, t, life: t, age: 0 });
-  }
-  // Floating numbers/labels. Numbers that pop up close together merge (+10 +10 → +20) instead of overlapping.
-  float(x, y, msg, color = COLORS.paper) {
-    const tc = this.C.text || {}, life = tc.floaterLife ?? 1.6;
-    const m = /^([+-])(\d+)$/.exec(msg);
-    if (m) {
-      const near = this.floaters.find((f) => f.num && f.sign === m[1] && f.color === color && f.life - f.t < 0.5 && Math.abs(f.x - x) < 70 && Math.abs(f.y - y) < 70);
-      if (near) { near.num += +m[2]; near.msg = m[1] + near.num; near.t = life; return; }
-    }
-    this.floaters.push({ x, y, msg, color, t: life, life, num: m ? +m[2] : 0, sign: m ? m[1] : '' });
-  }
+  banner(msg, time = 2.5) { this.banners.push({ msg, t: time }); }
+  float(x, y, msg, color = COLORS.paper) { this.floaters.push({ x, y, msg, color, t: 1.1 }); }
   fx(kind, x, y, life = 0.25, vy = 0) { this.particles.push({ kind, x, y, t: life, life, vy }); }
 
   // ---------------------------------------------------------------- update
   update(dt) {
     const inp = this.g.input;
     this.stateT += dt; this.time += dt;
-    for (const b of this.banners.slice(0, 2)) { b.t -= dt; b.age += dt; }   // queued banners wait their turn
+    for (const b of this.banners) b.t -= dt;
     this.banners = this.banners.filter((b) => b.t > 0);
-    const rise = this.C.text?.floaterRise ?? 28;
-    this.floaters.forEach((f) => { f.t -= dt; f.y -= rise * dt; });
+    this.floaters.forEach((f) => { f.t -= dt; f.y -= 40 * dt; });
     this.floaters = this.floaters.filter((f) => f.t > 0);
     this.particles.forEach((f) => { f.t -= dt; f.y += f.vy * dt; });
     this.particles = this.particles.filter((f) => f.t > 0);
@@ -1005,8 +990,8 @@ export class OfficeScene {
     }
 
     for (const f of this.floaters) {
-      ctx.globalAlpha = clamp(f.t / 0.4, 0, 1);   // full strength until the last 0.4 s
-      text(ctx, f.msg, Math.round(f.x), Math.round(f.y / 3) * 3, { size: f.num ? 26 : 22, color: f.color, weight: 700 });
+      ctx.globalAlpha = clamp(f.t, 0, 1);
+      text(ctx, f.msg, Math.round(f.x), Math.round(f.y / 3) * 3, { size: 20, color: f.color });
       ctx.globalAlpha = 1;
     }
 
@@ -1175,21 +1160,22 @@ export class OfficeScene {
     const s = who.say;
     if (!s) return;
     s.shown = Math.min(s.text.length, s.shown + 1.2);
-    ctx.font = fontOf(17);
-    const maxW = 300, words = s.text.slice(0, Math.floor(s.shown)).split(' '), lines = [];
+    ctx.font = font(17);
+    const lh = Math.round(17 * TEXT_SCALE * 1.4), maxW = 340, words = s.text.slice(0, Math.floor(s.shown)).split(' '), lines = [];
     let line = '';
     for (const w of words) { const tst = line ? line + ' ' + w : w; if (ctx.measureText(tst).width > maxW && line) { lines.push(line); line = w; } else line = tst; }
     if (line) lines.push(line);
     const full = []; { let l2 = ''; for (const w of s.text.split(' ')) { const tst = l2 ? l2 + ' ' + w : w; if (ctx.measureText(tst).width > maxW && l2) { full.push(l2); l2 = w; } else l2 = tst; } if (l2) full.push(l2); }
-    const w = Math.min(maxW, Math.max(...full.map((l) => ctx.measureText(l).width))) + 24, h = full.length * 20 + 16;
+    const w = Math.min(maxW, Math.max(...full.map((l) => ctx.measureText(l).width))) + 36, h = full.length * lh + 22;
     const x = clamp(Math.round(who.x - w / 2), this.cam.x + 8, this.cam.x + W - w - 8), y = Math.round(headY - h - 14);
     ctx.globalAlpha = clamp(s.t * 2, 0, 1);
-    ctx.fillStyle = PAL.ink; ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+    ctx.fillStyle = PAL.ink; ctx.fillRect(x - 4, y - 4, w + 8, h + 8);
     ctx.fillStyle = PAL.cream; ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = PAL.ink; ctx.fillRect(who.x - 6, y + h, 12, 6); ctx.fillRect(who.x - 3, y + h + 6, 6, 6);
+    ctx.fillStyle = '#D9CDB4'; ctx.fillRect(x, y + h - 4, w, 4);
+    ctx.fillStyle = PAL.ink; ctx.fillRect(who.x - 7, y + h, 14, 7); ctx.fillRect(who.x - 4, y + h + 7, 8, 6);
     ctx.fillStyle = PAL.cream; ctx.fillRect(who.x - 3, y + h, 6, 6);
     ctx.fillStyle = PAL.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    lines.forEach((l, i) => ctx.fillText(l, x + 12, y + 18 + i * 20));
+    lines.forEach((l, i) => ctx.fillText(l, x + 18, y + 11 + lh / 2 + i * lh));
     ctx.globalAlpha = 1;
   }
 
@@ -1210,9 +1196,12 @@ export class OfficeScene {
     const frac = p.mental / pc.mentalMax;
     const posture = frac > pc.postureThresholds.tired ? 'ok' : frac > pc.postureThresholds.burntOut ? 'tired' : 'burntOut';
     // mental health
-    windowBox(ctx, 16, 16, 360, 84);
-    text(ctx, `${T.hud.mental} — ${T.posture[posture]}`, 34, 40, { size: 18, align: 'left' });
-    bar(ctx, 34, 60, 320, 21, frac, frac > 0.66 ? PAL.celadon : frac > 0.33 ? PAL.gold : PAL.red);
+    const label = `${T.hud.mental} — ${T.posture[posture]}`;
+    ctx.font = font(18);
+    const hw = Math.max(360, Math.ceil(ctx.measureText(label).width) + 48);
+    windowBox(ctx, 16, 16, hw, 84);
+    text(ctx, label, 34, 40, { size: 18, align: 'left' });
+    bar(ctx, 34, 60, hw - 40, 21, frac, frac > 0.66 ? PAL.celadon : frac > 0.33 ? PAL.gold : PAL.red);
     // effects
     let ex = 30;
     for (const [k, v] of Object.entries(p.effects)) {
@@ -1226,22 +1215,15 @@ export class OfficeScene {
     const t = Math.floor(this.waveTime);
     text(ctx, `${T.hud.time}: ${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`, W - 36, 72, { size: 18, align: 'right' });
     // objective
-    if (this.state === 'wave') text(ctx, fmt(T.minibossesLeft, { n: this.minibosses.filter((m) => m.alive).length }), W / 2, H - 24, { size: 20 });
+    if (this.state === 'wave') text(ctx, fmt(T.minibossesLeft, { n: this.minibosses.filter((m) => m.alive).length }), W / 2, H - 28, { size: 20, plate: true });
     if (this.boss?.alive && this.boss.active) {
       text(ctx, T.bossName, W / 2, 28, { size: 20, color: PAL.gold });
       bar(ctx, W / 2 - 250, 48, 500, 15, this.boss.hp / this.boss.maxHp, PAL.red);
     }
     // banners
-    const tc = this.C.text || {};
     this.banners.slice(0, 2).forEach((b, i) => {
-      ctx.globalAlpha = Math.min(clamp(b.age / (tc.bannerFadeIn ?? 0.2), 0, 1), clamp(b.t / (tc.bannerFadeOut ?? 0.5), 0, 1));
-      const y = 150 + i * 56, main = i === 0;
-      // big arcade font for the headline when it fits on screen, bold body font otherwise
-      ctx.font = fontOf(24, { display: true });
-      const fits = main && ctx.measureText(b.msg).width < W - 160;
-      const st = fits ? { size: 24, display: true } : { size: main ? 30 : 26, weight: 700 };
-      textPlate(ctx, b.msg, W / 2, y, st);
-      text(ctx, b.msg, W / 2, y, { ...st, color: main ? PAL.gold : PAL.cream });
+      ctx.globalAlpha = clamp(b.t, 0, 1);
+      text(ctx, b.msg, W / 2, 150 + i * 50, { size: i === 0 ? 32 : 22, color: i === 0 ? PAL.gold : PAL.cream, plate: true });
       ctx.globalAlpha = 1;
     });
     // interaction prompt
@@ -1270,8 +1252,8 @@ export class OfficeScene {
     ctx.fillStyle = PAL.cream; ctx.fillRect(x + 12, y + 54, w - 24, h - 66);
     text(ctx, E.from, x + 28, y + 80, { size: 20, align: 'left', color: PAL.ink, shadow: false });
     text(ctx, E.subject, x + 28, y + 112, { size: 20, align: 'left', color: PAL.red, shadow: false });
-    ctx.fillStyle = PAL.ink; ctx.font = fontOf(22); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    wrapLeft(ctx, E.body, x + 28, y + 160, w - 56, 32);
+    ctx.fillStyle = PAL.ink; ctx.font = font(22); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    wrapLeft(ctx, E.body, x + 28, y + 164, w - 56, Math.round(22 * TEXT_SCALE * 1.4));
     text(ctx, E.hint, x + w - 28, y + h - 30, { size: 16, align: 'right', color: PAL.dgrey, shadow: false });
   }
 }

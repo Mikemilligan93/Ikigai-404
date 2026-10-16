@@ -1,4 +1,4 @@
-import { W, H, PX, PAL, COLORS, FONT, fontOf, clamp, lerp, text, dialogueBox, drawFrame, windowBox } from '../engine.js';
+import { W, H, PX, PAL, COLORS, FONT, font, TEXT_SCALE, clamp, lerp, text, dialogueBox, drawFrame, windowBox } from '../engine.js';
 import { SIDE, IDLE, WAKE, FLAT_PROP, METRO_PROP, DEBRIS, PETALS, PETAL_ON_GROUND, STREET_PROP, BEGGAR, loop } from '../sprites.js';
 
 // Side-view intro: home → metro (ticket inspector) → office entrance.
@@ -330,7 +330,7 @@ export class IntroScene {
       this.placeholderBackground(ctx, key, x0, x1);
     }
     if (!a.has('intro_flat')) { ctx.fillStyle = PAL.wood; ctx.fillRect(this.camX, GROUND, W, H - GROUND); }
-    text(ctx, this.T.locations[this.segAt(this.camX + W / 2)], this.camX + 40, 40, { size: 22, align: 'left', color: PAL.gold });
+    if (this.phase !== 'dialogue') text(ctx, this.T.locations[this.segAt(this.camX + W / 2)], this.camX + 40, 44, { size: 22, align: 'left', color: PAL.gold, plate: true });
   }
 
   segAt(x) { return Object.entries(SEG).find(([, [a, b]]) => x >= a && x < b)?.[0] || 'office'; }
@@ -383,18 +383,20 @@ export class IntroScene {
 
   // Pixel speech bubble above the bunny (world coordinates).
   drawBubble(ctx, say, x, headY) {
-    ctx.font = fontOf(18);
+    ctx.font = font(17);
+    const LH = Math.round(17 * TEXT_SCALE * 1.4);
     const words = say.text.split(' '), lines = [];
     let line = '';
-    for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > 320 && line) { lines.push(line); line = w; } else line = t; }
+    for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > 360 && line) { lines.push(line); line = w; } else line = t; }
     if (line) lines.push(line);
-    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 28, h = lines.length * 24 + 18;
+    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 36, h = lines.length * LH + 22;
     const bx = clamp(Math.round(x - w / 2), this.camX + 8, this.camX + W - w - 8), by = Math.round(headY - h);
     ctx.globalAlpha = clamp(say.t * 2, 0, 1);
-    ctx.fillStyle = PAL.ink; ctx.fillRect(bx - 3, by - 3, w + 6, h + 6); ctx.fillRect(x - 6, by + h, 12, 9);
+    ctx.fillStyle = PAL.ink; ctx.fillRect(bx - 4, by - 4, w + 8, h + 8); ctx.fillRect(x - 7, by + h, 14, 10);
     ctx.fillStyle = PAL.cream; ctx.fillRect(bx, by, w, h); ctx.fillRect(x - 3, by + h, 6, 6);
+    ctx.fillStyle = '#D9CDB4'; ctx.fillRect(bx, by + h - 4, w, 4);
     ctx.fillStyle = PAL.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    lines.forEach((l, i) => ctx.fillText(l, bx + 14, by + 21 + i * 24));
+    lines.forEach((l, i) => ctx.fillText(l, bx + 18, by + 11 + LH / 2 + i * LH));
     ctx.globalAlpha = 1;
   }
 
@@ -472,7 +474,7 @@ export class IntroScene {
       ctx.fillStyle = `rgba(27,26,46,${0.85 * (1 - this.t / this.cfg.sunriseDuration)})`; ctx.fillRect(0, 0, W, H);
       if (this.t < 1) text(ctx, this.T.wakeUp, W / 2, H / 2, { size: 40, color: PAL.cream });
     } else if (this.phase === 'walk') {
-      text(ctx, this.leftFlat ? this.T.walkHint : this.T.flat.hint, W / 2, 40, { size: 20, color: PAL.cream });
+      text(ctx, this.leftFlat ? this.T.walkHint : this.T.flat.hint, W / 2, 44, { size: 20, color: PAL.cream, plate: true });
       const prompt = this.onStreet && this.beggarNear ? this.T.beggarPrompt : this.prompt;
       if (prompt) {
         const py = this.onStreet ? 90 : H - 120;   // on the street the box would cover the beggar
@@ -486,12 +488,12 @@ export class IntroScene {
       ctx.fillStyle = `rgba(27,26,46,${clamp(k, 0, 1)})`; ctx.fillRect(0, 0, W, H);
       if (this.t >= D * 0.8 && this.t < D + C + D * 0.3) {
         const street = this.doorTo === 'street';
-        text(ctx, this.T.locations[street ? 'office' : 'metro'], W / 2, H / 2 - 14, { size: 36, color: PAL.gold, display: true });
+        text(ctx, this.T.locations[street ? 'office' : 'metro'], W / 2, H / 2 - 10, { size: 44, color: PAL.gold });
         text(ctx, street ? this.T.streetCardSub : this.T.flat.cardSub, W / 2, H / 2 + 44, { size: 20, color: PAL.cream });
       }
     } else if (this.phase === 'dialogue') {
       dialogueBox(ctx, this.T.inspectorName, this.T.inspectorLines[this.line], this.T.continueHint, { top: true, shown: Math.floor(this.shown) });
     }
-    text(ctx, this.T.skipHint, W - 20, H - 24, { size: 16, align: 'right', color: PAL.grey });
+    text(ctx, this.T.skipHint, W - 24, H - 26, { size: 16, align: 'right', color: PAL.grey, plate: true });
   }
 }

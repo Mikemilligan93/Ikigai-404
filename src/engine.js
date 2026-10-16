@@ -15,20 +15,12 @@ export const COLORS = {
   vermilion: PAL.red, jade: PAL.moss, dawn: PAL.peach, grey: PAL.grey, green: PAL.celadon,
 };
 
-// Body text: bold-capable pixel font. Display: chunky arcade font for short, big moments (titles, banners).
-// DotGothic16 stays in both stacks because it is the only one with Japanese characters.
-export const FONT = '"Pixelify Sans", "DotGothic16", "Courier New", monospace';
-export const DISPLAY_FONT = '"Press Start 2P", "Pixelify Sans", "DotGothic16", monospace';
-
-// Text settings from config.json → "text" (set once at boot).
-export const TEXT = { scale: 1, weight: 600, outline: true };
-export function setTextConfig(cfg = {}) { Object.assign(TEXT, cfg); }
-
-// Canvas font string. Display text ignores weight (Press Start 2P has one weight).
-export function fontOf(size, { display = false, weight } = {}) {
-  const px = Math.round(size * TEXT.scale);
-  return display ? `${px}px ${DISPLAY_FONT}` : `${weight ?? TEXT.weight} ${px}px ${FONT}`;
-}
+export const FONT = '"DotGothic16", "Courier New", monospace';
+// Readability pass (2026-10-16): every text size in the game is multiplied by this.
+export const TEXT_SCALE = 1.15;
+export const font = (px) => `${Math.round(px * TEXT_SCALE)}px ${FONT}`;
+// Deeper, solid window colour so text on panels has strong contrast.
+export const PANEL = '#171A40';
 // Every sprite pixel is drawn as PX×PX screen pixels (no smoothing): 24 px tiles become 48 px.
 export const PX = 2;
 
@@ -241,7 +233,7 @@ export function drawFrame(ctx, assets, key, col, row, x, y, opts = {}) {
     if (opts.label) {
       if (opts.flip) ctx.scale(-1, 1);
       ctx.fillStyle = PAL.ink;
-      ctx.font = fontOf(clamp(Math.floor(bw / 6), 10, 16));
+      ctx.font = `${clamp(Math.floor(bw / 6), 10, 16)}px ${FONT}`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       wrapText(ctx, opts.label, 0, by + bh / 2, bw - 4, clamp(Math.floor(bw / 6), 10, 16) + 2);
     }
@@ -280,39 +272,30 @@ export function wrapText(ctx, text, x, y, maxW, lineH) {
   return lines.length;
 }
 
-// Text with a solid dark outline (readable on any background). shadow: false = plain text for light panels.
-export function text(ctx, str, x, y, { size = 24, color = COLORS.paper, align = 'center', shadow = true, baseline = 'middle', display = false, weight } = {}) {
-  ctx.font = fontOf(size, { display, weight });
+// Text on screen. shadow = a solid ink outline all round (readable on any background);
+// plate = also a dark band behind it (for hints and banners that sit on top of the busy game world).
+export function text(ctx, str, x, y, { size = 24, color = COLORS.paper, align = 'center', shadow = true, baseline = 'middle', plate = false } = {}) {
+  const px = Math.round(size * TEXT_SCALE);
+  ctx.font = `${px}px ${FONT}`;
   ctx.textAlign = align; ctx.textBaseline = baseline;
+  if (plate) {
+    const w = ctx.measureText(str).width, pad = Math.round(px * 0.45);
+    const x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+    const yc = baseline === 'middle' ? y : y - px / 2;
+    ctx.save(); ctx.globalAlpha *= 0.82; ctx.fillStyle = PANEL;
+    ctx.fillRect(Math.round(x0 - pad), Math.round(yc - px * 0.8), Math.round(w + pad * 2), Math.round(px * 1.6));
+    ctx.restore();
+  }
   if (shadow) {
-    const px = size * TEXT.scale;
-    ctx.fillStyle = PAL.ink;
-    ctx.fillText(str, x + Math.max(2, Math.round(px / 10)), y + Math.max(2, Math.round(px / 10)));   // drop shadow
-    if (TEXT.outline) {
-      ctx.save();
-      ctx.strokeStyle = PAL.ink; ctx.lineJoin = 'round'; ctx.miterLimit = 2;
-      ctx.lineWidth = px < 22 ? 3 : Math.max(4, Math.round(px / 6));
-      ctx.strokeText(str, x, y);
-      ctx.restore();
-    }
+    ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(4, Math.round(px / 5)); ctx.strokeStyle = PAL.ink;
+    ctx.strokeText(str, x, y);
   }
   ctx.fillStyle = color;
   ctx.fillText(str, x, y);
 }
 
-// Dark translucent band behind floating text (banners), sized to the text.
-export function textPlate(ctx, str, x, y, { size = 24, display = false, padX = 22, padY = 12, alpha = 0.6 } = {}) {
-  ctx.font = fontOf(size, { display });
-  const w = ctx.measureText(str).width + padX * 2, h = size * TEXT.scale + padY * 2;
-  ctx.save();
-  ctx.globalAlpha *= alpha;
-  ctx.fillStyle = PAL.ink;
-  ctx.fillRect(Math.round(x - w / 2), Math.round(y - h / 2), Math.round(w), Math.round(h));
-  ctx.restore();
-}
-
 // Classic Japanese-RPG window: indigo panel, cream double border, small red corner studs.
-export function windowBox(ctx, x, y, w, h, { fill = PAL.indigo, alpha = 0.94 } = {}) {
+export function windowBox(ctx, x, y, w, h, { fill = PANEL, alpha = 1 } = {}) {
   x = Math.round(x); y = Math.round(y);
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -330,20 +313,29 @@ export function windowBox(ctx, x, y, w, h, { fill = PAL.indigo, alpha = 0.94 } =
 }
 
 // Dialogue window at the bottom (or top) of the screen. `shown` = how many characters are revealed (typewriter).
+// The box grows with the text (measured on the full line, so it doesn't jump while typing).
 export function dialogueBox(ctx, who, line, hint, { top = false, shown = Infinity } = {}) {
-  const x = 140, y = top ? 40 : H - 210, w = W - 280, h = 170;
+  const x = 140, w = W - 280;
+  ctx.font = font(24);
+  const lineH = Math.round(24 * TEXT_SCALE * 1.45);
+  const n = countLines(ctx, String(line), w - 72);
+  const h = Math.max(170, 64 + n * lineH + 40), y = top ? 48 : H - h - 32;
   windowBox(ctx, x, y, w, h);
   if (who) {
-    const nw = Math.max(160, who.length * 16 + 40);
-    windowBox(ctx, x + 24, y - 30, nw, 44, { fill: PAL.dred });
-    text(ctx, who, x + 24 + nw / 2, y - 8, { size: 20, color: PAL.gold, weight: 700 });
+    ctx.font = font(20);
+    const nw = Math.max(170, Math.ceil(ctx.measureText(who).width) + 56);
+    windowBox(ctx, x + 24, y - 32, nw, 48, { fill: PAL.dred });
+    text(ctx, who, x + 24 + nw / 2, y - 8, { size: 20, color: PAL.gold });
   }
-  ctx.fillStyle = PAL.cream; ctx.font = fontOf(26); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  wrapLeft(ctx, String(line).slice(0, shown), x + 32, y + 50, w - 64, 36);
-  const done = shown >= String(line).length;
-  // blinking ▼ when the whole line is shown
-  if (done && Math.floor(performance.now() / 400) % 2) text(ctx, '▼', x + w - 36, y + h - 56, { size: 18, color: PAL.gold });
-  if (hint && done) text(ctx, hint, x + w - 24, y + h - 26, { size: 17, color: PAL.grey, align: 'right', shadow: false });
+  ctx.fillStyle = PAL.cream; ctx.font = font(24); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  wrapLeft(ctx, String(line).slice(0, shown), x + 36, y + 54, w - 72, lineH);
+  if (hint && shown >= String(line).length) text(ctx, hint, x + w - 28, y + h - 28, { size: 16, color: PAL.gold, align: 'right', shadow: false });
+}
+
+export function countLines(ctx, str, maxW) {
+  let line = '', n = 0;
+  for (const w of String(str).split(' ')) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { n++; line = w; } else line = t; }
+  return n + (line ? 1 : 0);
 }
 
 export function wrapLeft(ctx, str, x, y, maxW, lineH) {

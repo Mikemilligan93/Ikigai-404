@@ -1,4 +1,4 @@
-import { W, H, PX, PAL, COLORS, text, windowBox, drawFrame } from '../engine.js';
+import { W, H, PX, PAL, COLORS, text, windowBox, drawFrame, font } from '../engine.js';
 import { walkFrame } from '../sprites.js';
 import { cleanName } from '../leaderboard.js';
 
@@ -56,17 +56,22 @@ export class TitleScene {
     // without the title art, a bunny walks in place at the bottom (the art has its own bunny)
     if (!bg) drawFrame(ctx, a, 'player_ok', walkFrame(this.t * 60, 22), 1, 180, 690, { flip: true, scale: PX * 2, kind: 'player', ph: [16, 26] });
 
-    text(ctx, T.gameName, W / 2, 110, { size: 72, color: PAL.gold, display: true });
+    text(ctx, T.gameName, W / 2, 110, { size: 96, color: PAL.gold });
     text(ctx, T.subtitle, W / 2, 182, { size: 28, color: PAL.cream });
 
     // name entry
-    windowBox(ctx, W / 2 - 300, 236, 600, 150);
+    ctx.font = font(22);
+    const bw = Math.min(W - 80, Math.max(600, Math.ceil(ctx.measureText(T.namePrompt).width) + 80));
+    windowBox(ctx, W / 2 - bw / 2, 236, bw, 150);
     text(ctx, T.namePrompt, W / 2, 274, { size: 22, color: PAL.cream });
     const cursor = Math.floor(this.t * 2) % 2 ? '_' : ' ';
     text(ctx, this.name + cursor, W / 2, 330, { size: 40, color: PAL.gold });
-    if (this.name.trim()) text(ctx, T.startHint, W / 2, 414, { size: 24, color: PAL.gold });
+    if (this.name.trim()) text(ctx, T.startHint, W / 2, 414, { size: 24, color: PAL.gold, plate: true });
 
-    text(ctx, T.controls, W / 2, 452, { size: 18, color: PAL.cream });
+    // the controls line shrinks to fit the screen if it gets long
+    let cs = 18; ctx.font = font(cs);
+    while (cs > 13 && ctx.measureText(T.controls).width > W - 100) { cs--; ctx.font = font(cs); }
+    text(ctx, T.controls, W / 2, 452, { size: cs, color: PAL.cream, plate: true });
 
     // leaderboard
     windowBox(ctx, W / 2 - 230, 484, 460, 220, { alpha: 0.85 });
