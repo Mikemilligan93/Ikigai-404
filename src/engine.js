@@ -145,14 +145,23 @@ export class Assets {
 // ---------- audio ----------
 export class Audio {
   constructor(assets, cfg) {
-    this.assets = assets; this.cfg = cfg; this.music = null; this.musicKey = null;
+    this.assets = assets; this.cfg = cfg;
+    this.music = null; this.musicKey = null; this.musicSrc = null;
+    this.lastSfx = {};
+    // browsers block sound until the first click / key press: start the music then
+    const unlock = () => { if (this.music && this.music.paused) this.music.play().catch(() => {}); };
+    window.addEventListener('keydown', unlock);
+    window.addEventListener('pointerdown', unlock);
   }
+  // Scenes that use the same file keep it playing (no restart between title → intro → office).
   playMusic(key) {
-    if (this.musicKey === key) return;
+    const src = this.assets.sounds[key];
+    this.musicKey = key;
+    if (src && this.music && this.musicSrc === src) return;
     this.stopMusic();
     this.musicKey = key;
-    const src = this.assets.sounds[key];
     if (!src) return;
+    this.musicSrc = src;
     this.music = new window.Audio(src);
     this.music.loop = true;
     this.music.volume = this.cfg.musicVolume;
@@ -160,13 +169,17 @@ export class Audio {
   }
   stopMusic() {
     if (this.music) { this.music.pause(); this.music = null; }
-    this.musicKey = null;
+    this.musicKey = null; this.musicSrc = null;
   }
-  sfx(key) {
+  // One-shot sound. The same sound can't restart within `gap` seconds (stops 10 hits at once from stacking).
+  sfx(key, gap = 0.04) {
     const src = this.assets.sounds[key];
     if (!src) return;
+    const now = performance.now();
+    if (now - (this.lastSfx[key] || 0) < gap * 1000) return;
+    this.lastSfx[key] = now;
     const a = new window.Audio(src);
-    a.volume = this.cfg.sfxVolume;
+    a.volume = clamp(this.cfg.sfxVolume * (this.cfg.volumes?.[key] ?? 1), 0, 1);
     a.play().catch(() => {});
   }
 }

@@ -168,7 +168,13 @@
     "nameMaxLength": 16
   },
   "audio": {
-    "musicVolume": 0.5,
-    "sfxVolume": 0.8
+    "_comment": "volumes 0-1. 'volumes' = extra per-sound multiplier on top of sfxVolume.",
+    "musicVolume": 0.45,
+    "sfxVolume": 0.8,
+    "volumes": {
+      "sfx_step": 0.35,
+      "sfx_hit": 0.9,
+      "sfx_melee": 0.8
+    }
   }
 }

@@ -452,12 +452,13 @@
     }
   },
   "audio": {
-    "music_title": "audio/music_title.mp3",
-    "music_intro": "audio/music_intro.mp3",
-    "music_office": "audio/music_office.mp3",
-    "music_boss": "audio/music_boss.mp3",
-    "music_lift": "audio/music_lift.mp3",
-    "music_end": "audio/music_end.mp3",
+    "music_title": "audio/music_ambient.mp3",
+    "music_intro": "audio/music_ambient.mp3",
+    "music_office": "audio/music_ambient.mp3",
+    "music_wave": "audio/music_fight.mp3",
+    "music_boss": "audio/music_fight.mp3",
+    "music_lift": "audio/music_ambient.mp3",
+    "music_end": "audio/music_ambient.mp3",
     "sfx_melee": "audio/sfx_melee.mp3",
     "sfx_throw": "audio/sfx_throw.mp3",
     "sfx_hit": "audio/sfx_hit.mp3",
@@ -468,6 +469,8 @@
     "sfx_boss_roar": "audio/sfx_boss_roar.mp3",
     "sfx_burnout": "audio/sfx_burnout.mp3",
     "sfx_win": "audio/sfx_win.mp3",
-    "sfx_train": "audio/sfx_train.mp3"
-  }
+    "sfx_train": "audio/sfx_train.mp3",
+    "sfx_step": "audio/sfx_step.mp3"
+  },
+  "_readme_audio": "Audio: several keys may point to the same file (music_ambient plays from the title to the office; music_fight from the email to the CEO). Missing files are simply silent. Volumes: config.json → audio."
 }

@@ -349,6 +349,8 @@ export class OfficeScene {
       this.collide(p);
       for (const m of this.minibosses) if (m.alive) pushOutCircle(p, m);
       p.walked += Math.hypot(p.x - ox, p.y - oy);   // frames follow real distance → no foot sliding
+      const step = Math.floor(p.walked / (this.A.walkStride * 2));   // one footstep per foot contact
+      if (step !== p.step) { p.step = step; this.g.audio.sfx('sfx_step'); }
     }
 
     const blocked = !!p.effects.weaponBlock;
@@ -541,6 +543,7 @@ export class OfficeScene {
 
   startWave() {
     this.state = 'wave'; this.stateT = 0;
+    this.g.audio.playMusic('music_wave');
     this.banner(this.T.waveStart, 3);
     // the day starts: the minibosses show up in their rooms
     for (const m of this.minibosses) {

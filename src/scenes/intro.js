@@ -104,6 +104,9 @@ export class IntroScene {
       nx = clamp(nx, 60, WORLD_W - 60);
       this.walked += Math.abs(nx - this.px);
       this.px = nx;
+      const stride = this.A.sideWalkStride * (this.leftFlat ? 1 : FLAT_SCALE / SIDE_SCALE);
+      const step = Math.floor(this.walked / (stride * 2));       // one footstep per foot contact
+      if (step !== this.step) { this.step = step; this.g.audio.sfx('sfx_step'); }
       if (this.px > WORLD_W - 200) this.g.go(this.g.scenes.office());
     } else if (this.phase === 'dialogue') {
       const full = this.T.inspectorLines[this.line].length;
