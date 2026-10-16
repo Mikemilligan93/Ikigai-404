@@ -1,0 +1,116 @@
+{
+  "_readme": "All on-screen text. Edit freely; keep the keys. Lines marked PLACEHOLDER are waiting for the team's texts.",
+
+  "title": {
+    "gameName": "Ikigai 404",
+    "subtitle": "Purpose not found",
+    "namePrompt": "Enter your name for the leaderboard:",
+    "startHint": "Press ENTER to clock in",
+    "leaderboardTitle": "Hall of the Still Employed",
+    "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · ESC skip"
+  },
+
+  "intro": {
+    "nightmare": "…the deadline… it was yesterday…",
+    "wakeUp": "*gasp*",
+    "skipHint": "ESC to skip",
+    "walkHint": "A / D to walk",
+    "locations": {
+      "flat": "Home",
+      "metro": "Metro station",
+      "office": "Office"
+    },
+    "inspectorName": "Ticket Inspector",
+    "inspectorLines": [
+      "Ticket.",
+      "This ticket expired three seconds ago.",
+      "Rules are rules. Have a nice day. I won't.",
+      "PLACEHOLDER — team to write the misery-starting lines"
+    ],
+    "continueHint": "E / SPACE to continue"
+  },
+
+  "office": {
+    "levelName": "Level 1 — The Office",
+    "exploreHint": "Look around. Your desk is waiting… press E at your desk.",
+    "deskPrompt": "E — open email",
+    "email": {
+      "from": "From: CEO",
+      "subject": "Subject: RE: RE: FW: URGENT!!! quick sync",
+      "body": "Per my last email, everything is now a priority. Please action ASAP.",
+      "hint": "E / SPACE — close email"
+    },
+    "waveStart": "The printers have awakened!",
+    "minibossesLeft": "Minibosses left: {n}",
+    "minibossDown": "{name} is down! The others are getting angry…",
+    "bossIncoming": "The CEO has entered the building.",
+    "bossName": "The CEO, a Dragon in a Suit",
+    "bossDown": "The CEO is down. The lift is open.",
+    "liftPrompt": "E — enter the lift",
+    "coffeePrompt": "E — have a coffee",
+    "coffeeCooldown": "Coffee machine is brewing…",
+    "mochiPickup": "+mochivation",
+    "weaponBlocked": "Stuck in a meeting — can't attack!",
+    "minibossNames": {
+      "printer": "The Jammed Printer",
+      "coffee": "The Broken Coffee Machine",
+      "fax": "The Haunted Fax"
+    },
+    "effects": {
+      "speed": "Motivated!",
+      "damage": "Mentored!",
+      "slow": "Drained…",
+      "weaponBlock": "In a meeting…"
+    },
+    "npcNames": {
+      "motivator": "Motivator colleague",
+      "mentor": "Mentor colleague",
+      "complainer": "Complainer colleague",
+      "meetinger": "Let's-have-a-meeting colleague"
+    },
+    "posture": {
+      "ok": "Holding on",
+      "tired": "Tired",
+      "burntOut": "Almost burnt out"
+    },
+    "hud": {
+      "mental": "Mental health",
+      "score": "Score",
+      "time": "Time"
+    }
+  },
+
+  "lift": {
+    "title": "The Lift",
+    "bossName": "The Boss",
+    "lines": [
+      { "who": "boss", "text": "PLACEHOLDER — Oh. You're still here." },
+      { "who": "player", "text": "PLACEHOLDER — I defeated the CEO." },
+      { "who": "boss", "text": "PLACEHOLDER — Great. That means you have his tasks now." },
+      { "who": "player", "text": "…" }
+    ],
+    "continueHint": "E / SPACE to continue · ESC to skip"
+  },
+
+  "end": {
+    "winTitle": "You survived the day.",
+    "comingSoon": "Level 2 — The Canteen — coming soon",
+    "burnoutTitle": "You burnt out.",
+    "burnoutLines": [
+      "I'd rather open a café.",
+      "I'll become a baker instead.",
+      "I'm moving to a farm. The goats don't send emails.",
+      "Turns out I was a florist all along.",
+      "I'm going to sell handmade mochi at the market."
+    ],
+    "scoreLabel": "Score",
+    "breakdown": {
+      "kills": "Defeated work",
+      "damage": "Mental damage taken",
+      "timeBonus": "Time bonus"
+    },
+    "submitting": "Sending score…",
+    "localOnly": "(offline — score saved on this computer only)",
+    "playAgain": "Press ENTER to play again"
+  }
+}

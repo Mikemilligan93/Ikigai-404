@@ -1,0 +1,96 @@
+{
+  "_readme": "All tunable numbers live here. Times are in seconds, speeds in pixels/second, distances in pixels. Reload the page after editing.",
+
+  "debug": {
+    "showHitboxes": false,
+    "startScene": "title",
+    "godMode": false
+  },
+
+  "player": {
+    "speed": 230,
+    "radius": 20,
+    "mentalMax": 100,
+    "invulnerableAfterHit": 0.7,
+    "postureThresholds": { "tired": 0.66, "burntOut": 0.33 },
+    "melee": { "damage": 4, "range": 70, "arcDegrees": 110, "cooldown": 0.35 },
+    "ranged": { "damage": 1.5, "speed": 560, "cooldown": 0.4, "lifetime": 1.1, "radius": 8 }
+  },
+
+  "recovery": {
+    "coffeeMachine": { "restore": 30, "cooldown": 25 },
+    "mochi": { "restore": 15, "count": 6, "respawnTime": 30 }
+  },
+
+  "enemies": {
+    "weak":   { "hp": 3,  "speed": 150, "radius": 14, "contactDamage": 6,  "score": 10 },
+    "strong": { "hp": 10, "speed": 95,  "radius": 22, "contactDamage": 14, "score": 30 }
+  },
+  "maxEnemiesAlive": 45,
+
+  "minibosses": {
+    "hp": 40,
+    "radius": 46,
+    "score": 250,
+    "contactDamage": 10,
+    "spawnInterval": 3.2,
+    "minionsPerSpawn": 1,
+    "strongChance": 0.15,
+    "spawnActivationDistance": 1100,
+    "escalationPerDefeat": {
+      "spawnIntervalMultiplier": 0.7,
+      "minionsPerSpawnAdd": 1,
+      "strongChanceAdd": 0.2
+    }
+  },
+
+  "boss": {
+    "hp": 160,
+    "radius": 62,
+    "speed": 85,
+    "score": 1000,
+    "contactDamage": 18,
+    "fireRing": { "interval": 4.5, "projectiles": 14, "speed": 260, "damage": 10 },
+    "charge": { "interval": 7, "speed": 620, "duration": 0.7, "windup": 0.8 },
+    "summon": { "interval": 9, "count": 4, "strongChance": 0.3 }
+  },
+
+  "friendlyNpcs": {
+    "_comment": "Effect types: speed (multiplier), slow (multiplier), weaponBlock, damage (multiplier). dwellTime = seconds the player must stay in the aura before the effect triggers.",
+    "auraRadius": 120,
+    "dwellTime": 2.5,
+    "rearmTime": 15,
+    "types": {
+      "motivator":  { "effect": "speed",       "value": 1.4, "duration": 8 },
+      "mentor":     { "effect": "damage",      "value": 1.5, "duration": 10 },
+      "complainer": { "effect": "slow",        "value": 0.6, "duration": 6 },
+      "meetinger":  { "effect": "weaponBlock", "value": 1,   "duration": 4 }
+    }
+  },
+
+  "scoring": {
+    "_comment": "Placeholder rules - to be decided after the first playtest.",
+    "pointsLostPerMentalDamage": 1,
+    "timeBonusBase": 3000,
+    "timeBonusLostPerSecond": 10,
+    "burnoutKeepsScore": true
+  },
+
+  "intro": {
+    "walkSpeed": 260,
+    "nightmareDuration": 2.2,
+    "sunriseDuration": 3,
+    "shakeDuration": 1.2
+  },
+
+  "leaderboard": {
+    "apiUrl": "/api/scores",
+    "showTop": 10,
+    "nameMaxLength": 16
+  },
+
+  "audio": {
+    "musicVolume": 0.5,
+    "sfxVolume": 0.8
+  }
+}
