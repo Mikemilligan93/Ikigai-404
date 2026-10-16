@@ -15,10 +15,22 @@ export const COLORS = {
   vermilion: PAL.red, jade: PAL.moss, dawn: PAL.peach, grey: PAL.grey, green: PAL.celadon,
 };
 
+// One font for everything (the team's pick): DotGothic16, pixel style with Japanese characters.
 export const FONT = '"DotGothic16", "Courier New", monospace';
-// Readability pass (2026-10-16): every text size in the game is multiplied by this.
-export const TEXT_SCALE = 1.15;
-export const font = (px) => `${Math.round(px * TEXT_SCALE)}px ${FONT}`;
+export const DISPLAY_FONT = FONT;   // titles and banners use the same font
+
+// Text settings from config.json → "text" (set once at boot by main.js).
+// scale enlarges every text in the game; weight 400 = DotGothic16's only real weight.
+export const TEXT = { scale: 1.15, weight: 400, outline: true };
+export let TEXT_SCALE = TEXT.scale;
+export function setTextConfig(cfg = {}) { Object.assign(TEXT, cfg); TEXT_SCALE = TEXT.scale; }
+
+// Canvas font string for a base size (scaled by TEXT.scale).
+export function fontOf(size, { weight } = {}) {
+  const px = Math.round(size * TEXT.scale), w = weight ?? TEXT.weight;
+  return `${w && w !== 400 ? w + ' ' : ''}${px}px ${FONT}`;
+}
+export const font = (px) => fontOf(px);
 // Deeper, solid window colour so text on panels has strong contrast.
 export const PANEL = '#171A40';
 // Every sprite pixel is drawn as PX×PX screen pixels (no smoothing): 24 px tiles become 48 px.
@@ -233,7 +245,7 @@ export function drawFrame(ctx, assets, key, col, row, x, y, opts = {}) {
     if (opts.label) {
       if (opts.flip) ctx.scale(-1, 1);
       ctx.fillStyle = PAL.ink;
-      ctx.font = `${clamp(Math.floor(bw / 6), 10, 16)}px ${FONT}`;
+      ctx.font = fontOf(clamp(Math.floor(bw / 6), 10, 16));
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       wrapText(ctx, opts.label, 0, by + bh / 2, bw - 4, clamp(Math.floor(bw / 6), 10, 16) + 2);
     }
@@ -274,9 +286,9 @@ export function wrapText(ctx, text, x, y, maxW, lineH) {
 
 // Text on screen. shadow = a solid ink outline all round (readable on any background);
 // plate = also a dark band behind it (for hints and banners that sit on top of the busy game world).
-export function text(ctx, str, x, y, { size = 24, color = COLORS.paper, align = 'center', shadow = true, baseline = 'middle', plate = false } = {}) {
-  const px = Math.round(size * TEXT_SCALE);
-  ctx.font = `${px}px ${FONT}`;
+export function text(ctx, str, x, y, { size = 24, color = COLORS.paper, align = 'center', shadow = true, baseline = 'middle', plate = false, weight } = {}) {
+  const px = Math.round(size * TEXT.scale);
+  ctx.font = fontOf(size, { weight });
   ctx.textAlign = align; ctx.textBaseline = baseline;
   if (plate) {
     const w = ctx.measureText(str).width, pad = Math.round(px * 0.45);
@@ -286,12 +298,23 @@ export function text(ctx, str, x, y, { size = 24, color = COLORS.paper, align = 
     ctx.fillRect(Math.round(x0 - pad), Math.round(yc - px * 0.8), Math.round(w + pad * 2), Math.round(px * 1.6));
     ctx.restore();
   }
-  if (shadow) {
+  if (shadow && TEXT.outline !== false) {
     ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(4, Math.round(px / 5)); ctx.strokeStyle = PAL.ink;
     ctx.strokeText(str, x, y);
   }
   ctx.fillStyle = color;
   ctx.fillText(str, x, y);
+}
+
+// Dark band behind floating text (banners), sized to the text.
+export function textPlate(ctx, str, x, y, { size = 24, padX = 22, padY = 12, alpha = 0.82 } = {}) {
+  ctx.font = fontOf(size);
+  const w = ctx.measureText(str).width + padX * 2, h = size * TEXT.scale + padY * 2;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = PANEL;
+  ctx.fillRect(Math.round(x - w / 2), Math.round(y - h / 2), Math.round(w), Math.round(h));
+  ctx.restore();
 }
 
 // Classic Japanese-RPG window: indigo panel, cream double border, small red corner studs.
@@ -317,7 +340,7 @@ export function windowBox(ctx, x, y, w, h, { fill = PANEL, alpha = 1 } = {}) {
 export function dialogueBox(ctx, who, line, hint, { top = false, shown = Infinity } = {}) {
   const x = 140, w = W - 280;
   ctx.font = font(24);
-  const lineH = Math.round(24 * TEXT_SCALE * 1.45);
+  const lineH = Math.round(24 * TEXT.scale * 1.45);
   const n = countLines(ctx, String(line), w - 72);
   const h = Math.max(170, 64 + n * lineH + 40), y = top ? 48 : H - h - 32;
   windowBox(ctx, x, y, w, h);
@@ -329,7 +352,10 @@ export function dialogueBox(ctx, who, line, hint, { top = false, shown = Infinit
   }
   ctx.fillStyle = PAL.cream; ctx.font = font(24); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   wrapLeft(ctx, String(line).slice(0, shown), x + 36, y + 54, w - 72, lineH);
-  if (hint && shown >= String(line).length) text(ctx, hint, x + w - 28, y + h - 28, { size: 16, color: PAL.gold, align: 'right', shadow: false });
+  const done = shown >= String(line).length;
+  // blinking ▼ when the whole line is shown
+  if (done && Math.floor(performance.now() / 400) % 2) text(ctx, '▼', x + w - 36, y + h - 58, { size: 18, color: PAL.gold });
+  if (hint && done) text(ctx, hint, x + w - 28, y + h - 28, { size: 16, color: PAL.gold, align: 'right', shadow: false });
 }
 
 export function countLines(ctx, str, maxW) {

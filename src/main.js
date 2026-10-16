@@ -19,7 +19,7 @@ async function boot() {
     ]);
     const assets = new Assets();
     // pixel font from Google Fonts; carry on with the fallback font if it does not arrive in time
-    const font = document.fonts ? Promise.race([Promise.all(['24px "DotGothic16"', '600 24px "Pixelify Sans"', '24px "Press Start 2P"'].map((f) => document.fonts.load(f))), new Promise((r) => setTimeout(r, 2500))]).catch(() => {}) : null;
+    const font = document.fonts ? Promise.race([document.fonts.load('24px "DotGothic16"'), new Promise((r) => setTimeout(r, 2500))]).catch(() => {}) : null;
     await Promise.all([assets.load(manifest), font]);
     setTextConfig(config.text);
     const canvas = document.getElementById('game');

@@ -5,9 +5,9 @@
     "floorDim": 0.1
   },
   "text": {
-    "_comment": "scale enlarges ALL in-game text (e.g. 1.2 for a projector). weight = body font boldness (400-700). Banners stay up for max(their own time, bannerMinSeconds + bannerPerChar x characters). floaterLife/floaterRise = how long damage/score numbers stay and how fast they rise.",
-    "scale": 1,
-    "weight": 600,
+    "_comment": "scale enlarges ALL in-game text (e.g. 1.2 for a projector). weight = text boldness (DotGothic16 only has 400; higher values are faked by the browser). Banners stay up for max(their own time, bannerMinSeconds + bannerPerChar x characters). floaterLife/floaterRise = how long damage/score numbers stay and how fast they rise.",
+    "scale": 1.15,
+    "weight": 400,
     "outline": true,
     "bannerMinSeconds": 3,
     "bannerPerChar": 0.05,
