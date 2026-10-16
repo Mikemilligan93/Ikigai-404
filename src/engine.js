@@ -126,13 +126,19 @@ export class Assets {
         img.src = 'assets/' + def.file;
       }));
     }
-    for (const [key, file] of Object.entries(manifest.audio || {})) {
-      jobs.push(fetch('assets/' + file, { method: 'HEAD' })
-        .then((r) => {
-          const type = r.headers.get('content-type') || '';
-          if (r.ok && !type.includes('text/html')) this.sounds[key] = 'assets/' + file;
-        })
-        .catch(() => {}));
+    // A sound can be one file or a list of variants (sfx_hit_1 … sfx_hit_4): one is picked at random each time.
+    this.variants = {};
+    for (const [key, files] of Object.entries(manifest.audio || {})) {
+      for (const file of [].concat(files)) {
+        jobs.push(fetch('assets/' + file, { method: 'HEAD' })
+          .then((r) => {
+            const type = r.headers.get('content-type') || '';
+            if (!r.ok || type.includes('text/html')) return;
+            (this.variants[key] ||= []).push('assets/' + file);
+            this.sounds[key] ||= 'assets/' + file;     // first one found (music uses a single file)
+          })
+          .catch(() => {}));
+      }
     }
     await Promise.all(jobs);
   }
@@ -164,7 +170,7 @@ export class Audio {
   constructor(assets, cfg) {
     this.assets = assets; this.cfg = cfg;
     this.music = null; this.musicKey = null; this.musicSrc = null;
-    this.lastSfx = {};
+    this.lastSfx = {}; this.lastVariant = {};
     // mute switches (pause menu), remembered in this browser
     this.musicMuted = false; this.sfxMuted = false; this.duck = 1;
     try { const m = JSON.parse(localStorage.getItem('ikigai404.audio') || '{}'); this.musicMuted = !!m.music; this.sfxMuted = !!m.sfx; } catch (e) { /* storage blocked: start unmuted */ }
@@ -201,11 +207,16 @@ export class Audio {
   }
   // One-shot sound. The same sound can't restart within `gap` seconds (stops 10 hits at once from stacking).
   sfx(key, gap = 0.04) {
-    const src = this.assets.sounds[key];
-    if (!src || this.sfxMuted) return;
+    const list = this.assets.variants?.[key];
+    if (!list?.length || this.sfxMuted) return;
     const now = performance.now();
     if (now - (this.lastSfx[key] || 0) < gap * 1000) return;
     this.lastSfx[key] = now;
+    // random variant, never the same one twice in a row
+    let i = Math.floor(Math.random() * list.length);
+    if (list.length > 1 && i === this.lastVariant[key]) i = (i + 1 + Math.floor(Math.random() * (list.length - 1))) % list.length;
+    this.lastVariant[key] = i;
+    const src = list[i];
     const a = new window.Audio(src);
     a.volume = clamp(this.cfg.sfxVolume * (this.cfg.volumes?.[key] ?? 1), 0, 1);
     a.play().catch(() => {});

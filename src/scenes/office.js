@@ -551,9 +551,10 @@ export class OfficeScene {
   hurtEnemy(e, dmg) {
     e.hp -= dmg; e.hitFlash = 0.12;
     this.fx('spark', e.x + rand(-8, 8), e.y - 20 + rand(-8, 8), 0.12);
-    this.g.audio.sfx('sfx_hit');
+    if (e.hp > 0) this.g.audio.sfx('sfx_hit');
     if (e.hp <= 0 && !e.dead) {
       e.dead = true;
+      this.g.audio.sfx('sfx_enemy_die', 0.05);
       this.fx('smoke', e.x, e.y - 10, 0.4, -40);
       this.stats.killScore += this.C.enemies[e.type].score;
       this.float(e.x, e.y - 40, `+${this.C.enemies[e.type].score}`, COLORS.gold);
@@ -589,7 +590,7 @@ export class OfficeScene {
       this.stats.killScore += this.C.boss.score;
       this.shake = 1.5;
       for (let i = 0; i < 10; i++) this.fx(i % 2 ? 'smoke' : 'star', b.x + rand(-70, 70), b.y - rand(0, 140), 1, -50);
-      this.state = 'cleared'; this.stateT = 0;
+      this.state = 'cleared'; this.stateT = 0; this.g.audio.sfx('sfx_lift_ding');
       this.enemies.forEach((e) => { e.dead = true; this.fx('smoke', e.x, e.y - 10, 0.4, -40); });
       this.hostile = [];
       this.banner(this.T.bossDown, 4);
@@ -660,6 +661,7 @@ export class OfficeScene {
           else if (def.effect === 'drain') this.drain(def.value);
           else p.effects[def.effect] = { t: def.duration, v: def.value };
           if (def.effect !== 'heal') this.float(n.x, n.y - 120, this.T.effects[def.effect], good ? PAL.gold : PAL.red);
+          this.g.audio.sfx(good ? 'sfx_buff' : 'sfx_debuff');
           if (good) { this.stats.helped++; this.kindWord(this.T.helpLines); }
           for (let i = 0; i < 3; i++) this.fx(good ? 'star' : 'smoke', p.x + rand(-20, 20), p.y - rand(40, 80), 0.6, -50);
         }
@@ -752,7 +754,7 @@ export class OfficeScene {
       }
       if (!near) continue;
       m.talkT -= dt;
-      if (m.talkT <= 0) { m.talkT = mc.talkInterval + rand(0, 3); this.say(m, pick(this.T.bossLines[m.id] || ['…']), 3.5); }
+      if (m.talkT <= 0) { m.talkT = mc.talkInterval + rand(0, 3); this.say(m, pick(this.T.bossLines[m.id] || ['…']), 3.5); if (this.onScreen(m.x, m.y, 0)) this.g.audio.sfx('sfx_enemy_mumble', 0.5); }
       m.spawnT -= dt;
       if (m.spawnT <= 0) {
         m.spawnT = interval; m.attackT = 0.5;

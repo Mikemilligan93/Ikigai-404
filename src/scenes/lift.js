@@ -12,7 +12,7 @@ export class LiftScene {
     this.shown = 0;
   }
 
-  enter() { this.g.audio.playMusic('music_lift'); }
+  enter() { this.g.audio.playMusic('music_lift'); this.g.audio.sfx('sfx_lift_ding'); }
 
   done() { this.g.go(this.g.scenes.end(this.g.session.result)); }
 
@@ -21,7 +21,9 @@ export class LiftScene {
   update(dt) {
     this.t += dt;
     const inp = this.g.input;
+    const before = Math.floor(this.shown);
     this.shown = Math.min(this.line.text.length, this.shown + dt * this.A.typeSpeed);
+    if (Math.floor(this.shown) !== before && Math.floor(this.shown) % 3 === 0) this.g.audio.sfx('sfx_dialogue', 0.07);   // typewriter blips
     if (inp.wasPressed('Escape')) return this.done();
     if (inp.wasPressed('e', ' ', 'Enter') && this.t > 0.2) {
       if (this.shown < this.line.text.length) { this.shown = this.line.text.length; return; }

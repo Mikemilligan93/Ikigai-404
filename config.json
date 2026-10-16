@@ -184,13 +184,12 @@
     "nameMaxLength": 16
   },
   "audio": {
-    "_comment": "volumes 0-1. 'volumes' = extra per-sound multiplier on top of sfxVolume.",
+    "_comment": "volumes 0-1. 'volumes' = extra per-sound multiplier on top of sfxVolume. All sfx files are mastered to the same loudness (about -20 dB average), so 1 = equal to the others; footsteps and typewriter blips are kept a little lower because they repeat constantly.",
     "musicVolume": 0.45,
     "sfxVolume": 0.8,
     "volumes": {
-      "sfx_step": 0.35,
-      "sfx_hit": 0.9,
-      "sfx_melee": 0.8
+      "sfx_step": 0.5,
+      "sfx_dialogue": 0.6
     }
   },
   "_balance": "2026-10-16 balance pass: minions -30% (minibosses.minionAmount, maxEnemiesAlive 45→32), all enemies -15% hp and damage, mochi 6→8 / restore 15→18 / respawn 30→24 s, colleague effects trigger 35% faster (dwellTime 2→1.3)."

@@ -124,7 +124,9 @@ export class IntroScene {
       if (this.px > WORLD_W - 200) this.g.go(this.g.scenes.office());
     } else if (this.phase === 'dialogue') {
       const full = this.T.inspectorLines[this.line].length;
+      const before = Math.floor(this.shown);
       this.shown = Math.min(full, this.shown + dt * this.A.typeSpeed);
+      if (Math.floor(this.shown) !== before && Math.floor(this.shown) % 3 === 0) this.g.audio.sfx('sfx_dialogue', 0.07);   // typewriter blips
       if (inp.wasPressed('e', ' ', 'Enter')) {
         if (this.shown < full) this.shown = full;           // first press: show the whole line
         else {
