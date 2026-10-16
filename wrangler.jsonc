@@ -9,8 +9,7 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS"
-  }
-  // Leaderboard storage: create a KV namespace (Workers & Pages → KV → Create),
-  // then uncomment and paste its ID. Until then scores are saved in each player's browser only.
-  // ,"kv_namespaces": [{ "binding": "LEADERBOARD", "id": "PASTE_KV_NAMESPACE_ID_HERE" }]
+  },
+  // Leaderboard storage: KV namespace "ikigai404-leaderboard" (created 2026-10-16).
+  "kv_namespaces": [{ "binding": "LEADERBOARD", "id": "58e5bc80ffae48f1bda95181570fa2b9" }]
 }

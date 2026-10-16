@@ -2,7 +2,8 @@
 // Needs a KV namespace bound as LEADERBOARD (see wrangler.jsonc).
 //   GET  /api/scores  → { scores: [...] }
 //   POST /api/scores  { name, score, outcome, seconds } → { scores: [...] }
-// Basic checks only (internal event): name sanitised, score range-limited, simple per-IP rate limit.
+// Basic checks only (internal event): name sanitised, score range-limited.
+// No per-IP rate limit: at the office everyone shares one IP, so it would block real players.
 
 const KEY = 'top';
 const KEEP = 100;
@@ -36,13 +37,7 @@ export async function onRequestPost({ request, env }) {
   const outcome = body.outcome === 'win' ? 'win' : 'burnout';
   if (!name) return json({ error: 'name required' }, 400);
   if (!Number.isFinite(score) || score < 0 || score > MAX_SCORE) return json({ error: 'bad score' }, 400);
-  if (!Number.isFinite(seconds) || seconds < 5) return json({ error: 'bad time' }, 400);
-
-  // naive rate limit: one submission per IP per 60 s (KV's minimum TTL)
-  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-  const rlKey = 'rl:' + ip;
-  if (await env.LEADERBOARD.get(rlKey)) return json({ error: 'slow down' }, 429);
-  await env.LEADERBOARD.put(rlKey, '1', { expirationTtl: 60 });
+  if (!Number.isFinite(seconds) || seconds < 0) return json({ error: 'bad time' }, 400);
 
   const scores = await load(env);
   scores.push({ name, score: Math.round(score), outcome, seconds: Math.round(seconds), at: Date.now() });

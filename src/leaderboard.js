@@ -1,4 +1,4 @@
-// Leaderboard client: Cloudflare Pages Function at config.leaderboard.apiUrl,
+// Leaderboard client: the Cloudflare Worker API at config.leaderboard.apiUrl (worker/scores.js),
 // falling back to this browser's localStorage when the API is unreachable (e.g. local testing).
 
 const LOCAL_KEY = 'ikigai404.scores';
@@ -13,11 +13,12 @@ export class Leaderboard {
     try {
       const r = await fetch(this.cfg.apiUrl, { headers: { accept: 'application/json' } });
       const type = r.headers.get('content-type') || '';
-      if (!r.ok || !type.includes('application/json')) throw new Error('no api');
+      if (!r.ok || !type.includes('application/json')) throw new Error(`leaderboard API: HTTP ${r.status} ${await r.text().catch(() => '')}`);
       const data = await r.json();
       this.online = true;
       return data.scores.slice(0, this.cfg.showTop);
-    } catch {
+    } catch (err) {
+      console.warn('Leaderboard offline, using this browser only.', err.message);
       this.online = false;
       return this.localTop();
     }
@@ -37,11 +38,12 @@ export class Leaderboard {
         body: JSON.stringify(clean),
       });
       const type = r.headers.get('content-type') || '';
-      if (!r.ok || !type.includes('application/json')) throw new Error('no api');
+      if (!r.ok || !type.includes('application/json')) throw new Error(`leaderboard API: HTTP ${r.status} ${await r.text().catch(() => '')}`);
       const data = await r.json();
       this.online = true;
       return data.scores.slice(0, this.cfg.showTop);
-    } catch {
+    } catch (err) {
+      console.warn('Score not saved online, kept in this browser.', err.message);
       this.online = false;
       const all = this.localAll();
       all.push({ ...clean, at: Date.now() });
