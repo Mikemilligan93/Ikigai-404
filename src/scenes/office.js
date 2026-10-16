@@ -489,7 +489,24 @@ export class OfficeScene {
     for (const e of this.enemies) drawables.push({ y: e.y, d: () => this.drawEnemy(ctx, e) });
     if (this.boss?.alive) drawables.push({ y: this.boss.y, d: () => this.drawBoss(ctx) });
     drawables.push({ y: this.player.y, d: () => this.drawPlayer(ctx) });
+    // furniture with real art: drawn standing on the bottom edge of its collision box, sorted with characters
+    const L = this.L;
+    const standing = [
+      ...L.cubicles.map((r) => ({ key: 'cubicle_block', r })),
+      { key: 'own_desk', r: L.ownDesk },
+      { key: 'coffee_machine', r: L.coffeeMachine, alpha: this.coffeeCd > 0 ? 0.7 : 1 },
+      ...L.props.map((r) => ({ key: r.key, r })),
+    ];
+    for (const f of standing) if (a.has(f.key)) drawables.push({ y: f.r.y + f.r.h, d: () => this.drawStanding(ctx, f.key, f.r, f.alpha) });
     drawables.sort((p, q) => p.y - q.y).forEach((o) => o.d());
+
+    // your-desk marker on top of everything
+    if (this.state === 'explore') {
+      const d = L.ownDesk;
+      ctx.fillStyle = COLORS.vermilion;
+      ctx.beginPath(); ctx.arc(d.x + d.w - 10, d.y - 10, 12 + Math.sin(this.stateT * 6) * 2, 0, Math.PI * 2); ctx.fill();
+      text(ctx, '!', d.x + d.w - 10, d.y - 9, { size: 18, bold: true, shadow: false });
+    }
 
     for (const s of this.shots) sprite(ctx, a, 'paper_ball', s.x, s.y, 20, 20, { kind: 'fx', color: COLORS.paper });
     for (const h of this.hostile) sprite(ctx, a, 'fireball', h.x, h.y, 24, 24, { kind: 'fx', color: '#e67e22', rot: this.stateT * 10 });
@@ -543,7 +560,7 @@ export class OfficeScene {
     }
     // cubicles
     for (const c of L.cubicles) {
-      if (a.has('cubicle_block')) { ctx.drawImage(a.images.cubicle_block, c.x, c.y, c.w, c.h); continue; }
+      if (a.has('cubicle_block')) continue; // real art is drawn depth-sorted in draw()
       ctx.fillStyle = '#8d8a80'; ctx.fillRect(c.x, c.y, c.w, c.h);
       ctx.fillStyle = '#b8b3a3';
       for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) {
@@ -557,21 +574,25 @@ export class OfficeScene {
     }
     // own desk
     const d = L.ownDesk;
-    sprite(ctx, a, 'own_desk', d.x + d.w / 2, d.y + d.h / 2, d.w, d.h, { kind: 'prop', color: '#c9a66b', label: 'Your desk' });
-    if (this.state === 'explore') {
-      ctx.fillStyle = COLORS.vermilion;
-      ctx.beginPath(); ctx.arc(d.x + d.w - 10, d.y + 8, 10 + Math.sin(this.stateT * 6) * 2, 0, Math.PI * 2); ctx.fill();
-      text(ctx, '!', d.x + d.w - 10, d.y + 9, { size: 16, bold: true, shadow: false });
-    }
+    if (!a.has('own_desk')) sprite(ctx, a, 'own_desk', d.x + d.w / 2, d.y + d.h / 2, d.w, d.h, { kind: 'prop', color: '#c9a66b', label: 'Your desk' });
     // coffee machine
     const cm = L.coffeeMachine;
-    sprite(ctx, a, 'coffee_machine', cm.x + cm.w / 2, cm.y + cm.h / 2, cm.w, cm.h, { kind: 'prop', color: this.coffeeCd > 0 ? '#7d6b5d' : '#a0522d', label: 'Coffee' });
+    if (!a.has('coffee_machine')) sprite(ctx, a, 'coffee_machine', cm.x + cm.w / 2, cm.y + cm.h / 2, cm.w, cm.h, { kind: 'prop', color: this.coffeeCd > 0 ? '#7d6b5d' : '#a0522d', label: 'Coffee' });
     // props
-    for (const p of L.props) sprite(ctx, a, p.key, p.x + p.w / 2, p.y + p.h / 2, p.w, p.h, { kind: 'prop', label: p.label });
+    for (const p of L.props) if (!a.has(p.key)) sprite(ctx, a, p.key, p.x + p.w / 2, p.y + p.h / 2, p.w, p.h, { kind: 'prop', label: p.label });
     // lift
     const lf = L.lift;
     const open = this.state === 'cleared';
     sprite(ctx, a, 'lift_door', lf.x + lf.w / 2, lf.y + lf.h / 2, lf.w, lf.h, { kind: 'prop', color: open ? COLORS.gold : '#7f8c8d', label: 'LIFT', alpha: open ? 0.6 + Math.sin(this.stateT * 4) * 0.4 : 1 });
+  }
+
+  // Draw furniture art full-width, bottom-aligned to its collision rectangle (taller art extends upwards = depth).
+  drawStanding(ctx, key, r, alpha = 1) {
+    const img = this.g.assets.get(key);
+    const w = r.w * 1.04, h = (w * img.height) / img.width;
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.drawImage(img, r.x + r.w / 2 - w / 2, r.y + r.h + 4 - h, w, h);
+    ctx.restore();
   }
 
   drawPlayer(ctx) {
@@ -579,7 +600,8 @@ export class OfficeScene {
     const frac = p.mental / pc.mentalMax;
     const posture = frac > pc.postureThresholds.tired ? 'ok' : frac > pc.postureThresholds.burntOut ? 'tired' : 'burnt';
     const bob = p.walkT > 0 ? Math.sin(p.walkT * 14) * 3 : 0;
-    const slump = { ok: [1, 0], tired: [0.92, 0.08], burnt: [0.82, 0.18] }[posture];
+    const hasArt = !!a.images['player_' + posture];
+    const slump = hasArt ? [1, 0] : { ok: [1, 0], tired: [0.92, 0.08], burnt: [0.82, 0.18] }[posture];
     const colors = { ok: '#e8e2d0', tired: '#c9bfa3', burnt: '#8f8a80' };
     let rot = (p.flip ? -1 : 1) * slump[1];
     let alpha = p.invuln > 0 && Math.floor(p.invuln * 20) % 2 ? 0.4 : 1;

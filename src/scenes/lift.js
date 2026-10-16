@@ -35,8 +35,8 @@ export class LiftScene {
     const line = this.T.lines[Math.min(this.i, this.T.lines.length - 1)];
     const speaking = line.who;
     const bob = (who) => (speaking === who ? Math.sin(this.t * 10) * 3 : 0);
-    sprite(ctx, a, 'player_portrait', 290, 300 + bob('player'), 400, 400, { kind: 'player', label: 'Bunny (chest-up)', alpha: speaking === 'player' ? 1 : 0.7 });
-    sprite(ctx, a, 'boss_portrait', W - 290, 300 + bob('boss'), 400, 400, { kind: 'boss', label: this.T.bossName + ' (chest-up)', flip: true, alpha: speaking === 'boss' ? 1 : 0.7 });
+    sprite(ctx, a, 'player_portrait', 290, 330 + bob('player'), 400, 400, { kind: 'player', label: 'Bunny (chest-up)', alpha: speaking === 'player' ? 1 : 0.7 });
+    sprite(ctx, a, 'boss_portrait', W - 290, 330 + bob('boss'), 400, 400, { kind: 'boss', label: this.T.bossName + ' (chest-up)', flip: true, alpha: speaking === 'boss' ? 1 : 0.7 });
     const who = speaking === 'player' ? this.g.session.name : this.T.bossName;
     dialogueBox(ctx, who, line.text, this.T.continueHint);
   }
