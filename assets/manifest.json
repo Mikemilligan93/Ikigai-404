@@ -394,6 +394,48 @@
       "palette": false,
       "colors": 48
     },
+    "metro_back": {
+      "file": "img/metro_back.png",
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48,
+      "seamless": true
+    },
+    "metro_platform": {
+      "file": "img/metro_platform.png",
+      "type": "layer",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48,
+      "seamless": true
+    },
+    "metro_train": {
+      "file": "img/metro_train.png",
+      "type": "sheet",
+      "cols": 1,
+      "rows": 2,
+      "cell": [480, 120],
+      "align": "bottom",
+      "palette": false,
+      "colors": 32
+    },
+    "metro_props": {
+      "file": "img/metro_props.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [108, 108],
+      "align": "bottom"
+    },
+    "metro_debris": {
+      "file": "img/metro_debris.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [24, 24],
+      "align": "center"
+    },
     "intro_entrance": {
       "file": "img/intro_entrance.png",
       "type": "background",
@@ -425,6 +467,7 @@
     "sfx_miniboss_down": "audio/sfx_miniboss_down.mp3",
     "sfx_boss_roar": "audio/sfx_boss_roar.mp3",
     "sfx_burnout": "audio/sfx_burnout.mp3",
-    "sfx_win": "audio/sfx_win.mp3"
+    "sfx_win": "audio/sfx_win.mp3",
+    "sfx_train": "audio/sfx_train.mp3"
   }
 }

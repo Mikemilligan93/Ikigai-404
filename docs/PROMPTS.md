@@ -85,6 +85,11 @@ The frame meanings are also listed in `src/sprites.js` — if ChatGPT puts a pos
 | `props_server.png` | 3 × 2 | 48×48 | Office props |
 | `props_misc.png` | 3 × 2 | 48×48 | Office props |
 | `fx_items.png` | 4 × 2 | 16×16 | Pickups, projectiles and effects |
+| `metro_back.png` | full scene | 320×180 | background |
+| `metro_platform.png` | full scene | 320×180 | see-through layer |
+| `metro_train.png` | 1 × 2 | 400×100 | Metro station |
+| `metro_props.png` | 3 × 2 | 72×72 | Metro station |
+| `metro_debris.png` | 4 × 2 | 16×16 | Metro station |
 | `title_bg.png` | full scene | 320×180 | background |
 | `intro_flat.png` | full scene | 320×180 | background |
 | `intro_metro.png` | full scene | 320×180 | background |
@@ -940,6 +945,100 @@ Cells, left to right, top to bottom:
 Output: PNG, Wide landscape image, 1536×1024.
 ```
 
+## Metro station (layered, animated)
+
+### `metro_back.png` — frames 320×180
+
+*Back layer: the train drives in front of it.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
+
+Subject: The far side of a 1990s Tokyo metro station seen from the platform, plain side view: the opposite tunnel wall with white tiles, a red stripe, a few framed advertisement posters (pictures only, no text), round wall lamps and dark tunnel shadows; below it the dark track bed with two shiny rails running straight across the whole picture at about two thirds of the image height. NO train, NO platform in the foreground, NO pillars, NO people — just the wall and the empty tracks.
+
+Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
+
+The picture must tile seamlessly from left to right: the left edge must continue exactly into the right edge (same horizon, same floor and ceiling lines, nothing cut in half at the edges). No characters.
+
+Output: the scene fills the whole image edge to edge, no border, no vignette, no text. Wide landscape image, 1536×1024 (it will be cropped to 16:9, so keep important things away from the top and bottom edges).
+```
+
+### `metro_platform.png` — frames 320×180
+
+*Front layer: pillars and platform go in front of the train. Magenta = see-through.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
+
+Subject: The FRONT layer of a 1990s Tokyo metro platform, plain side view: the platform floor with grey tiles across the bottom quarter of the picture, its front edge with a bright yellow tactile safety strip, two thick white-tiled pillars with a red band (one at about one quarter and one at about three quarters of the width) reaching from the floor to the top edge, a dark ceiling beam along the very top with hanging fluorescent lights and a hanging station sign with arrows (no letters). Everything between the pillars above the platform floor is magenta (it will show the tracks and passing trains).
+
+Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
+
+Layout: everything that is NOT part of this layer is a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard) — that area will become see-through in the game. The picture must tile seamlessly from left to right: the left edge must continue exactly into the right edge (same heights, same floor line, same ceiling line, nothing cut in half at the edges). No characters, no train.
+
+Output: PNG, Wide landscape image, 1536×1024 (it will be cropped to 16:9, so keep important things away from the top and bottom edges).
+```
+
+### `metro_train.png` — frames 400×100 · grid 1×2
+
+*Each car is long and low (about 4 times wider than tall). The code chains them into trains.*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: A 1990s Tokyo metro train car in plain side view, silver body with a red stripe along the windows, sliding doors, bright windows with the silhouettes of tired standing commuters (dark simple shapes, no faces), wheels on the bogies at the bottom.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 1 column and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 400×100 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: the front (driver) car, facing LEFT: rounded driver cab with a headlight on the left end, the rest of the car to the right
+- Row 2: a middle car: the same body without a cab, flat ends on both sides so cars can be chained one after another
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `metro_props.png` — frames 72×72 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: Objects on a 1990s Tokyo metro platform, plain side view, all at the same scale (a standing person would be about as tall as the ticket gates are wide).
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: a row of three grey automatic ticket gates with small green arrows | a red drinks vending machine | a station rubbish bin with three openings for separate waste
+- Row 2: a plain wooden station bench | a timetable board on a pole (lines and dots, no readable text) | a big advertisement billboard on legs showing a smiling salaryman holding coffee (no text)
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `metro_debris.png` — frames 16×16 · grid 4×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: Small light things that the draft in a metro tunnel blows along the platform.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows one small item, centred, drawn at about 16×16 pixel-art resolution so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: dry orange maple leaf | the same leaf flipped over, tumbling | a sheet of newspaper (scribbles, no readable text) | the same newspaper crumpled, flapping
+- Row 2: an empty white plastic shopping bag, puffed | the same bag flattened, fluttering | a crushed drink can | a paper coffee cup lying on its side
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
 ## Full-screen backgrounds
 
 ### `title_bg.png` — frames 320×180
@@ -977,7 +1076,7 @@ Art style: retro 8-bit pixel art, like a Japanese console game from around 1990,
 
 Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
 
-Subject: A 1990s Tokyo metro station platform: tiled walls, pillars, a ticket turnstile, hanging station signs (symbols only). Keep the bottom sixth of the image as plain floor.
+Subject: OLD single-picture metro background, replaced by the metro_* layers above — only used until those exist. A 1990s Tokyo metro station platform: tiled walls, pillars, a ticket turnstile, hanging station signs (symbols only). Keep the bottom sixth of the image as plain floor.
 
 Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
 

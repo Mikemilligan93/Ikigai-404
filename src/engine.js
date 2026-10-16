@@ -99,7 +99,7 @@ export class Assets {
         const img = new Image();
         img.onload = () => {
           // only accept processed sheets of the expected size (an unprocessed ChatGPT image would slice wrongly)
-          const ok = def.type === 'background' ? img.width === def.size[0] && img.height === def.size[1]
+          const ok = def.type === 'background' || def.type === 'layer' ? img.width === def.size[0] && img.height === def.size[1]
             : img.width === def.cols * def.cell[0] && img.height === def.rows * def.cell[1];
           if (ok) this.images[key] = img;
           else console.warn(`assets/${def.file}: unexpected size ${img.width}x${img.height} — run python3 tools/process_art.py`);

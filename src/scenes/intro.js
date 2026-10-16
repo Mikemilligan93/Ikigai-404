@@ -1,9 +1,9 @@
 import { W, H, PX, PAL, COLORS, FONT, clamp, lerp, text, dialogueBox, drawFrame, windowBox } from '../engine.js';
-import { SIDE, IDLE, WAKE, FLAT_PROP, loop } from '../sprites.js';
+import { SIDE, IDLE, WAKE, FLAT_PROP, METRO_PROP, DEBRIS, loop } from '../sprites.js';
 
 // Side-view intro: home → metro (ticket inspector) → office entrance.
 // Backgrounds are 320×180 pixel art drawn at 4x; the bottom sixth of each is the floor.
-const GROUND = 612;
+const GROUND = 662;           // metro platform + office street: feet in the middle of the platform floor, not on the yellow line
 const SEG = { flat: [0, 1280], metro: [1280, 3840], office: [3840, 5120] };
 const WORLD_W = 5120;
 const INSPECTOR_X = 3440;   // in front of the ticket gates of the second metro screen
@@ -15,6 +15,21 @@ const FLAT_SCALE = 4;        // bunny + futon in the flat (≈1.3 m bunny next t
 const WAKE_STAND_DX = 264;   // where the bunny stands in the last wake-up frame, measured from FUTON_X (66 sprite px × 4)
 const FLAT_GROUND = 560;     // the flat's floor line: just in front of the wall's skirting board
 const DOOR_X = 1180;         // walking into the flat's front door starts the fade to the metro
+// The metro is built from layers (metro_back repeats with parallax, trains pass in front of it,
+// metro_platform repeats in front of the trains, props are placed, debris is blown by the draft).
+const METRO = {
+  parallax: 0.6,            // the back wall + trains scroll slower than the platform → depth
+  trainBottom: 560,         // screen y of the train wheels (on the near rail in metro_back)
+  trainSpeed: 760,          // px/s
+  trainGap: [2.5, 5.5],     // seconds between trains
+  trainCars: [3, 5],        // middle cars per train
+  floorY: GROUND - 6,       // debris rests here
+};
+const METRO_PROPS = [       // world x on the platform; kind → METRO_PROP in sprites.js
+  { kind: 'bench', x: 1700 }, { kind: 'vending', x: 2020 }, { kind: 'bin', x: 2190 },
+  { kind: 'billboard', x: 2650 }, { kind: 'timetable', x: 3020 }, { kind: 'gates', x: 3580 },
+];
+
 // Things to interact with in the flat (E). x = world position, kind = row/cols in sprites.js → FLAT_PROP.
 // scale = size per prop, so they match real-world sizes (mirror ≈1.5 m, plant ≈0.7 m, cat on cushion ≈0.35 m).
 const FLAT_PROPS = [
@@ -42,6 +57,8 @@ export class IntroScene {
     game.session.morningBonus = 0;
     this.hasWake = game.assets.has('player_wake');
     this.wakeTotal = WAKE.sequence.reduce((s, f) => s + f[2], 0);
+    this.train = null; this.trainWait = 1.2; this.trainDir = -1;
+    this.debris = []; this.draftT = 3; this.wind = 0;
   }
 
   enter() { this.g.audio.playMusic('music_intro'); }
@@ -93,8 +110,110 @@ export class IntroScene {
       }
     }
     if (this.say) { this.say.t -= dt; if (this.say.t <= 0) this.say = null; }
+    this.updateMetro(dt);
     for (const p of this.props) p.t -= dt;
     this.camX = this.leftFlat ? clamp(this.px - W / 2, SEG.metro[0], WORLD_W - W) : 0;
+  }
+
+  // ---------------------------------------------------------------- metro life: trains, draft, debris
+  updateMetro(dt) {
+    const A = this.g.assets, view = this.camX * METRO.parallax;   // trains live in the parallax (back-wall) space
+    const carW = A.cell('metro_train')[0] * PX;
+    // trains: one at a time, alternating directions, a short pause between them
+    if (!this.train) {
+      this.trainWait -= dt;
+      if (this.trainWait <= 0 && this.leftFlat) {
+        const cars = 1 + Math.floor(METRO.trainCars[0] + Math.random() * (METRO.trainCars[1] - METRO.trainCars[0] + 1));
+        const len = cars * carW, dir = this.trainDir;
+        this.train = { dir, cars, len, x: dir < 0 ? view + W + 40 : view - len - 40, sound: false };
+        this.trainDir = -dir;
+      }
+    } else {
+      const tr = this.train;
+      tr.x += tr.dir * METRO.trainSpeed * dt;
+      const onScreen = tr.x < view + W && tr.x + tr.len > view;
+      if (onScreen && !tr.sound) { tr.sound = true; this.g.audio.sfx('sfx_train'); }
+      if ((tr.dir < 0 && tr.x + tr.len < view - 60) || (tr.dir > 0 && tr.x > view + W + 60)) {
+        this.train = null; this.trainWait = METRO.trainGap[0] + Math.random() * (METRO.trainGap[1] - METRO.trainGap[0]);
+      }
+    }
+    // wind: strong while a train rushes past, otherwise an occasional light draft
+    const inMetro = this.leftFlat && this.camX + W > SEG.metro[0] && this.camX < SEG.metro[1];
+    const tr = this.train;
+    const rushing = tr && tr.x < view + W + 200 && tr.x + tr.len > view - 200;
+    this.draftT -= dt;
+    let target = 0;
+    if (rushing) target = tr.dir * 1;
+    else if (this.draftT < 0) { target = this.draftDir * 0.35; if (this.draftT < -2.5) { this.draftT = 4 + Math.random() * 5; this.draftDir = Math.random() < 0.5 ? -1 : 1; } }
+    if (!this.draftDir) this.draftDir = 1;
+    this.wind += (target - this.wind) * Math.min(1, dt * 2.5);
+    // spawn debris on the upwind edge of the screen
+    if (inMetro && Math.abs(this.wind) > 0.2 && this.debris.length < 22 && Math.random() < dt * 10 * Math.abs(this.wind)) {
+      const kinds = Object.keys(DEBRIS), kind = kinds[Math.floor(Math.random() * kinds.length)];
+      const heavy = DEBRIS[kind].heavy;
+      this.debris.push({
+        kind, heavy, t: 0, life: 7,
+        x: this.wind > 0 ? this.camX - 40 : this.camX + W + 40,
+        y: heavy ? METRO.floorY : METRO.floorY - 20 - Math.random() * 140,
+        vx: this.wind * 300, vy: 0, phase: Math.random() * 6, rest: 0,
+      });
+    }
+    for (const d of this.debris) {
+      d.t += dt;
+      const push = this.wind * (d.heavy ? 260 : 560);
+      d.vx += (push - d.vx) * Math.min(1, dt * (d.heavy ? 1.2 : 2.2));
+      if (!d.heavy) {
+        const lift = Math.abs(this.wind) * 110;
+        d.vy += (90 - lift) * dt;                                  // gravity vs. lift from the draft
+        d.vy += Math.sin(d.t * 5 + d.phase) * 220 * dt * Math.abs(this.wind);   // flutter
+        d.vy = clamp(d.vy, -220, 220);
+      }
+      d.x += d.vx * dt; d.y += d.vy * dt;
+      if (d.y >= METRO.floorY) { d.y = METRO.floorY; d.vy = 0; d.vx *= 0.96; }
+      if (Math.abs(this.wind) < 0.15 && d.y >= METRO.floorY) d.rest += dt;
+    }
+    this.debris = this.debris.filter((d) => d.t < d.life && d.rest < 2.5 && d.x > this.camX - 200 && d.x < this.camX + W + 200);
+  }
+
+  drawMetro(ctx, x0, x1) {
+    const a = this.g.assets;
+    const back = a.get('metro_back'), front = a.get('metro_platform');
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0, 0, x1 - x0, H); ctx.clip();
+    // rumble while a train passes
+    const tr = this.train, view = this.camX * METRO.parallax;
+    const rumble = tr && tr.x < view + W && tr.x + tr.len > view ? (Math.floor(this.time * 30) % 2) * 2 : 0;
+    // back wall: repeats, scrolls slower (parallax)
+    const off = this.camX - (view % W);
+    for (let k = -1; k <= 1; k++) ctx.drawImage(back, off + k * W, rumble, W, H);
+    // the train, in back-wall space
+    if (tr) {
+      const carW = a.cell('metro_train')[0] * PX;
+      for (let i = 0; i < tr.cars; i++) {
+        const head = tr.dir < 0 ? i === 0 : i === tr.cars - 1;
+        const sx = this.camX + (tr.x - view) + i * carW;
+        if (sx > this.camX + W || sx + carW < this.camX) continue;
+        drawFrame(ctx, a, 'metro_train', 0, head ? 0 : 1, sx + carW / 2, METRO.trainBottom + rumble, { flip: tr.dir > 0, kind: 'prop', color: PAL.grey, eyes: false });
+      }
+    }
+    // platform: repeats at full speed, in front of the train
+    for (let x = x0; x < x1; x += W) if (x + W > this.camX && x < this.camX + W) ctx.drawImage(front, x, 0, W, H);
+    for (const p of METRO_PROPS) {
+      const [col, row] = METRO_PROP[p.kind];
+      drawFrame(ctx, a, 'metro_props', col, row, p.x, GROUND, { kind: 'prop', label: p.kind, eyes: false });
+    }
+    ctx.restore();
+  }
+
+  drawDebris(ctx) {
+    const a = this.g.assets;
+    for (const d of this.debris) {
+      const def = DEBRIS[d.kind];
+      const f = def.frames[Math.floor(d.t * (4 + Math.abs(d.vx) / 40)) % def.frames.length];
+      const spin = d.heavy ? Math.round((d.x / 18) % 4) * (Math.PI / 2) : 0;           // cans and cups roll in 90° steps
+      const alpha = d.rest > 0 ? clamp(1 - d.rest / 2.5, 0, 1) : clamp((d.life - d.t) / 1, 0, 1);
+      drawFrame(ctx, a, 'metro_debris', f[0], f[1], d.x, d.y - 12, { anchor: 'center', rot: spin, flip: d.vx < 0, alpha, kind: 'fx', color: def.ph, ph: [8, 6], eyes: false });
+    }
   }
 
   // Interactive props in the flat: stand next to one and press E.
@@ -131,6 +250,7 @@ export class IntroScene {
     const a = this.g.assets;
     for (const [key, [x0, x1]] of Object.entries(SEG)) {
       if (x1 < this.camX || x0 > this.camX + W) continue;
+      if (key === 'metro' && a.has('metro_back') && a.has('metro_platform')) { this.drawMetro(ctx, x0, x1); continue; }
       const imgKey = { flat: 'intro_flat', metro: 'intro_metro', office: 'intro_entrance' }[key];
       const img = a.get(imgKey);
       if (img) {
@@ -264,6 +384,7 @@ export class IntroScene {
       const ground = this.leftFlat ? GROUND : FLAT_GROUND;
       drawFrame(ctx, a, 'player_side', col, row, x, ground - (rot ? 30 : 0) - (asleep && a.has('intro_flat') ? 118 : 0) + breathe, { scale: this.leftFlat ? SIDE_SCALE : FLAT_SCALE, flip, rot, kind: 'player', ph: [16, 30], label: 'Bunny' });
     }
+    if (this.leftFlat) this.drawDebris(ctx);
     if (!this.leftFlat) for (const p of this.props.filter((q) => q.front)) {
       const [col, row] = this.propFrame(p);
       drawFrame(ctx, a, 'flat_props', col, row, p.x, FLAT_GROUND + 18, { scale: p.scale, kind: 'prop', color: { mirror: PAL.sky, plant: PAL.moss, cat: PAL.ochre }[p.kind], ph: [14, p.kind === 'cat' ? 12 : 26], label: p.kind, eyes: false });

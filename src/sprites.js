@@ -24,6 +24,19 @@ export const FLAT_PROP = {
   cat: { idle: [0, 1], noticed: [1, 1], used: [2, 1], stretch: [3, 1] },
 };
 
+// Metro station (intro): props and the debris the draft blows around
+export const METRO_PROP = {
+  gates: [0, 0], vending: [1, 0], bin: [2, 0],
+  bench: [0, 1], timetable: [1, 1], billboard: [2, 1],
+};
+export const DEBRIS = {           // frames to flip between while it tumbles; heavy = rolls on the floor instead of flying
+  leaf: { frames: [[0, 0], [1, 0]], heavy: false, ph: '#D9822B' },
+  paper: { frames: [[2, 0], [3, 0]], heavy: false, ph: '#E6E2D6' },
+  bag: { frames: [[0, 1], [1, 1]], heavy: false, ph: '#F4F4F4' },
+  can: { frames: [[2, 1]], heavy: true, ph: '#B4302A' },
+  cup: { frames: [[3, 1]], heavy: true, ph: '#EFE4CC' },
+};
+
 // player_side (intro): row 0 = 4-frame walk to the right, row 1 = wake-up sequence
 export const SIDE = { walkRow: 0, asleep: [0, 1], startled: [1, 1], shaking: [2, 1], standing: [3, 1] };
 

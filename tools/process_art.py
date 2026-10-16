@@ -19,7 +19,8 @@ What it does for a sprite sheet (type "sheet" / "tiles" in assets/manifest.json)
   5. snaps every colour to the shared 16-colour palette (consistent look across all sheets),
   6. lines the frames up: 'bottom' = feet on one baseline + centred on the body, 'center' = centred,
   7. writes a tiny sheet: cols x rows cells of exactly `cell` pixels.
-Backgrounds are cropped to 16:9 and shrunk to 320x180 the same way.
+Backgrounds are cropped to 16:9 and shrunk to 640x360 the same way ('seamless': made to repeat left-to-right;
+type 'layer': magenta stays see-through, for foreground layers such as the metro platform).
 """
 import json, shutil, sys
 from pathlib import Path
@@ -258,9 +259,11 @@ def process_sheet(name, d, im):
     cols, rows = d['cols'], d['rows']
     cw, ch = d['cell']
     tiles = d['type'] == 'tiles'
-    pal = PALETTE if d.get('palette', True) else adaptive_palette(im, d.get('colors', 32))
     rgba = np.asarray(im.convert('RGBA')).astype(np.float32)
     mask = clean_specks(foreground_mask(im))
+    # own palette (if asked) is built from the drawing only, so the magenta background can't steal colours (red → pink)
+    pal = PALETTE if d.get('palette', True) else adaptive_palette(
+        Image.fromarray(rgba[..., :3][mask].astype(np.uint8)[None]), d.get('colors', 32))
     grid, messy = find_cells(mask, cols, rows)
     idx = snap_to_palette(rgba[..., :3], pal)
 
@@ -327,18 +330,46 @@ def process_sheet(name, d, im):
     return out, messy, scale
 
 
+def make_seamless_x(rgb, mask, band_frac=0.08):
+    """Make a picture repeat left-to-right without a visible seam: cross-fade the last strip into the first one
+    and cut that strip off. rgb: float (h, w, 3); mask: bool (h, w) or None."""
+    h, w = rgb.shape[:2]
+    band = max(4, int(w * band_frac))
+    t = np.linspace(0, 1, band)[None, :, None]
+    out = rgb[:, :w - band].copy()
+    out[:, :band] = rgb[:, w - band:] * (1 - t) + rgb[:, :band] * t
+    if mask is None:
+        return out, None
+    m = mask[:, :w - band].copy()
+    m[:, :band] = np.where(t[..., 0] < 0.5, mask[:, w - band:], mask[:, :band])
+    return out, m
+
+
 def process_background(d, im):
+    """Full-screen pictures. 'layer' = keeps the magenta parts see-through; 'seamless' = repeats left-to-right."""
     tw, th = d['size']
-    im = im.convert('RGB')
-    s = max(tw / im.width, th / im.height)
+    layer = d['type'] == 'layer'
+    mask = foreground_mask(im) if layer else None
+    rgb = np.asarray(im.convert('RGB')).astype(np.float32)
+    if d.get('seamless'):
+        rgb, mask = make_seamless_x(rgb, mask)
+    h, w = rgb.shape[:2]
+    s = max(tw / w, th / h)
     cw, chh = tw / s, th / s
-    l, t = (im.width - cw) / 2, (im.height - chh) / 2
-    im = im.crop((round(l), round(t), round(l + cw), round(t + chh)))
-    pal = PALETTE if d.get('palette', True) else adaptive_palette(im, d.get('colors', 48))
-    rgb = np.asarray(im).astype(np.float32)
+    l, t = int((w - cw) / 2), int((h - chh) / 2)
+    rgb = rgb[t:t + int(chh), l:l + int(cw)]
+    if mask is not None:
+        mask = mask[t:t + int(chh), l:l + int(cw)]
+    crop = Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8))
+    if d.get('palette', True):
+        pal = PALETTE
+    else:   # own palette, built from the drawn part only
+        pal = adaptive_palette(crop if mask is None else Image.fromarray(np.clip(rgb[mask], 0, 255).astype(np.uint8)[None]), d.get('colors', 48))
     idx = snap_to_palette(rgb, pal)
-    col, alpha = resample(idx, np.ones(idx.shape, bool), tw, th, len(pal))
-    return to_rgba(col, np.ones_like(alpha), pal)[..., :3]
+    col, alpha = resample(idx, np.ones(idx.shape, bool) if mask is None else mask, tw, th, len(pal))
+    if mask is None:
+        return to_rgba(col, np.ones_like(alpha), pal)[..., :3]
+    return to_rgba(col, alpha, pal)
 
 
 def save(path, arr, mode):
@@ -396,10 +427,11 @@ def main(argv):
         if src.parent == IMG:
             shutil.copy2(src, backup)                  # always keep the newest original
             im = Image.open(backup)
-        if d['type'] == 'background':
+        if d['type'] in ('background', 'layer'):
             arr = process_background(d, im)
-            save(IMG / fname, arr, 'RGB')
-            print(f'ok {fname}: background {arr.shape[1]}x{arr.shape[0]}')
+            save(IMG / fname, arr, 'RGB' if arr.shape[-1] == 3 else 'RGBA')
+            kind = 'see-through layer' if d['type'] == 'layer' else 'background'
+            print(f'ok {fname}: {kind} {arr.shape[1]}x{arr.shape[0]}' + (' (repeats left-to-right)' if d.get('seamless') else ''))
         else:
             arr, messy, scale = process_sheet(name, d, im)
             save(IMG / fname, arr, 'RGBA')
