@@ -1,6 +1,6 @@
 import {
   W, H, PX, PAL, COLORS, clamp, dist, rand, pick, fmt, text, bar, wrapLeft, windowBox, drawFrame,
-  resolveCircleRect, circleRectOverlap, FONT,
+  resolveCircleRect, circleRectOverlap, FONT, fontOf, textPlate,
 } from '../engine.js';
 import { OFFICE } from '../levels/office.js';
 import {
@@ -391,17 +391,32 @@ export class OfficeScene {
     return [gx / gd, gy / gd];
   }
 
-  banner(msg, time = 2.5) { this.banners.push({ msg, t: time }); }
-  float(x, y, msg, color = COLORS.paper) { this.floaters.push({ x, y, msg, color, t: 1.1 }); }
+  // Banners stay up long enough to read: at least `time`, or minSeconds + perChar × length (config.json → text).
+  banner(msg, time = 2.5) {
+    const tc = this.C.text || {};
+    const t = Math.max(time, (tc.bannerMinSeconds ?? 3) + String(msg).length * (tc.bannerPerChar ?? 0.05));
+    this.banners.push({ msg, t, life: t, age: 0 });
+  }
+  // Floating numbers/labels. Numbers that pop up close together merge (+10 +10 → +20) instead of overlapping.
+  float(x, y, msg, color = COLORS.paper) {
+    const tc = this.C.text || {}, life = tc.floaterLife ?? 1.6;
+    const m = /^([+-])(\d+)$/.exec(msg);
+    if (m) {
+      const near = this.floaters.find((f) => f.num && f.sign === m[1] && f.color === color && f.life - f.t < 0.5 && Math.abs(f.x - x) < 70 && Math.abs(f.y - y) < 70);
+      if (near) { near.num += +m[2]; near.msg = m[1] + near.num; near.t = life; return; }
+    }
+    this.floaters.push({ x, y, msg, color, t: life, life, num: m ? +m[2] : 0, sign: m ? m[1] : '' });
+  }
   fx(kind, x, y, life = 0.25, vy = 0) { this.particles.push({ kind, x, y, t: life, life, vy }); }
 
   // ---------------------------------------------------------------- update
   update(dt) {
     const inp = this.g.input;
     this.stateT += dt; this.time += dt;
-    for (const b of this.banners) b.t -= dt;
+    for (const b of this.banners.slice(0, 2)) { b.t -= dt; b.age += dt; }   // queued banners wait their turn
     this.banners = this.banners.filter((b) => b.t > 0);
-    this.floaters.forEach((f) => { f.t -= dt; f.y -= 40 * dt; });
+    const rise = this.C.text?.floaterRise ?? 28;
+    this.floaters.forEach((f) => { f.t -= dt; f.y -= rise * dt; });
     this.floaters = this.floaters.filter((f) => f.t > 0);
     this.particles.forEach((f) => { f.t -= dt; f.y += f.vy * dt; });
     this.particles = this.particles.filter((f) => f.t > 0);
@@ -990,8 +1005,8 @@ export class OfficeScene {
     }
 
     for (const f of this.floaters) {
-      ctx.globalAlpha = clamp(f.t, 0, 1);
-      text(ctx, f.msg, Math.round(f.x), Math.round(f.y / 3) * 3, { size: 20, color: f.color });
+      ctx.globalAlpha = clamp(f.t / 0.4, 0, 1);   // full strength until the last 0.4 s
+      text(ctx, f.msg, Math.round(f.x), Math.round(f.y / 3) * 3, { size: f.num ? 26 : 22, color: f.color, weight: 700 });
       ctx.globalAlpha = 1;
     }
 
@@ -1160,7 +1175,7 @@ export class OfficeScene {
     const s = who.say;
     if (!s) return;
     s.shown = Math.min(s.text.length, s.shown + 1.2);
-    ctx.font = `15px ${FONT}`;
+    ctx.font = fontOf(17);
     const maxW = 300, words = s.text.slice(0, Math.floor(s.shown)).split(' '), lines = [];
     let line = '';
     for (const w of words) { const tst = line ? line + ' ' + w : w; if (ctx.measureText(tst).width > maxW && line) { lines.push(line); line = w; } else line = tst; }
@@ -1217,9 +1232,16 @@ export class OfficeScene {
       bar(ctx, W / 2 - 250, 48, 500, 15, this.boss.hp / this.boss.maxHp, PAL.red);
     }
     // banners
+    const tc = this.C.text || {};
     this.banners.slice(0, 2).forEach((b, i) => {
-      ctx.globalAlpha = clamp(b.t, 0, 1);
-      text(ctx, b.msg, W / 2, 150 + i * 42, { size: i === 0 ? 32 : 22, color: i === 0 ? PAL.gold : PAL.cream });
+      ctx.globalAlpha = Math.min(clamp(b.age / (tc.bannerFadeIn ?? 0.2), 0, 1), clamp(b.t / (tc.bannerFadeOut ?? 0.5), 0, 1));
+      const y = 150 + i * 56, main = i === 0;
+      // big arcade font for the headline when it fits on screen, bold body font otherwise
+      ctx.font = fontOf(24, { display: true });
+      const fits = main && ctx.measureText(b.msg).width < W - 160;
+      const st = fits ? { size: 24, display: true } : { size: main ? 30 : 26, weight: 700 };
+      textPlate(ctx, b.msg, W / 2, y, st);
+      text(ctx, b.msg, W / 2, y, { ...st, color: main ? PAL.gold : PAL.cream });
       ctx.globalAlpha = 1;
     });
     // interaction prompt
@@ -1248,7 +1270,7 @@ export class OfficeScene {
     ctx.fillStyle = PAL.cream; ctx.fillRect(x + 12, y + 54, w - 24, h - 66);
     text(ctx, E.from, x + 28, y + 80, { size: 20, align: 'left', color: PAL.ink, shadow: false });
     text(ctx, E.subject, x + 28, y + 112, { size: 20, align: 'left', color: PAL.red, shadow: false });
-    ctx.fillStyle = PAL.ink; ctx.font = `22px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = PAL.ink; ctx.font = fontOf(22); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     wrapLeft(ctx, E.body, x + 28, y + 160, w - 56, 32);
     text(ctx, E.hint, x + w - 28, y + h - 30, { size: 16, align: 'right', color: PAL.dgrey, shadow: false });
   }

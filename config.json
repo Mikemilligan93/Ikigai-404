@@ -4,6 +4,19 @@
     "_comment": "floorDim: 0 = floor tiles at full contrast, 1 = black. Calms a busy floor so characters stand out.",
     "floorDim": 0.1
   },
+  "text": {
+    "_comment": "scale enlarges ALL in-game text (e.g. 1.2 for a projector). weight = body font boldness (400-700). Banners stay up for max(their own time, bannerMinSeconds + bannerPerChar x characters). floaterLife/floaterRise = how long damage/score numbers stay and how fast they rise.",
+    "scale": 1,
+    "weight": 600,
+    "outline": true,
+    "bannerMinSeconds": 3,
+    "bannerPerChar": 0.05,
+    "bannerFadeIn": 0.2,
+    "bannerFadeOut": 0.5,
+    "floaterLife": 1.6,
+    "floaterRise": 28
+  },
+
   "animation": {
     "_comment": "walkStride = pixels walked per walk frame (frames follow distance, so feet never slide). fps = frames per second. idleBreath = seconds per breathing step.",
     "walkStride": 20,
@@ -18,7 +31,7 @@
     "throwTime": 0.16,
     "sideWalkStride": 26,
     "talkFps": 8,
-    "typeSpeed": 45
+    "typeSpeed": 35
   },
   "debug": {
     "showHitboxes": false,
