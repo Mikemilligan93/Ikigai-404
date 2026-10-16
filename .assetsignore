@@ -8,3 +8,5 @@ wrangler.jsonc
 docs
 README.md
 .DS_Store
+tools
+assets/originals

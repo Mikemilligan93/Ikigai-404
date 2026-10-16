@@ -509,8 +509,10 @@ export class OfficeScene {
   drawFloor(ctx) {
     const a = this.g.assets, L = this.L;
     if (a.has('office_floor')) {
-      const s = 256, x0 = Math.floor(this.cam.x / s) * s, y0 = Math.floor(this.cam.y / s) * s;
+      const s = a.size('office_floor', 256, 256)[0], x0 = Math.floor(this.cam.x / s) * s, y0 = Math.floor(this.cam.y / s) * s;
       for (let x = x0; x < this.cam.x + W + s; x += s) for (let y = y0; y < this.cam.y + H + s; y += s) ctx.drawImage(a.images.office_floor, x, y, s, s);
+      const dim = this.C.visuals?.floorDim ?? 0;
+      if (dim > 0) { ctx.fillStyle = `rgba(13,15,31,${dim})`; ctx.fillRect(this.cam.x - 20, this.cam.y - 20, W + 40, H + 40); }
     } else {
       ctx.fillStyle = '#4f5b4a'; ctx.fillRect(0, 0, L.width, L.height);
       ctx.fillStyle = '#566350';
@@ -582,7 +584,8 @@ export class OfficeScene {
     let rot = (p.flip ? -1 : 1) * slump[1];
     let alpha = p.invuln > 0 && Math.floor(p.invuln * 20) % 2 ? 0.4 : 1;
     if (this.state === 'burnout') { rot = Math.min(1.4, this.stateT * 2) * (p.flip ? -1 : 1); alpha = 1; }
-    sprite(ctx, a, 'player_' + posture, p.x, p.y + bob, 64, 64 * slump[0], { kind: 'player', color: colors[posture], label: 'Bunny', flip: p.flip, rot, alpha });
+    const [pw, ph] = a.size('player_ok', 64, 64);
+    sprite(ctx, a, 'player_' + posture, p.x, p.y + bob, pw, ph * slump[0], { kind: 'player', color: colors[posture], label: 'Bunny', flip: p.flip, rot, alpha });
 
     // facing indicator + swing
     const fx = p.x + p.fx * (p.r + 14), fy = p.y + p.fy * (p.r + 14);
@@ -596,17 +599,17 @@ export class OfficeScene {
   }
 
   drawEnemy(ctx, e) {
-    const size = e.r * 2.5;
+    const size = this.g.assets.has('enemy_' + e.type) ? this.g.assets.size('enemy_' + e.type, 36, 36)[0] : e.r * 2.5;
     sprite(ctx, this.g.assets, 'enemy_' + e.type, e.x, e.y + Math.sin(e.wob) * 2, size, size, {
       kind: 'enemy', color: e.hitFlash > 0 ? '#fff' : e.type === 'weak' ? '#e74c3c' : '#922b21',
-      label: e.type === 'weak' ? '@' : 'URGENT', rot: Math.sin(e.wob) * 0.1,
+      label: e.type === 'weak' ? '@' : 'URGENT', rot: Math.sin(e.wob) * 0.1, flash: e.hitFlash > 0,
     });
   }
 
   drawMiniboss(ctx, m) {
     const s = 110;
     sprite(ctx, this.g.assets, 'miniboss_' + m.id, m.x, m.y, s, s, {
-      kind: 'miniboss', color: m.hitFlash > 0 ? '#fff' : MB_COLORS[m.id], label: this.T.minibossNames[m.id],
+      kind: 'miniboss', color: m.hitFlash > 0 ? '#fff' : MB_COLORS[m.id], label: this.T.minibossNames[m.id], flash: m.hitFlash > 0,
       sx: 1 + Math.sin(this.stateT * 5) * (this.state === 'wave' ? 0.04 : 0),
     });
     bar(ctx, m.x - 50, m.y - 72, 100, 8, m.hp / m.maxHp, COLORS.vermilion);
@@ -616,7 +619,7 @@ export class OfficeScene {
     const b = this.boss, s = 150;
     const wind = b.mode === 'windup' && Math.floor(b.modeT * 12) % 2;
     sprite(ctx, this.g.assets, 'boss_ceo', b.x, b.y, s, s, {
-      kind: 'boss', color: b.hitFlash > 0 || wind ? '#fff' : '#b03a2e', label: 'CEO DRAGON', flip: b.flip,
+      kind: 'boss', color: b.hitFlash > 0 || wind ? '#fff' : '#b03a2e', label: 'CEO DRAGON', flip: b.flip, flash: b.hitFlash > 0 || wind,
       sx: b.mode === 'charge' ? 1.15 : 1, sy: b.mode === 'charge' ? 0.9 : 1,
     });
   }

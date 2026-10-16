@@ -27,6 +27,7 @@ WASD move · J / Space briefcase strike · K paper ball · E interact · Esc ski
 | `texts.json` | All on-screen text (English). Lines marked PLACEHOLDER need the team's texts. |
 | `assets/manifest.json` | Image/audio file names and sizes. Drop a file with that name into `assets/img` or `assets/audio` — no code change needed. |
 | `docs/PROMPTS.md` | ChatGPT prompts for every image. |
+| `tools/process_art.py` | Run `python3 tools/process_art.py` after adding ChatGPT images: crops, resizes, makes floor tiles seamless. Originals are kept in `assets/originals/` (not in git). |
 | `docs/DESIGN.md` | Design document (living). |
 | `src/levels/office.js` | Office layout: walls, cubicles, props, miniboss / NPC / mochi positions. |
 

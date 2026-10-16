@@ -1,6 +1,11 @@
 {
   "_readme": "All tunable numbers live here. Times are in seconds, speeds in pixels/second, distances in pixels. Reload the page after editing.",
 
+  "visuals": {
+    "_comment": "floorDim: 0 = carpet at full contrast, 1 = black. Calms a busy floor texture so characters stand out.",
+    "floorDim": 0.35
+  },
+
   "debug": {
     "showHitboxes": false,
     "startScene": "title",

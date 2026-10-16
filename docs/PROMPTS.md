@@ -22,8 +22,11 @@ posture variants and the portrait. Same for the CEO dragon (top-down sprite + po
 
 Top-down addition (for all in-office sprites):
 
-> Seen from directly above (top-down view, like a classic 2D top-down game), centred, single object,
-> transparent background.
+> Seen from a high angle above, slightly from the front (like player_ok.png — head and
+> face visible, feet at the bottom), centred, single object, transparent background, square 1024×1024.
+
+*Style test done 2026-10-16 (player_ok, enemy_weak, office_floor). Keep this camera angle for every
+in-office sprite. After saving new images run `python3 tools/process_art.py`.*
 
 ---
 

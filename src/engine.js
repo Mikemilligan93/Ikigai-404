@@ -111,7 +111,14 @@ export class Assets {
     }
     await Promise.all(jobs);
   }
-  has(key) { return !!this.images[key]; }
+  // Image for a key, following manifest "fallback" links (e.g. player_tired → player_ok).
+  get(key) {
+    for (let k = key, i = 0; k && i < 5; k = this.meta[k]?.fallback, i++) if (this.images[k]) return this.images[k];
+    return null;
+  }
+  has(key) { return !!this.get(key); }
+  // In-game draw size from the manifest, or the given default.
+  size(key, w, h) { const s = this.meta[key]?.size; return s ? s : [w, h]; }
 }
 
 // ---------- audio ----------
@@ -151,7 +158,7 @@ const PLACEHOLDER_COLORS = {
 
 /**
  * Draw an image by key centred on (x, y) with size w×h, or a placeholder if the art is missing.
- * opts: { flip, alpha, rot, sx, sy, kind, label, color }
+ * opts: { flip, alpha, rot, sx, sy, kind, label, color, flash }
  */
 export function sprite(ctx, assets, key, x, y, w, h, opts = {}) {
   ctx.save();
@@ -159,9 +166,13 @@ export function sprite(ctx, assets, key, x, y, w, h, opts = {}) {
   if (opts.rot) ctx.rotate(opts.rot);
   ctx.scale((opts.flip ? -1 : 1) * (opts.sx ?? 1), opts.sy ?? 1);
   if (opts.alpha != null) ctx.globalAlpha = opts.alpha;
-  const img = assets.images[key];
+  const img = assets.get(key);
   if (img) {
-    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    // keep the picture's proportions inside the w×h box
+    const k = Math.min(w / img.width, h / img.height);
+    const dw = img.width * k, dh = img.height * k;
+    if (opts.flash) ctx.filter = 'brightness(2.5)';
+    ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
   } else {
     const color = opts.color || PLACEHOLDER_COLORS[opts.kind] || '#999';
     ctx.fillStyle = color;
