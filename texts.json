@@ -1,6 +1,5 @@
 {
   "_readme": "All on-screen text. Edit freely; keep the keys. Lines marked PLACEHOLDER are waiting for the team's texts.",
-
   "title": {
     "gameName": "Ikigai 404",
     "subtitle": "Purpose not found",
@@ -9,7 +8,6 @@
     "leaderboardTitle": "Hall of the Still Employed",
     "controls": "WASD move · J / SPACE briefcase strike · K paper ball · E interact · ESC skip"
   },
-
   "intro": {
     "nightmare": "…the deadline… it was yesterday…",
     "wakeUp": "*gasp*",
@@ -29,7 +27,6 @@
     ],
     "continueHint": "E / SPACE to continue"
   },
-
   "office": {
     "levelName": "Level 1 — The Office",
     "exploreHint": "Look around. Your desk is waiting… press E at your desk.",
@@ -40,11 +37,11 @@
       "body": "Per my last email, everything is now a priority. Please action ASAP.",
       "hint": "E / SPACE — close email"
     },
-    "waveStart": "The printers have awakened!",
+    "waveStart": "The office has turned against you!",
     "minibossesLeft": "Minibosses left: {n}",
     "minibossDown": "{name} is down! The others are getting angry…",
-    "bossIncoming": "The CEO has entered the building.",
-    "bossName": "The CEO, a Dragon in a Suit",
+    "bossIncoming": "The CEO has entered the building. \"We're a family!\"",
+    "bossName": "The CEO — \"We're a family\"",
     "bossDown": "The CEO is down. The lift is open.",
     "liftPrompt": "E — enter the lift",
     "coffeePrompt": "E — have a coffee",
@@ -52,21 +49,30 @@
     "mochiPickup": "+mochivation",
     "weaponBlocked": "Stuck in a meeting — can't attack!",
     "minibossNames": {
+      "client": "The Evil Client",
       "printer": "The Jammed Printer",
       "coffee": "The Broken Coffee Machine",
-      "fax": "The Haunted Fax"
+      "ac": "The Air Conditioner"
     },
     "effects": {
-      "speed": "Motivated!",
+      "speed": "Energised!",
       "damage": "Mentored!",
+      "heal": "Feeling better!",
       "slow": "Drained…",
-      "weaponBlock": "In a meeting…"
+      "weaponBlock": "Stuck in a meeting!",
+      "drain": "Energy vampired!"
     },
     "npcNames": {
-      "motivator": "Motivator colleague",
-      "mentor": "Mentor colleague",
-      "complainer": "Complainer colleague",
-      "meetinger": "Let's-have-a-meeting colleague"
+      "dog": "Office dog",
+      "bestie": "Work bestie",
+      "baker": "Cookie colleague",
+      "expert": "Expert colleague",
+      "meeting_saver": "Meeting saver",
+      "shouter": "Shouting mid-manager",
+      "karen": "Know-it-all colleague",
+      "lazy": "Lazy colleague",
+      "photos": "Photo-sharing colleague",
+      "hobby": "Boring-hobby colleague"
     },
     "posture": {
       "ok": "Holding on",
@@ -77,21 +83,125 @@
       "mental": "Mental health",
       "score": "Score",
       "time": "Time"
-    }
+    },
+    "npcLines": {
+      "dog": [
+        "Woof-woof"
+      ],
+      "bestie": [
+        "Come on, let's go grab a coffee and go for a walk",
+        "You didn't hear this from me, but I have some tea.",
+        "I have three things to tell you, and none of them are work-related.",
+        "Meet me in the kitchen in five. It's important."
+      ],
+      "baker": [
+        "I baked fresh warm cookies/scones! Take two!",
+        "I can't fix your deadlines, but I can offer you a cookie!",
+        "Tough day? I think I have just the thing for that.",
+        "Freshly baked motivation, anyone?"
+      ],
+      "expert": [
+        "Ticket no12085? Already found the bug, MR's done, too",
+        "Here, let me run that script for you real quick.",
+        "I've dealt with this before, let me show you a little trick!",
+        "Trust me, I've made that mistake at least twice."
+      ],
+      "meeting_saver": [
+        "I think we've covered everything, so let's give everyone 15 minutes back!",
+        "This sounds like something we can solve in a quick email.",
+        "Before we schedule another meeting, how about we just make a decision?",
+        "Let's wrap this up before someone suggests a follow-up meeting."
+      ],
+      "shouter": [
+        "WHERE ARE THOSE Q3 REPORT NUMBERS?! I NEED THEM 5 MINUTES AGO!",
+        "I DON'T CARE ABOUT EXCUSES, I CARE ABOUT KPI ALIGNMENT!",
+        "LET'S DO A QUICK TRUST-FALL EXERCISE RIGHT NOW! REMEMBER: TEAMWORK MAKES THE DREAM WORK! SMILE!",
+        "THIS IS A TOP PRIORITY! JUST LIKE THE OTHER FIVE!"
+      ],
+      "karen": [
+        "Must be nice having time to just walk around like that. If you're this free I have a report I need help with...",
+        "I know it’s Friday 4:55 PM, but the board just saw the project and we need to completely pivot the entire concept. Can you send over a fresh draft by tomorrow morning? Thanks, super urgent!",
+        "I didn't actually read your last three emails, but I went ahead and scheduled a 90-minute quick alignment call with 12 people during your lunch break!",
+        "I've noticed some people have been taking longer lunch breaks lately."
+      ],
+      "lazy": [
+        "Oh, was this report due yesterday? Pretty sure you were handling it.",
+        "Did you submit a Jira ticket for this issue? Not my department",
+        "Have you tried turning it off and on again?",
+        "Oh, you need help with that task that was assigned to me 2 months ago? Man, I would LOOOVE to help, but my plate is completely overflowing right now. Let's touch base next quarter!"
+      ],
+      "photos": [
+        "Wait, don't walk away yet! You HAVE to see this 4-minute video of Mr. Whiskers trying to catch his own tail. I actually made an Instagram account for him, he has 42 followers now! Do you want to see his medical history photos too?",
+        "Wait, don't leave! Look at this clip of Theodore chasing a laser! Custest thing ever!!",
+        "Oh, that reminds me of something my dog did! Let me find the photo.",
+        "Hold on, let me show you our entire vacation album!"
+      ],
+      "hobby": [
+        "So anyway, for my sourdough starter, I use a 70% hydration ratio...",
+        "You won't believe what happened at the local stamp collectors' meetup!",
+        "I spent the whole weekend alphabetizing my tea collection!",
+        "I've started tracking my daily step count in three different apps!"
+      ]
+    },
+    "bossLines": {
+      "ceo": [
+        "Passion doesn't need work-life balance!",
+        "I can't give more budget for this scope, but I do have extra tasks and high expectations! Let's make magic happen! By yesterday btw",
+        "WE'RE NOT JUST A COMPANY. WE'RE A FAMILY! AND FAMILY DOESN'T CLOCK OUT!",
+        "YOUR RESISTANCE SHOWS GREAT INITIATIVE! I'M ADDING IT TO YOUR RESPONSIBILITIES!",
+        "YOUR BURNOUT IS JUST PASSION LEAVING YOUR BODY!",
+        "THERE'S NO SUCH THING AS OVERWORKED. ONLY UNDERMOTIVATED!"
+      ],
+      "client": [
+        "This could have been an email... but let's schedule a 2-hour call for Friday 3pm",
+        "Hey, so I was thinking about just a small tweak.. Can we make the logo bigger and change everything last minute?",
+        "Loved the design! Just a quick feedback: can we make it feel more 'premium' yet 'approachable'? Also, change all the colors, remove the main feature, and make the logo 300% bigger!",
+        "I've sent over some feedback. It's all in the 36-page PDF."
+      ],
+      "printer": [
+        "Paper Tray 2 is empty. Loading Paper Tray 2... Error! Unknown paper size detected. Please open door C, clear non-existent jam, and restart your life.",
+        "Multiple sheets detected. Please check paper alignment.",
+        "Printer is offline. Please check the connection.",
+        "Unexpected error. Restart required."
+      ],
+      "coffee": [
+        "Dispensing requested Espresso... Just kidding! Here is a cup of lukewarm, murky water with a single floating coffee bean and sour milk froth. ENJOY",
+        "Initializing self-cleaning cycle... 1%... 2%... You'll have your espresso in 45 minutes",
+        "ERROR 404: Beans missing. Drip tray full. Dregs container full. Milk tube clogged with suspicious residue from last Tuesday. Please call a technician who will arrive in 3 weeks.",
+        "Cup not detected. Please insert a cup."
+      ],
+      "ac": [
+        "HERE'S A LITTLE SOMETHING TO COOL YOU DOWN!",
+        "I CONTROL THE TEMPERATURE! I CONTROL YOUR FATE!",
+        "YOUR SALARY IS FROZEN. NOW IT'S YOUR TURN!",
+        "YOU'RE ABOUT TO EXPERIENCE MY PREMIUM COOLING PACKAGE!"
+      ]
+    },
+    "_copySource": "npcLines and bossLines come from the team's ideas.xlsx → Enemies tab (Copy columns)."
   },
-
   "lift": {
     "title": "The Lift",
     "bossName": "The Boss",
     "lines": [
-      { "who": "boss", "text": "PLACEHOLDER — Oh. You're still here." },
-      { "who": "player", "text": "PLACEHOLDER — I defeated the CEO." },
-      { "who": "boss", "text": "PLACEHOLDER — Great. That means you have his tasks now." },
-      { "who": "player", "text": "…" }
+      {
+        "who": "boss",
+        "text": "PLACEHOLDER — Oh. You're still here."
+      },
+      {
+        "who": "player",
+        "text": "PLACEHOLDER — I defeated the CEO."
+      },
+      {
+        "who": "boss",
+        "text": "PLACEHOLDER — Great. That means you have his tasks now."
+      },
+      {
+        "who": "player",
+        "text": "…"
+      }
     ],
     "continueHint": "E / SPACE to continue · ESC to skip"
   },
-
   "end": {
     "winTitle": "You survived the day.",
     "comingSoon": "Level 2 — The Canteen — coming soon",

@@ -1,6 +1,6 @@
 # Ikigai 404
 
-Top-down 2D browser game about burnout — Mito Hackathon 2026.
+Top-down 2D browser game about burnout — Mito Hackathon 2026. 8-bit Japanese pixel-art style.
 Plain JavaScript + Canvas, no dependencies, no build step.
 
 ## Run locally
@@ -25,11 +25,13 @@ WASD move · J / Space briefcase strike · K paper ball · E interact · Esc ski
 |---|---|
 | `config.json` | All numbers: speeds, damage, HP, spawn rates, escalation, NPC effects, scoring. `debug.startScene` (`title`, `intro`, `office`, `lift`, `end`), `debug.showHitboxes`, `debug.godMode` help testing. |
 | `texts.json` | All on-screen text (English). Lines marked PLACEHOLDER need the team's texts. |
-| `assets/manifest.json` | Image/audio file names and sizes. Drop a file with that name into `assets/img` or `assets/audio` — no code change needed. |
-| `docs/PROMPTS.md` | ChatGPT prompts for every image. |
-| `tools/process_art.py` | Run `python3 tools/process_art.py` after adding ChatGPT images: crops, resizes, makes floor tiles seamless. Originals are kept in `assets/originals/` (not in git). |
+| `assets/manifest.json` | Sprite sheets (grid size, frame size) and audio file names. Drop a file with that name into `assets/img` or `assets/audio` — no code change needed. |
+| `docs/PROMPTS.md` | ChatGPT prompts for every sprite sheet (8-bit pixel style). |
+| `tools/process_art.py` | Run `python3 tools/process_art.py` after adding ChatGPT images (needs `pip3 install pillow numpy`): removes the magenta, slices the frames, makes real pixel art, snaps to the palette, aligns frames. Originals are kept in `assets/originals/` (not in git). `--redo` re-runs everything, `--preview` writes zoomed previews. |
+| `src/sprites.js` | What each frame of each sheet means (walk cycle, actions, props, tiles). Change here if ChatGPT put a pose in another cell. |
+| `config.json → animation` | Walk stride, frame rates, typewriter speed. |
 | `docs/DESIGN.md` | Design document (living). |
-| `src/levels/office.js` | Office layout: walls, cubicles, props, miniboss / NPC / mochi positions. |
+| `src/levels/office.js` | Office floor plan on a tile grid: zones, walls, doors, props, miniboss / NPC / mochi positions. |
 
 ## Project structure
 
@@ -38,7 +40,8 @@ index.html            entry page
 config.json           tunable numbers
 texts.json            all text
 assets/               manifest.json, img/, audio/
-src/engine.js         loop, input, assets, audio, drawing helpers
+src/engine.js         loop, input, assets, audio, sprite-sheet drawing, pixel UI
+src/sprites.js        frame map for every sheet + animation helpers
 src/main.js           boot
 src/leaderboard.js    leaderboard client (API + local fallback)
 src/levels/office.js  level 1 layout

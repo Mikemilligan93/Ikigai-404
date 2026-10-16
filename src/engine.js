@@ -3,20 +3,21 @@
 export const W = 1280;
 export const H = 720;
 
+// One shared 16-colour palette (same as tools/process_art.py and docs/PROMPTS.md).
+export const PAL = {
+  ink: '#1B1A2E', indigo: '#26295A', slate: '#5468A8', sky: '#9CC3E6', cream: '#F2E8D5', grey: '#A39E93',
+  dgrey: '#5C5A63', red: '#D9412B', dred: '#8C2A2A', gold: '#E8B84A', ochre: '#B97A2E', wood: '#6B4226',
+  celadon: '#7FB3A0', moss: '#3E6B4F', pink: '#F2A7B8', peach: '#F0C9A0',
+};
+// Older names used around the code, mapped onto the palette.
 export const COLORS = {
-  indigo: '#1b1f3b',
-  night: '#0d0f1f',
-  paper: '#efe3c2',
-  paperDark: '#d9c89a',
-  ink: '#1a1a1a',
-  gold: '#d4a537',
-  vermilion: '#c0392b',
-  jade: '#3f7f6b',
-  dawn: '#f2b36b',
-  grey: '#7d7a72',
+  indigo: PAL.indigo, night: PAL.ink, paper: PAL.cream, paperDark: PAL.grey, ink: PAL.ink, gold: PAL.gold,
+  vermilion: PAL.red, jade: PAL.moss, dawn: PAL.peach, grey: PAL.grey, green: PAL.celadon,
 };
 
-export const FONT = 'Georgia, "Times New Roman", serif';
+export const FONT = '"DotGothic16", "Courier New", monospace';
+// Every sprite pixel is drawn as PX×PX screen pixels (no smoothing): 24 px tiles become 48 px.
+export const PX = 2;
 
 // ---------- math ----------
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -88,7 +89,7 @@ export class Input {
 
 // ---------- assets ----------
 export class Assets {
-  constructor() { this.images = {}; this.meta = {}; this.sounds = {}; }
+  constructor() { this.images = {}; this.meta = {}; this.sounds = {}; this.flash = {}; }
 
   async load(manifest) {
     const jobs = [];
@@ -96,7 +97,14 @@ export class Assets {
       this.meta[key] = def;
       jobs.push(new Promise((resolve) => {
         const img = new Image();
-        img.onload = () => { this.images[key] = img; resolve(); };
+        img.onload = () => {
+          // only accept processed sheets of the expected size (an unprocessed ChatGPT image would slice wrongly)
+          const ok = def.type === 'background' ? img.width === def.size[0] && img.height === def.size[1]
+            : img.width === def.cols * def.cell[0] && img.height === def.rows * def.cell[1];
+          if (ok) this.images[key] = img;
+          else console.warn(`assets/${def.file}: unexpected size ${img.width}x${img.height} — run python3 tools/process_art.py`);
+          resolve();
+        };
         img.onerror = () => resolve(); // missing art -> placeholder
         img.src = 'assets/' + def.file;
       }));
@@ -111,14 +119,27 @@ export class Assets {
     }
     await Promise.all(jobs);
   }
-  // Image for a key, following manifest "fallback" links (e.g. player_tired → player_ok).
-  get(key) {
-    for (let k = key, i = 0; k && i < 5; k = this.meta[k]?.fallback, i++) if (this.images[k]) return this.images[k];
+  // Key that actually has art, following manifest "fallback" links (e.g. player_tired → player_ok).
+  resolve(key) {
+    for (let k = key, i = 0; k && i < 5; k = this.meta[k]?.fallback, i++) if (this.images[k]) return k;
     return null;
   }
-  has(key) { return !!this.get(key); }
-  // In-game draw size from the manifest, or the given default.
-  size(key, w, h) { const s = this.meta[key]?.size; return s ? s : [w, h]; }
+  get(key) { const k = this.resolve(key); return k ? this.images[k] : null; }
+  has(key) { return !!this.resolve(key); }
+  // Sheet geometry from the manifest (also known when the art is missing, for placeholders).
+  cell(key) { return this.meta[key]?.cell || [32, 32]; }
+  // White silhouette of a sheet, used for the hit flash (ctx.filter is not supported everywhere).
+  flashOf(key) {
+    if (this.flash[key]) return this.flash[key];
+    const img = this.images[key];
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const x = c.getContext('2d');
+    x.drawImage(img, 0, 0);
+    x.globalCompositeOperation = 'source-in';
+    x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+    return (this.flash[key] = c);
+  }
 }
 
 // ---------- audio ----------
@@ -152,43 +173,61 @@ export class Audio {
 
 // ---------- drawing helpers ----------
 const PLACEHOLDER_COLORS = {
-  player: '#e8e2d0', enemy: '#c0392b', miniboss: '#8e44ad', boss: '#b03a2e', npc: '#3f7f6b',
-  prop: '#8a7a5c', pickup: '#f5b7c5', fx: '#d4a537',
+  player: PAL.cream, enemy: PAL.red, miniboss: PAL.dgrey, boss: PAL.dred, npc: PAL.moss,
+  prop: PAL.ochre, pickup: PAL.pink, fx: PAL.gold,
 };
 
 /**
- * Draw an image by key centred on (x, y) with size w×h, or a placeholder if the art is missing.
- * opts: { flip, alpha, rot, sx, sy, kind, label, color, flash }
+ * Draw one frame (col,row) of sprite sheet `key`.
+ * (x, y) is the anchor: 'bottom' (default) = the feet / bottom-centre of the cell, 'center' = the cell centre.
+ * opts: { scale (default PX), flip, alpha, flash, rot, anchor, kind, color, label, ph: [w,h] placeholder size in sprite px }
+ * Without art a pixel-style placeholder block is drawn; it still bobs with the frame so animation is visible.
  */
-export function sprite(ctx, assets, key, x, y, w, h, opts = {}) {
+export function drawFrame(ctx, assets, key, col, row, x, y, opts = {}) {
+  const s = opts.scale ?? PX;
+  const k = assets.resolve(key);
+  const [cw, ch] = assets.cell(k || key);
+  const w = cw * s, h = ch * s;
   ctx.save();
-  ctx.translate(x, y);
+  ctx.translate(Math.round(x), Math.round(y));
   if (opts.rot) ctx.rotate(opts.rot);
-  ctx.scale((opts.flip ? -1 : 1) * (opts.sx ?? 1), opts.sy ?? 1);
+  if (opts.flip) ctx.scale(-1, 1);
   if (opts.alpha != null) ctx.globalAlpha = opts.alpha;
-  const img = assets.get(key);
-  if (img) {
-    // keep the picture's proportions inside the w×h box
-    const k = Math.min(w / img.width, h / img.height);
-    const dw = img.width * k, dh = img.height * k;
-    if (opts.flash) ctx.filter = 'brightness(2.5)';
-    ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+  const top = opts.anchor === 'center' ? -h / 2 : -h;
+  if (k) {
+    const img = opts.flash ? assets.flashOf(k) : assets.images[k];
+    ctx.drawImage(img, col * cw, row * ch, cw, ch, -w / 2, top, w, h);
   } else {
-    const color = opts.color || PLACEHOLDER_COLORS[opts.kind] || '#999';
-    ctx.fillStyle = color;
-    ctx.strokeStyle = COLORS.ink;
-    ctx.lineWidth = 3;
-    roundRect(ctx, -w / 2, -h / 2, w, h, Math.min(w, h) * 0.25);
-    ctx.fill(); ctx.stroke();
+    const [pw, ph] = opts.ph || [cw * 0.6, ch * 0.75];
+    const bw = Math.round(pw) * s, bh = Math.round(ph) * s;
+    const bob = col % 2 ? -s : 0;
+    const by = (opts.anchor === 'center' ? -bh / 2 : -bh) + bob;
+    ctx.fillStyle = PAL.ink; ctx.fillRect(-bw / 2 - s, by - s, bw + 2 * s, bh + 2 * s);
+    ctx.fillStyle = opts.flash ? '#fff' : (opts.color || PLACEHOLDER_COLORS[opts.kind] || PAL.grey);
+    ctx.fillRect(-bw / 2, by, bw, bh);
+    // "eyes" show which way the placeholder faces: row 0 = down, 1 = side, 2 = up
+    if (opts.eyes !== false && bh > 8 * s) {
+      ctx.fillStyle = PAL.ink;
+      const ey = by + Math.min(bh * 0.25, 6 * s);
+      if (row === 0) { ctx.fillRect(-bw / 4 - s, ey, 2 * s, 2 * s); ctx.fillRect(bw / 4 - s, ey, 2 * s, 2 * s); }
+      else if (row === 1) ctx.fillRect(-bw / 2 + s, ey, 2 * s, 2 * s);
+    }
     if (opts.label) {
       if (opts.flip) ctx.scale(-1, 1);
-      ctx.fillStyle = COLORS.ink;
-      ctx.font = `bold ${clamp(Math.floor(Math.min(w, h) / 4), 9, 18)}px ${FONT}`;
+      ctx.fillStyle = PAL.ink;
+      ctx.font = `${clamp(Math.floor(bw / 6), 10, 16)}px ${FONT}`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      wrapText(ctx, opts.label, 0, 0, w - 6, clamp(Math.floor(Math.min(w, h) / 4), 9, 18) + 2);
+      wrapText(ctx, opts.label, 0, by + bh / 2, bw - 4, clamp(Math.floor(bw / 6), 10, 16) + 2);
     }
   }
   ctx.restore();
+}
+
+// Backwards-compatible single-picture helper: draws frame (0,0) centred in a w×h box.
+export function sprite(ctx, assets, key, x, y, w, h, opts = {}) {
+  const [cw, ch] = assets.cell(key);
+  const scale = opts.scale ?? Math.max(1, Math.floor(Math.min(w / cw, h / ch)));
+  drawFrame(ctx, assets, key, opts.col || 0, opts.row || 0, x, y, { ...opts, scale, anchor: 'center', ph: [w / scale, h / scale] });
 }
 
 export function roundRect(ctx, x, y, w, h, r) {
@@ -215,24 +254,44 @@ export function wrapText(ctx, text, x, y, maxW, lineH) {
   return lines.length;
 }
 
-export function text(ctx, str, x, y, { size = 24, color = COLORS.paper, align = 'center', bold = false, shadow = true, baseline = 'middle' } = {}) {
-  ctx.font = `${bold ? 'bold ' : ''}${size}px ${FONT}`;
+export function text(ctx, str, x, y, { size = 24, color = COLORS.paper, align = 'center', shadow = true, baseline = 'middle' } = {}) {
+  ctx.font = `${size}px ${FONT}`;
   ctx.textAlign = align; ctx.textBaseline = baseline;
-  if (shadow) { ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillText(str, x + 2, y + 2); }
+  if (shadow) { ctx.fillStyle = PAL.ink; ctx.fillText(str, x + 3, y + 3); }
   ctx.fillStyle = color;
   ctx.fillText(str, x, y);
 }
 
-// Scroll-like dialogue panel at the bottom of the screen.
-export function dialogueBox(ctx, who, line, hint, { top = false } = {}) {
-  const x = 140, y = top ? 40 : H - 200, w = W - 280, h = 160;
-  ctx.fillStyle = COLORS.paper; ctx.strokeStyle = COLORS.ink; ctx.lineWidth = 4;
-  roundRect(ctx, x, y, w, h, 12); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = COLORS.gold; ctx.fillRect(x, y, w, 8); ctx.fillRect(x, y + h - 8, w, 8);
-  if (who) text(ctx, who, x + 24, y + 34, { size: 22, color: COLORS.vermilion, align: 'left', bold: true, shadow: false });
-  ctx.fillStyle = COLORS.ink; ctx.font = `24px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  wrapLeft(ctx, line, x + 24, y + 74, w - 48, 30);
-  if (hint) text(ctx, hint, x + w - 20, y + h - 24, { size: 16, color: COLORS.grey, align: 'right', shadow: false });
+// Classic Japanese-RPG window: indigo panel, cream double border, small red corner studs.
+export function windowBox(ctx, x, y, w, h, { fill = PAL.indigo, alpha = 0.94 } = {}) {
+  x = Math.round(x); y = Math.round(y);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = PAL.ink; ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+  ctx.fillStyle = fill; ctx.fillRect(x, y, w, h);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = PAL.cream;
+  ctx.fillRect(x + 3, y + 3, w - 6, 3); ctx.fillRect(x + 3, y + h - 6, w - 6, 3);
+  ctx.fillRect(x + 3, y + 3, 3, h - 6); ctx.fillRect(x + w - 6, y + 3, 3, h - 6);
+  ctx.fillStyle = PAL.slate;
+  ctx.fillRect(x + 9, y + 9, w - 18, 3); ctx.fillRect(x + 9, y + 9, 3, h - 18);
+  ctx.fillStyle = PAL.red;
+  for (const [cx, cy] of [[x, y], [x + w - 9, y], [x, y + h - 9], [x + w - 9, y + h - 9]]) ctx.fillRect(cx, cy, 9, 9);
+  ctx.restore();
+}
+
+// Dialogue window at the bottom (or top) of the screen. `shown` = how many characters are revealed (typewriter).
+export function dialogueBox(ctx, who, line, hint, { top = false, shown = Infinity } = {}) {
+  const x = 140, y = top ? 40 : H - 210, w = W - 280, h = 170;
+  windowBox(ctx, x, y, w, h);
+  if (who) {
+    const nw = Math.max(160, who.length * 16 + 40);
+    windowBox(ctx, x + 24, y - 30, nw, 44, { fill: PAL.dred });
+    text(ctx, who, x + 24 + nw / 2, y - 8, { size: 20, color: PAL.gold });
+  }
+  ctx.fillStyle = PAL.cream; ctx.font = `24px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  wrapLeft(ctx, String(line).slice(0, shown), x + 32, y + 50, w - 64, 34);
+  if (hint && shown >= String(line).length) text(ctx, hint, x + w - 24, y + h - 26, { size: 16, color: PAL.grey, align: 'right', shadow: false });
 }
 
 export function wrapLeft(ctx, str, x, y, maxW, lineH) {
@@ -245,10 +304,15 @@ export function wrapLeft(ctx, str, x, y, maxW, lineH) {
   if (line) ctx.fillText(line, x, yy);
 }
 
-export function bar(ctx, x, y, w, h, frac, color, back = 'rgba(0,0,0,0.5)') {
-  ctx.fillStyle = back; ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = color; ctx.fillRect(x, y, w * clamp(frac, 0, 1), h);
-  ctx.strokeStyle = COLORS.ink; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+// Segmented pixel bar.
+export function bar(ctx, x, y, w, h, frac, color, back = PAL.ink) {
+  x = Math.round(x); y = Math.round(y);
+  ctx.fillStyle = PAL.ink; ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+  ctx.fillStyle = back === PAL.ink ? PAL.dgrey : back; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = color; ctx.fillRect(x, y, Math.round(w * clamp(frac, 0, 1)), h);
+  ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x, y, Math.round(w * clamp(frac, 0, 1)), 3);
+  ctx.fillStyle = PAL.ink;
+  for (let sx = x + 12; sx < x + w; sx += 12) ctx.fillRect(sx, y, 2, h);
 }
 
 // ---------- game & scenes ----------
@@ -276,6 +340,13 @@ export class Game {
     this.nextScene = scene; this.fadeDir = 1;
   }
 
+  // Pixel 'blinds' transition between scenes (classic 8-bit wipe).
+  drawWipe(ctx) {
+    ctx.fillStyle = PAL.ink;
+    const band = 48;
+    for (let y = 0; y < H; y += band) ctx.fillRect(0, y, W, Math.ceil(band * this.fade));
+  }
+
   start() {
     let last = performance.now();
     const loop = (now) => {
@@ -301,9 +372,10 @@ export class Game {
     }
     const ctx = this.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, W, H);
     this.scene?.draw(ctx);
-    if (this.fade > 0) { ctx.fillStyle = `rgba(13,15,31,${this.fade})`; ctx.fillRect(0, 0, W, H); }
+    if (this.fade > 0) this.drawWipe(ctx);
     this.input.endFrame();
   }
 }

@@ -1,307 +1,396 @@
 {
-  "_readme": "Drop a file with this exact name into assets/img or assets/audio and the game uses it automatically. Missing files show as placeholder shapes / silence. Sizes are the in-game draw size; generate larger (2x) with the same aspect ratio and transparent background where noted. After adding ChatGPT images run: python3 tools/process_art.py (crops, resizes, fixes tile seams; originals go to assets/originals). 'fallback' = image used until this one exists.",
+  "_readme": "Every image is a SPRITE SHEET (a grid of frames) or a background. Drop the ChatGPT image into assets/img with exactly this file name and run: python3 tools/process_art.py. It keys out the magenta, slices the grid (cols x rows), shrinks every frame to 'cell' pixels (real pixel art), snaps colours to the shared palette and aligns the frames ('bottom' = feet on one baseline, 'center' = centred). The game draws everything at 2x with no smoothing. What each frame means: src/sprites.js. Missing files show as placeholder blocks.",
   "images": {
     "player_ok": {
       "file": "img/player_ok.png",
-      "size": [
-        88,
-        88
-      ],
-      "transparent": true
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
     },
     "player_tired": {
       "file": "img/player_tired.png",
-      "size": [
-        88,
-        88
-      ],
-      "transparent": true,
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom",
       "fallback": "player_ok"
     },
     "player_burnt": {
       "file": "img/player_burnt.png",
-      "size": [
-        88,
-        88
-      ],
-      "transparent": true,
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom",
       "fallback": "player_ok"
+    },
+    "player_actions": {
+      "file": "img/player_actions.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
     },
     "player_side": {
       "file": "img/player_side.png",
-      "size": [
-        96,
-        128
-      ],
-      "transparent": true,
-      "fallback": "player_ok"
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [48, 72],
+      "align": "bottom"
     },
     "player_portrait": {
       "file": "img/player_portrait.png",
-      "size": [
-        420,
-        420
-      ],
-      "transparent": true,
-      "fallback": "player_ok"
-    },
-    "briefcase_swing": {
-      "file": "img/briefcase_swing.png",
-      "size": [
-        80,
-        80
-      ],
-      "transparent": true
-    },
-    "paper_ball": {
-      "file": "img/paper_ball.png",
-      "size": [
-        20,
-        20
-      ],
-      "transparent": true
-    },
-    "enemy_weak": {
-      "file": "img/enemy_weak.png",
-      "size": [
-        56,
-        56
-      ],
-      "transparent": true
-    },
-    "enemy_strong": {
-      "file": "img/enemy_strong.png",
-      "size": [
-        52,
-        52
-      ],
-      "transparent": true
-    },
-    "miniboss_printer": {
-      "file": "img/miniboss_printer.png",
-      "size": [
-        110,
-        110
-      ],
-      "transparent": true
-    },
-    "miniboss_coffee": {
-      "file": "img/miniboss_coffee.png",
-      "size": [
-        110,
-        110
-      ],
-      "transparent": true
-    },
-    "miniboss_fax": {
-      "file": "img/miniboss_fax.png",
-      "size": [
-        110,
-        110
-      ],
-      "transparent": true
+      "type": "sheet",
+      "cols": 2,
+      "rows": 1,
+      "cell": [96, 96],
+      "align": "bottom"
     },
     "boss_ceo": {
       "file": "img/boss_ceo.png",
-      "size": [
-        150,
-        150
-      ],
-      "transparent": true
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [96, 96],
+      "align": "bottom"
     },
     "boss_portrait": {
       "file": "img/boss_portrait.png",
-      "size": [
-        420,
-        420
-      ],
-      "transparent": true
+      "type": "sheet",
+      "cols": 2,
+      "rows": 1,
+      "cell": [96, 96],
+      "align": "bottom"
     },
-    "fireball": {
-      "file": "img/fireball.png",
-      "size": [
-        24,
-        24
-      ],
-      "transparent": true
+    "miniboss_client": {
+      "file": "img/miniboss_client.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "npc_motivator": {
-      "file": "img/npc_motivator.png",
-      "size": [
-        60,
-        60
-      ],
-      "transparent": true
+    "miniboss_printer": {
+      "file": "img/miniboss_printer.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "npc_mentor": {
-      "file": "img/npc_mentor.png",
-      "size": [
-        60,
-        60
-      ],
-      "transparent": true
+    "miniboss_coffee": {
+      "file": "img/miniboss_coffee.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "npc_complainer": {
-      "file": "img/npc_complainer.png",
-      "size": [
-        60,
-        60
-      ],
-      "transparent": true
+    "miniboss_ac": {
+      "file": "img/miniboss_ac.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "npc_meetinger": {
-      "file": "img/npc_meetinger.png",
-      "size": [
-        60,
-        60
-      ],
-      "transparent": true
+    "minion_email_weak": {
+      "file": "img/minion_email_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "center"
+    },
+    "minion_email_strong": {
+      "file": "img/minion_email_strong.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "center"
+    },
+    "minion_paper_weak": {
+      "file": "img/minion_paper_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "bottom"
+    },
+    "minion_paper_strong": {
+      "file": "img/minion_paper_strong.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "minion_coffee_weak": {
+      "file": "img/minion_coffee_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "bottom"
+    },
+    "minion_coffee_strong": {
+      "file": "img/minion_coffee_strong.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "minion_ice_weak": {
+      "file": "img/minion_ice_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "bottom"
+    },
+    "minion_ice_strong": {
+      "file": "img/minion_ice_strong.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "minion_heart_weak": {
+      "file": "img/minion_heart_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "bottom"
+    },
+    "minion_heart_strong": {
+      "file": "img/minion_heart_strong.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_dog": {
+      "file": "img/npc_dog.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_bestie": {
+      "file": "img/npc_bestie.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_baker": {
+      "file": "img/npc_baker.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_expert": {
+      "file": "img/npc_expert.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_meeting_saver": {
+      "file": "img/npc_meeting_saver.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_shouter": {
+      "file": "img/npc_shouter.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_karen": {
+      "file": "img/npc_karen.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_lazy": {
+      "file": "img/npc_lazy.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_photos": {
+      "file": "img/npc_photos.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_hobby": {
+      "file": "img/npc_hobby.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
     },
     "npc_inspector": {
       "file": "img/npc_inspector.png",
-      "size": [
-        96,
-        128
-      ],
-      "transparent": true
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 72],
+      "align": "bottom"
     },
-    "office_floor": {
-      "file": "img/office_floor.png",
-      "size": [
-        512,
-        512
-      ],
-      "transparent": false,
-      "note": "seamless tile"
+    "tiles_floor": {
+      "file": "img/tiles_floor.png",
+      "type": "tiles",
+      "cols": 4,
+      "rows": 4,
+      "cell": [24, 24],
+      "palette": false,
+      "colors": 24
     },
-    "cubicle_block": {
-      "file": "img/cubicle_block.png",
-      "size": [
-        360,
-        170
-      ],
-      "transparent": true
+    "tiles_wall": {
+      "file": "img/tiles_wall.png",
+      "type": "tiles",
+      "cols": 4,
+      "rows": 4,
+      "cell": [24, 24],
+      "palette": false,
+      "colors": 24
     },
-    "own_desk": {
-      "file": "img/own_desk.png",
-      "size": [
-        140,
-        80
-      ],
-      "transparent": true
+    "props_cubicles_a": {
+      "file": "img/props_cubicles_a.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "coffee_machine": {
-      "file": "img/coffee_machine.png",
-      "size": [
-        70,
-        70
-      ],
-      "transparent": true
+    "props_cubicles_b": {
+      "file": "img/props_cubicles_b.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "water_cooler": {
-      "file": "img/water_cooler.png",
-      "size": [
-        44,
-        44
-      ],
-      "transparent": true
+    "props_manager": {
+      "file": "img/props_manager.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "printer_decor": {
-      "file": "img/printer_decor.png",
-      "size": [
-        70,
-        60
-      ],
-      "transparent": true
+    "props_kitchen": {
+      "file": "img/props_kitchen.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "coat_rack": {
-      "file": "img/coat_rack.png",
-      "size": [
-        44,
-        44
-      ],
-      "transparent": true
+    "props_archive": {
+      "file": "img/props_archive.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "plant": {
-      "file": "img/plant.png",
-      "size": [
-        48,
-        48
-      ],
-      "transparent": true
+    "props_meeting": {
+      "file": "img/props_meeting.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "kitchen_table": {
-      "file": "img/kitchen_table.png",
-      "size": [
-        220,
-        120
-      ],
-      "transparent": true
+    "props_server": {
+      "file": "img/props_server.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "lift_door": {
-      "file": "img/lift_door.png",
-      "size": [
-        120,
-        160
-      ],
-      "transparent": true
+    "props_misc": {
+      "file": "img/props_misc.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
     },
-    "mochi": {
-      "file": "img/mochi.png",
-      "size": [
-        32,
-        32
-      ],
-      "transparent": true
-    },
-    "window_city": {
-      "file": "img/window_city.png",
-      "size": [
-        512,
-        60
-      ],
-      "transparent": false,
-      "note": "seamless horizontally"
-    },
-    "intro_flat": {
-      "file": "img/intro_flat.png",
-      "size": [
-        1280,
-        720
-      ],
-      "transparent": false
-    },
-    "intro_metro": {
-      "file": "img/intro_metro.png",
-      "size": [
-        1280,
-        720
-      ],
-      "transparent": false
-    },
-    "intro_entrance": {
-      "file": "img/intro_entrance.png",
-      "size": [
-        1280,
-        720
-      ],
-      "transparent": false
-    },
-    "lift_interior": {
-      "file": "img/lift_interior.png",
-      "size": [
-        1280,
-        720
-      ],
-      "transparent": false
+    "fx_items": {
+      "file": "img/fx_items.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [24, 24],
+      "align": "center"
     },
     "title_bg": {
       "file": "img/title_bg.png",
-      "size": [
-        1280,
-        720
-      ],
-      "transparent": false
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48
+    },
+    "intro_flat": {
+      "file": "img/intro_flat.png",
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48
+    },
+    "intro_metro": {
+      "file": "img/intro_metro.png",
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48
+    },
+    "intro_entrance": {
+      "file": "img/intro_entrance.png",
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48
+    },
+    "lift_interior": {
+      "file": "img/lift_interior.png",
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48
     }
   },
   "audio": {

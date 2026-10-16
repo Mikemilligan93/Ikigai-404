@@ -1,8 +1,8 @@
-# Ikigai 404 — Design Document v0.2
+# Ikigai 404 — Design Document v0.3
 
 *Mito Hackathon 2026 · 24 hours to MVP · living document — decisions are updated here*
 
-Changes vs v0.1: Q&A decisions folded in (2026-10-16), MVP cut line, task breakdown, open items.
+Changes vs v0.2: visual style pivot to 8-bit pixel art, sprite-sheet animation, themed office zones, the team's cast wired in, first real art (2026-10-16).
 
 ---
 
@@ -36,15 +36,17 @@ Reuse of earlier personal projects (e.g. the top-down tech demo) is allowed.
 
 ## 4. Visual style
 
-Modern(ish, 90s) Japanese office drawn as if by a medieval artist: Japanese woodblock prints and
-picture scrolls merged with European illuminated manuscripts. Bold carved ink lines, flat historical
-pigments, gold leaf on aged paper, satirical animals in the spirit of the Chōjū-giga scrolls,
-palette from night indigo to hopeful golden dawn. *Not final — we try it and pivot if needed.*
+**Pivot 2026-10-16:** the woodblock / illuminated-manuscript style did not work. New style: **8-bit Japanese pixel art**, in the spirit of the top-down tech demo — chunky pixels, dark outlines, Japanese office details (shoji, noren, tatami, maneki-neko, daruma, bonsai, seigaiha).
 
-- **Camera:** top-down (like the tech demo), scrolling camera following the player.
-- **Intro:** side view. **Lift:** chest-up dialogue view.
-- **Animation:** static sprites + code-driven bob / squash / tilt (ChatGPT does not make sprite sheets).
-- Art prompts: `docs/PROMPTS.md`.
+- **Camera:** classic Japanese RPG three-quarter top-down view, scrolling camera following the player.
+- **Intro:** side view (characters drawn 1.5× bigger there). **Lift:** chest-up pixel portraits.
+- **Art pipeline:** the team generates each sheet in ChatGPT (grid of frames on flat magenta); `tools/process_art.py` keys out the magenta, finds the frames, shrinks them to real pixel art, snaps sprites to the shared 16-colour palette (backgrounds and floor/wall tiles get their own adaptive palette so gradients survive) and aligns the frames. Originals are kept in `assets/originals/`.
+- **Resolution:** everything is drawn at 2× with no smoothing: characters 48 px (bunny, colleagues, strong minions), weak minions 36, minibosses 72, CEO 96, tiles 24, props 72, portraits 96, backgrounds 640×360.
+- **Animation:** real frame animation from the sheets — walk cycles follow the distance walked (no foot sliding), idle breathing, attack / hurt / defeated frames, typewriter speech bubbles with mouth movement. Frame meanings: `src/sprites.js`.
+- **Player:** 4 directions (right = mirrored left), separate walk sheets for the 3 postures, plus an action sheet (swing, throw).
+- **Cast (from the team's ideas.xlsx):** final boss = CEO "We're a family" oni (throws toxic pink hearts, enraged below half HP); 4 walking minibosses on a leash around their room — Evil Client yōkai (meeting room, spawns emails), Printer (archive, paper), Broken Coffee Machine (kitchen, coffee cups), Air Conditioner (server closet, ice cubes); the CEO spawns pink hearts. Every minion has a weak and a strong version. 10 colleagues (5 energy boost, 5 energy vampire) speak their lines from the Copy columns in a speech bubble when you walk up, and apply their effect if you stay; effects are in `config.json → friendlyNpcs`. Intro: crow ticket inspector. Lift boss portrait: shiba in a suit (the team's art; still labelled "The Boss").
+- **Variety — themed zones:** open-plan cubicles (12 variants) around the boss arena, kitchen, manager's corner (tatami), meeting room, lift lobby (lift + the healing coffee machine), server closet, archive. Floor plan: 64×40 tiles in `src/levels/office.js`. Enemies path-find through doors and aisles; the CEO walks over furniture.
+- Art prompts: `docs/PROMPTS.md` (= `claude/ikigai-404-art-prompts.md` in the project) and the Image prompts tab in `docs/ideas.xlsx`.
 
 ## 5. Player character
 
@@ -114,8 +116,9 @@ random line · end screen with score · online leaderboard · config.json + text
 | # | Task | Owner | Status |
 |---|---|---|---|
 | 1 | Playable skeleton with placeholders (all scenes) | Claude | done (v0.1 skeleton) |
-| 2 | Asset list + ChatGPT prompts | Claude | done (draft) |
-| 3 | Generate art from prompts, drop into `assets/img` | Team | open |
+| 2 | Asset list + ChatGPT prompts (v2, pixel art) | Claude | done |
+| 3 | Generate art from prompts, drop into `assets/img` | Team | done (49 sheets, 2026-10-16) |
+| 3a | Sprite-sheet pipeline + frame animation + zoned office + team cast | Claude | done (real art processed and in game) |
 | 4 | Write texts (intro, inspector, lift, burnout lines) in `texts.json` | Team | open |
 | 5 | Define NPC types (buff/debuff) | Team | open |
 | 6 | Define enemy / miniboss / boss behaviour | PO + team | open |
@@ -131,4 +134,4 @@ random line · end screen with score · online leaderboard · config.json + text
 - Enemy / minion types, miniboss list (beyond printer and coffee machine), boss attack patterns.
 - Lift scene content.
 - Scoring rules.
-- Whether the art style works in top-down; fallback style if not.
+- Fine-tune the floor plan once the real prop art is in (footprints in `src/sprites.js`).

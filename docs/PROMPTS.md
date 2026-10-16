@@ -1,492 +1,971 @@
-# Ikigai 404 — ChatGPT image prompts
+# Ikigai 404 — ChatGPT image prompts (v2 · 8-bit pixel style)
 
-Every prompt below is **complete** — copy the whole grey box into ChatGPT as one message. Nothing else to add.
+*Style pivot 2026-10-16: the woodblock / manuscript style is dropped (old images moved to `assets/originals/legacy_v1/`). Everything is now 8-bit Japanese pixel art, in the spirit of the top-down tech demo. All images are **sprite sheets** — several frames or objects in one picture — and the game slices and animates them.*
 
-After saving:
-1. Save the image into `assets/img/` with **exactly** the file name shown.
-2. In the project folder run `python3 tools/process_art.py` (crops, resizes, fixes tiles; originals go to `assets/originals/`).
-3. Reload the game.
+## How to use
 
-If ChatGPT shows a grey-and-white checkerboard instead of real transparency, reply: *"The background is a checkerboard pattern, not real transparency. Please output it again with a truly transparent background."*
+1. Copy one whole grey box into ChatGPT as one message. Nothing else to add (except the attachment tip where it says so).
+2. Save the image into `assets/img/` with **exactly** the file name shown.
+3. In the project folder run `python3 tools/process_art.py` (first time: `pip3 install pillow numpy`). It removes the magenta, finds the frames, shrinks them to real pixel art (one game pixel per ChatGPT "big pixel"), snaps colours to the shared palette and lines the frames up so the animation does not wobble. Originals go to `assets/originals/`.
+4. Reload the game — the code animates the frames (walk cycles follow the distance walked, so feet never slide).
 
-Generate all bunny images in **the same ChatGPT chat** so he stays consistent.
+Want to check a sheet up close? `python3 tools/process_art.py player_ok --redo --preview` writes `assets/originals/preview_player_ok.png` (8× zoom with the frame grid). If the script says *"spacing was messy"*, look at the preview — usually ChatGPT made the wrong number of rows/columns.
 
-*Style test done 2026-10-16 with player_ok, enemy_weak, office_floor: the high-angle-from-the-front camera works and is used for every office sprite.*
+## Rules that make the pipeline work
+
+- **Magenta background, not transparency.** Every sprite sheet uses a flat magenta (#FF00FF) background; the script turns it into transparency. If ChatGPT adds shading, a floor or a checkerboard, reply: *"The background must be one flat pure magenta colour (#FF00FF), no shading, no floor, no checkerboard. Please output it again."*
+- **Grid must match.** Check that the number of rows and columns is exactly what the prompt asks for. If not, reply: *"Please redo it with exactly N columns and M rows, evenly spaced, with wide magenta gaps between cells."*
+- **Too smooth?** If the result looks like a smooth illustration instead of chunky pixels, reply: *"Make it much lower resolution, real chunky pixel art with big visible square pixels and no anti-aliasing."*
+- **Consistency.** Make `player_ok.png` first and attach it when making every other bunny sheet. Make each prop sheet in the same chat as the previous one so the style stays together.
+- Rows that say *facing LEFT* are mirrored in code for *facing right*.
+
+## Palette (the script snaps every image to this)
+
+| Name | Hex | Name | Hex |
+|---|---|---|---|
+| ink black | `#1B1A2E` | ochre | `#B97A2E` |
+| night indigo | `#26295A` | wood brown | `#6B4226` |
+| slate blue | `#5468A8` | celadon green | `#7FB3A0` |
+| paper cream | `#F2E8D5` | moss green | `#3E6B4F` |
+| warm grey | `#A39E93` | sakura pink | `#F2A7B8` |
+| dark grey | `#5C5A63` | peach | `#F0C9A0` |
+| vermilion | `#D9412B` | gold | `#E8B84A` |
+| deep red | `#8C2A2A` | sky blue | `#9CC3E6` |
+
+## Sheet overview
+
+The frame meanings are also listed in `src/sprites.js` — if ChatGPT puts a pose in a different cell, change it there instead of regenerating.
+
+
+| File | Grid (cols × rows) | Frame size in pixels | Contents |
+|---|---|---|---|
+| `player_ok.png` | 3 × 3 | 32×32 | Player |
+| `player_tired.png` | 3 × 3 | 32×32 | Player |
+| `player_burnt.png` | 3 × 3 | 32×32 | Player |
+| `player_actions.png` | 3 × 3 | 32×32 | Player |
+| `player_side.png` | 4 × 2 | 32×48 | Player |
+| `player_portrait.png` | 2 × 1 | 64×64 | Player |
+| `boss_ceo.png` | 4 × 2 | 64×64 | Bosses |
+| `boss_portrait.png` | 2 × 1 | 64×64 | Bosses |
+| `miniboss_client.png` | 4 × 2 | 48×48 | Minibosses |
+| `miniboss_printer.png` | 4 × 2 | 48×48 | Minibosses |
+| `miniboss_coffee.png` | 4 × 2 | 48×48 | Minibosses |
+| `miniboss_ac.png` | 4 × 2 | 48×48 | Minibosses |
+| `minion_email_weak.png` | 4 × 1 | 24×24 | Minions |
+| `minion_email_strong.png` | 4 × 1 | 32×32 | Minions |
+| `minion_paper_weak.png` | 4 × 1 | 24×24 | Minions |
+| `minion_paper_strong.png` | 4 × 1 | 32×32 | Minions |
+| `minion_coffee_weak.png` | 4 × 1 | 24×24 | Minions |
+| `minion_coffee_strong.png` | 4 × 1 | 32×32 | Minions |
+| `minion_ice_weak.png` | 4 × 1 | 24×24 | Minions |
+| `minion_ice_strong.png` | 4 × 1 | 32×32 | Minions |
+| `minion_heart_weak.png` | 4 × 1 | 24×24 | Minions |
+| `minion_heart_strong.png` | 4 × 1 | 32×32 | Minions |
+| `npc_dog.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_bestie.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_baker.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_expert.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_meeting_saver.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_shouter.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_karen.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_lazy.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_photos.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_hobby.png` | 4 × 1 | 32×32 | Colleagues |
+| `npc_inspector.png` | 4 × 1 | 32×48 | Colleagues |
+| `tiles_floor.png` | 4 × 4 | 16×16 | Tiles |
+| `tiles_wall.png` | 4 × 4 | 16×16 | Tiles |
+| `props_cubicles_a.png` | 3 × 2 | 48×48 | Office props |
+| `props_cubicles_b.png` | 3 × 2 | 48×48 | Office props |
+| `props_manager.png` | 3 × 2 | 48×48 | Office props |
+| `props_kitchen.png` | 3 × 2 | 48×48 | Office props |
+| `props_archive.png` | 3 × 2 | 48×48 | Office props |
+| `props_meeting.png` | 3 × 2 | 48×48 | Office props |
+| `props_server.png` | 3 × 2 | 48×48 | Office props |
+| `props_misc.png` | 3 × 2 | 48×48 | Office props |
+| `fx_items.png` | 4 × 2 | 16×16 | Pickups, projectiles and effects |
+| `title_bg.png` | full scene | 320×180 | background |
+| `intro_flat.png` | full scene | 320×180 | background |
+| `intro_metro.png` | full scene | 320×180 | background |
+| `intro_entrance.png` | full scene | 320×180 | background |
+| `lift_interior.png` | full scene | 320×180 | background |
 
 ---
 
 ## Player — the bunny
 
-Tip: if ChatGPT lets you, also attach `assets/originals/player_ok.png` and add *"Keep the character identical to the attached image."* — that keeps him consistent.
+### `player_ok.png` — frames 32×32 · grid 3×3
 
-### `player_ok.png` — in game 88×88
-
-```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
-
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
-
-Subject: The main character: a burnt-out white rabbit office worker with long upright ears (pink inside, gold-leaf edges), tired half-closed eyes with red rims, golden whiskers, wearing a navy-blue suit with thin gold trim, a white shirt, a vermilion tie with a gold pattern, brown leather loafers, and carrying a brown leather briefcase in his right hand. Pose: standing upright, tired but holding on, ears up.
-
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
-```
-
-### `player_tired.png` — in game 88×88
+*Generate this first. It is the reference for every other bunny image.*
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: The main character: a burnt-out white rabbit office worker with long upright ears (pink inside, gold-leaf edges), tired half-closed eyes with red rims, golden whiskers, wearing a navy-blue suit with thin gold trim, a white shirt, a vermilion tie with a gold pattern, brown leather loafers, and carrying a brown leather briefcase in his right hand. Pose: shoulders slumped, one ear drooping, tie loosened, briefcase hanging low.
+Subject: The main character: a burnt-out white rabbit office worker with long upright ears (soft pink inside), tired half-closed eyes with red rims, a navy-blue suit, white shirt, vermilion tie and brown shoes, carrying a brown leather briefcase. Mood: tired but holding on, ears up, standing straight.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: facing DOWN (towards the viewer): left foot forward | standing still | right foot forward
+- Row 2: facing LEFT (side profile): left foot forward | standing still | right foot forward
+- Row 3: facing UP (back to the viewer): left foot forward | standing still | right foot forward
+
+Output: PNG, Square image, 1024×1024.
 ```
 
-### `player_burnt.png` — in game 88×88
+### `player_tired.png` — frames 32×32 · grid 3×3
+
+*Attach player_ok.png and add: "Keep the character identical to the attached sprite sheet, only change the posture."*
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: The main character: a burnt-out white rabbit office worker with long upright ears (pink inside, gold-leaf edges), tired half-closed eyes with red rims, golden whiskers, wearing a navy-blue suit with thin gold trim, a white shirt, a vermilion tie with a gold pattern, brown leather loafers, and carrying a brown leather briefcase in his right hand. Pose: hunched and exhausted, both ears flopped down, briefcase dragging on the floor, small grey smoke wisps rising from his head.
+Subject: The main character: a burnt-out white rabbit office worker with long upright ears (soft pink inside), tired half-closed eyes with red rims, a navy-blue suit, white shirt, vermilion tie and brown shoes, carrying a brown leather briefcase. Mood: tired — shoulders slumped, one ear drooping, tie loosened, briefcase hanging low.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: facing DOWN (towards the viewer): left foot forward | standing still | right foot forward
+- Row 2: facing LEFT (side profile): left foot forward | standing still | right foot forward
+- Row 3: facing UP (back to the viewer): left foot forward | standing still | right foot forward
+
+Output: PNG, Square image, 1024×1024.
 ```
 
-### `player_side.png` — in game 96×128
+### `player_burnt.png` — frames 32×32 · grid 3×3
+
+*Attach player_ok.png and add: "Keep the character identical to the attached sprite sheet, only change the posture."*
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: plain side view, full body, standing on an invisible ground line at the bottom of the image, like a 2D side-scrolling game.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: The main character: a burnt-out white rabbit office worker with long upright ears (pink inside, gold-leaf edges), tired half-closed eyes with red rims, golden whiskers, wearing a navy-blue suit with thin gold trim, a white shirt, a vermilion tie with a gold pattern, brown leather loafers, and carrying a brown leather briefcase in his right hand. Pose: walking to the right, mid-stride, briefcase in hand, weary.
+Subject: The main character: a burnt-out white rabbit office worker with long upright ears (soft pink inside), tired half-closed eyes with red rims, a navy-blue suit, white shirt, vermilion tie and brown shoes, carrying a brown leather briefcase. Mood: nearly burnt out — hunched, both ears flopped down, briefcase dragging, small grey smoke wisps above his head.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no backdrop). One single subject, centred, filling most of the image height. Portrait image, 1024×1536.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: facing DOWN (towards the viewer): left foot forward | standing still | right foot forward
+- Row 2: facing LEFT (side profile): left foot forward | standing still | right foot forward
+- Row 3: facing UP (back to the viewer): left foot forward | standing still | right foot forward
+
+Output: PNG, Square image, 1024×1024.
 ```
 
-### `player_portrait.png` — in game 420×420
+### `player_actions.png` — frames 32×32 · grid 3×3
+
+*Attach player_ok.png and add: "Keep the character identical to the attached sprite sheet."*
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: chest-up portrait, straight-on to three-quarter view, like a character portrait in a visual novel dialogue scene.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: The main character: a burnt-out white rabbit office worker with long upright ears (pink inside, gold-leaf edges), tired half-closed eyes with red rims, golden whiskers, wearing a navy-blue suit with thin gold trim, a white shirt, a vermilion tie with a gold pattern, brown leather loafers, and carrying a brown leather briefcase in his right hand. He faces to the right. Weary, slightly sarcastic expression. Head, shoulders and chest only.
+Subject: The main character: a burnt-out white rabbit office worker with long upright ears (soft pink inside), tired half-closed eyes with red rims, a navy-blue suit, white shirt, vermilion tie and brown shoes, carrying a brown leather briefcase. Action poses.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 3 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: facing DOWN: winding up a briefcase swing (briefcase raised behind) | briefcase swung hard forward | throwing a crumpled paper ball forward
+- Row 2: facing LEFT: winding up a briefcase swing | briefcase swung hard forward | throwing a crumpled paper ball forward
+- Row 3: facing UP (back to viewer): winding up a briefcase swing | briefcase swung hard forward | throwing a crumpled paper ball forward
+
+Output: PNG, Square image, 1024×1024.
 ```
 
----
+### `player_side.png` — frames 32×48 · grid 4×2
+
+*Attach player_ok.png and add: "Keep the character identical to the attached sprite sheet."*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
+
+Subject: The main character in side view, for the intro: a burnt-out white rabbit office worker with long upright ears (soft pink inside), tired half-closed eyes with red rims, a navy-blue suit, white shirt, vermilion tie and brown shoes, carrying a brown leather briefcase.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×48 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: walking to the RIGHT, four frames of one walk cycle (contact | passing | contact other foot | passing)
+- Row 2: lying curled up asleep on his side | sitting up startled with sweat drops | shaking himself awake, ears flapping | standing upright facing right, weary
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `player_portrait.png` — frames 64×64 · grid 2×1
+
+*Attach player_ok.png and add: "Keep the character identical to the attached sprite sheet."*
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: chest-up character portrait, three-quarter view, like a dialogue portrait in a Japanese RPG.
+
+Subject: Portrait of the main character: a burnt-out white rabbit office worker with long upright ears (soft pink inside), tired half-closed eyes with red rims, a navy-blue suit, white shirt, vermilion tie and brown shoes, carrying a brown leather briefcase. He faces to the right. Weary, slightly sarcastic expression. Head, shoulders and chest only.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 2 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 64×64 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: mouth closed | mouth open (talking), otherwise identical
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
 
 ## Bosses
 
-### `boss_ceo.png` — in game 150×150
+### `boss_ceo.png` — frames 64×64 · grid 4×2
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: The CEO: a huge, menacing red-and-gold Japanese dragon wearing an expensive black pinstripe business suit with a gold tie and gold cufflinks, long whiskers, smug expression, smoke curling from the nostrils. Pose: wings half spread, coiled and threatening, facing the viewer.
+Subject: The CEO, final boss: a huge red Japanese oni demon with two horns and small tusks, wearing an expensive black business suit and a pink heart-patterned tie, a fake loving smile, surrounded by a soft pink aura of little hearts. Facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 64×64 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: normal: idle A | idle B (breathing, slightly raised) | throwing pink hearts forward with both hands | hurt (recoiling, eyes squeezed shut)
+- Row 2: enraged (suit torn, eyes glowing, aura turns dark pink): idle A | idle B | roaring with mouth wide open | defeated, slumped on the floor
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `boss_portrait.png` — in game 420×420 · *Wait for the team*
+### `boss_portrait.png` — frames 64×64 · grid 2×1
+
+*Wait for the team.*
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: chest-up portrait, straight-on to three-quarter view, like a character portrait in a visual novel dialogue scene.
+Camera: chest-up character portrait, three-quarter view, like a dialogue portrait in a Japanese RPG.
 
-Subject: PLACEHOLDER — the boss in the lift is not decided yet. Wait for the team before generating this one.
+Subject: PLACEHOLDER — the boss in the lift is not decided yet. Wait for the team before generating this one. Faces to the left.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 2 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 64×64 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: mouth closed | mouth open (talking), otherwise identical
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
----
+## Minibosses (walking, possessed office things)
 
-## Minibosses (possessed office machines)
-
-### `miniboss_printer.png` — in game 110×110
+### `miniboss_client.png` — frames 48×48 · grid 4×2
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A monstrous beige 1990s office laser printer possessed like a Japanese yōkai: paper spewing from its slot like a long tongue, glowing angry eyes on the control panel, small stubby legs.
+Subject: The evil client, a Japanese yōkai: a many-armed creature in a smart-casual blazer with one big demanding eye; its hands hold a smartphone, a thick PDF document, a coffee cup and a giant logo.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 48×48 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (shaking, slightly bigger) | spawning minions (mouth / slot wide open) | hurt (flashing, tilted)
+- Row 2: walking to the LEFT (side profile), four frames of one walk cycle
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `miniboss_coffee.png` — in game 110×110
+### `miniboss_printer.png` — frames 48×48 · grid 4×2
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A broken office coffee machine possessed like a Japanese yōkai: black coffee leaking everywhere, steam rising like horns, a cracked glass coffee pot, glowing angry eyes.
+Subject: An evil beige 1990s office laser printer possessed like a Japanese yōkai: paper spewing from its slot like a long tongue, glowing angry eyes on the control panel, small stubby legs.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 48×48 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (shaking, slightly bigger) | spawning minions (mouth / slot wide open) | hurt (flashing, tilted)
+- Row 2: walking to the LEFT (side profile), four frames of one walk cycle
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `miniboss_fax.png` — in game 110×110
+### `miniboss_coffee.png` — frames 48×48 · grid 4×2
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A haunted 1990s fax machine possessed like a Japanese yōkai: ghostly paper streamers floating around it, a curly phone cord as a tail, glowing angry eyes.
+Subject: A broken, evil office coffee machine with a wide grin, possessed like a Japanese yōkai: leaking murky coffee, a cracked glass pot, a sour-milk tube hanging out, steam rising like oni horns, small legs.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 48×48 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (shaking, slightly bigger) | spawning minions (mouth / slot wide open) | hurt (flashing, tilted)
+- Row 2: walking to the LEFT (side profile), four frames of one walk cycle
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
----
-
-## Minions
-
-### `enemy_weak.png` — in game 56×56
+### `miniboss_ac.png` — frames 48×48 · grid 4×2
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A small angry flying envelope (an email) with tiny bat wings, angry eyebrows and a red wax seal with an @ symbol in the middle.
+Subject: An evil walking air-conditioner unit possessed like a Japanese yōkai: a boxy white AC with frosty vents for a mouth, icicles hanging from it, cold mist around it, stubby legs.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 48×48 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (shaking, slightly bigger) | spawning minions (mouth / slot wide open) | hurt (flashing, tilted)
+- Row 2: walking to the LEFT (side profile), four frames of one walk cycle
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `enemy_strong.png` — in game 52×52
+## Minions (each boss spawns its own; weak + strong)
+
+### `minion_email_weak.png` — frames 24×24 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A hulking, angry scroll-shaped creature representing an URGENT work request, covered in red ink stamps (symbols only, no readable text), angry eyes and clenched little fists.
+Subject: A weak enemy minion: a small angry flying email envelope with tiny wings and angry eyebrows.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 24×24 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: flapping: wings up | wings level | wings down | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
----
-
-## Colleagues (friendly NPCs) — animals are suggestions until the team finalises NPC types
-
-### `npc_motivator.png` — in game 60×60
+### `minion_email_strong.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A cheerful monkey office colleague in a white shirt sitting on a rolling office chair, giving a big thumbs up, surrounded by a soft golden glow.
+Subject: A strong enemy minion: a huge furious flying email envelope with big wings, red 'urgent' seal marks (symbols only, no text) and bared teeth.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: flapping: wings up | wings level | wings down | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `npc_mentor.png` — in game 60×60
+### `minion_paper_weak.png` — frames 24×24 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A wise old tortoise office colleague with round reading glasses, a cardigan and a neat stack of documents.
+Subject: A weak enemy minion: a small angry sheet of paper with little legs and a frowning face.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 24×24 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: scuttling: step A | step B | step C | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `npc_complainer.png` — in game 60×60
+### `minion_paper_strong.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A grumpy frog office colleague with arms crossed and a small dark rain cloud hanging over his head.
+Subject: A strong enemy minion: a big furious crumpled stack of jammed paper with legs, toner smudges and bared teeth.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: scuttling: step A | step B | step C | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `npc_meetinger.png` — in game 60×60
+### `minion_coffee_weak.png` — frames 24×24 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: An overly eager fox office colleague holding a calendar and a whiteboard marker, pointing at an invisible meeting invite.
+Subject: A weak enemy minion: a small angry cracked coffee cup sloshing murky coffee and sour milk, with little legs.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 24×24 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: hopping: crouch | in the air | landing | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `npc_inspector.png` — in game 96×128
+### `minion_coffee_strong.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: plain side view, full body, standing on an invisible ground line at the bottom of the image, like a 2D side-scrolling game.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A smug crow metro ticket inspector in a stiff dark-blue uniform with a peaked cap, holding a ticket punch, chin raised arrogantly, facing to the left.
+Subject: A strong enemy minion: a big furious cracked coffee cup overflowing with murky coffee and curdled milk, with bared teeth and little legs.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no backdrop). One single subject, centred, filling most of the image height. Portrait image, 1024×1536.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: hopping: crouch | in the air | landing | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
----
-
-## Office furniture and props
-
-### `own_desk.png` — in game 140×80
+### `minion_ice_weak.png` — frames 24×24 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A single messy 1990s office desk: a big beige CRT monitor, keyboard, piles of paper, yellow sticky notes everywhere and a cold cup of coffee. The desk is wider than it is deep.
+Subject: A weak enemy minion: a small angry ice cube with a frosty frowning face.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 24×24 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: sliding: lean left | upright | lean right | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `cubicle_block.png` — in game 360×170 · *Ask for transparency*
+### `minion_ice_strong.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A block of six grey 1990s office cubicles in two rows of three, each with a desk, a big beige CRT monitor and a rolling chair, low fabric partition walls. Draw the cubicle block only, on a REAL transparent background (no floor around it).
+Subject: A strong enemy minion: a big furious block of ice with sharp icicles and bared teeth.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor). The subject fills most of the width. Wide landscape image, 1536×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: sliding: lean left | upright | lean right | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `coffee_machine.png` — in game 70×70
+### `minion_heart_weak.png` — frames 24×24 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A friendly, working office coffee machine with a warm golden glow and a steaming cup — a place of rest.
+Subject: A weak enemy minion: a small pink heart that looks loving but is clearly poisonous: sweet smile, green toxic drips.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 24×24 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: floating: up | middle | down | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `water_cooler.png` — in game 44×44
+### `minion_heart_strong.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: An office water cooler with a big blue water bottle on top.
+Subject: A strong enemy minion: a big glowing pink heart with a creepy loving smile, green toxic drips and tiny thorns.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: floating: up | middle | down | hit (squashed, little stars)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `printer_decor.png` — in game 70×60
+## Colleagues (NPCs from the team's list)
+
+### `npc_dog.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: An ordinary, harmless beige 1990s office printer.
+Subject: A cute friendly office dog (no clothes), standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | wagging its tail in a happy jump | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `coat_rack.png` — in game 44×44
+### `npc_bestie.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A wooden coat rack with a beige raincoat and a folded umbrella.
+Subject: A cute cat colleague, the player's work bestie, in a casual office outfit (cardigan and blouse), standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | waving 'come with me' with one paw | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `plant.png` — in game 48×48
+### `npc_baker.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A small potted bonsai tree in a ceramic pot.
+Subject: A cheerful panda colleague in an office shirt and an apron, standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | holding out a tray of fresh cookies | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `kitchen_table.png` — in game 220×120 · *Ask for transparency*
+### `npc_expert.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A small office kitchen table with two chairs, two tea cups and a teapot. Draw the furniture only, on a REAL transparent background (no floor around it).
+Subject: A kind owl expert colleague with round glasses and a sweater vest, standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor). The subject fills most of the width. Wide landscape image, 1536×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | showing his laptop screen | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `lift_door.png` — in game 120×160
+### `npc_meeting_saver.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: straight-on front view, no characters in the scene.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A closed brass art-deco lift (elevator) door with gold-leaf ornaments and a small round floor indicator above it. Only the door and its frame, on a REAL transparent background.
+Subject: A sharp fox colleague in a neat shirt and tie, standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no backdrop). One single subject, centred, filling most of the image height. Portrait image, 1024×1536.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | tapping his wristwatch | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `mochi.png` — in game 32×32
+### `npc_shouter.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from a high angle above and slightly from the front, like a classic 2D top-down game where you still see the face (head and face visible near the top, feet at the bottom).
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A single cute round pink mochi with a tiny gold sparkle on top.
+Subject: A loud hyena middle manager in a tight suit with a loosened tie, standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | yelling with both fists up | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `paper_ball.png` — in game 20×20
+### `npc_karen.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from directly above, flat.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A single crumpled ball of office paper, off-white with ink lines.
+Subject: A smug blobfish colleague in a blazer and a lanyard, standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | smug finger-point | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `fireball.png` — in game 24×24
+### `npc_lazy.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from directly above, flat.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A small round ball of dragon fire painted in flat vermilion and gold.
+Subject: A lazy sloth colleague in a wrinkled shirt with a coffee mug, standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | a huge yawn | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `briefcase_swing.png` — in game 80×80
+### `npc_photos.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from directly above, flat.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: A golden curved motion arc (a swoosh of a fast swing) with a brown leather briefcase at its tip, the arc sweeping towards the right.
+Subject: An overexcited pig colleague in an office shirt, standing, facing the viewer.
 
-Output: PNG with a REAL transparent background (no checkerboard pattern, no floor, no shadow box, no backdrop). One single subject, centred, filling most of the image. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | holding up a phone showing photos | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
----
-
-## Floor and window textures
-
-### `office_floor.png` — in game 512×512 tile
+### `npc_hobby.png` — frames 32×32 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: seen from directly above, flat.
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
 
-Subject: 1990s office carpet, muted celadon green with a subtle woodblock pattern of small clouds and lattice shapes, low contrast so characters stand out on it.
+Subject: A chatty shrew colleague in a cardigan, standing, facing the viewer.
 
-Output: a SEAMLESS TILEABLE texture that fills the whole image edge to edge — the left edge must continue into the right edge and the top into the bottom. No border, no vignette, no lighting gradient, no objects. Square image, 1024×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×32 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A | idle B (breathing) | holding up a sourdough jar | talking (mouth open)
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
-### `window_city.png` — in game 512×60 strip
+### `npc_inspector.png` — frames 32×48 · grid 4×1
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
-Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
+Camera: plain side view, like a 2D side-scrolling game; every figure stands on the bottom edge of its cell.
 
-Subject: A long row of office windows at night: dark indigo sky, the lights of a city skyline with golden lit windows, a few stars. The view should continue seamlessly from the left edge to the right edge.
+Subject: A smug crow metro ticket inspector in a stiff dark-blue uniform with a peaked cap, holding a ticket punch, facing to the LEFT.
 
-Output: the scene fills the whole image edge to edge, no border, no vignette. Wide landscape image, 1536×1024.
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 1 row of equal-sized cells with wide plain magenta gaps between the cells. Every cell shows the exact same character (same design, same colours, same size), centred in its cell, feet on the same baseline. Draw each cell at about 32×48 pixel-art resolution, so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: idle A, chin raised | idle B | punching a ticket | talking with beak open, pointing
+
+Output: PNG, Wide landscape image, 1536×1024.
 ```
 
----
+## Tiles (floors and walls)
+
+### `tiles_floor.png` — frames 16×16 · grid 4×4
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: seen from directly above, completely flat.
+
+Subject: Floor tiles for the different zones of a 1990s Japanese office.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 4 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell is one square FLOOR TILE drawn at 16×16 pixel-art resolution (each pixel a big visible block), filling its whole cell, seen from directly above, and tiling seamlessly with itself (left edge continues into right, top into bottom). Tiles in the same row belong together and must also fit next to each other. Low contrast so characters stand out. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: open-plan office carpet, muted celadon green: plain | small seigaiha wave pattern | worn spot | coffee stain
+- Row 2: manager's corner tatami mats: plain tatami | tatami with dark border | tatami turned 90° | tatami with a cushion mark
+- Row 3: kitchen floor: cream-and-indigo checker tiles | plain cream tiles | wet spot | crumbs
+- Row 4: archive and server room: grey metal raised floor panel | grey concrete | floor cable cover | indigo rug with gold border
+
+Output: PNG, Square image, 1024×1024.
+```
+
+### `tiles_wall.png` — frames 16×16 · grid 4×4
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Wall and partition tiles for a 1990s Japanese office.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 4 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell is one square WALL or PARTITION tile drawn at 16×16 pixel-art resolution (each pixel a big visible block), filling its whole cell, in the three-quarter top-down view. Neighbouring wall tiles must line up edge to edge. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: wall faces: plain cream wall | wall with a night-sky window | wall with a dawn window | wall with a hanging ink-painting scroll (mountains, no writing)
+- Row 2: wall faces: closed wooden door | doorway with an indigo noren curtain | shoji paper screen | cork notice board with pinned papers (no readable text)
+- Row 3: grey fabric cubicle partition: horizontal piece | vertical piece | corner piece | end piece
+- Row 4: wall tops: wall top cap (seen from above) | top inner corner | top outer corner | square pillar
+
+Output: PNG, Square image, 1024×1024.
+```
+
+## Office props (one sheet per zone)
+
+### `props_cubicles_a.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Six different single office cubicles (desk, grey partition, rolling chair, beige CRT monitor), each with a distinct personality.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: tidy salaryman cubicle with neatly aligned folders | messy cubicle with a paper avalanche | overtime cubicle with a pillow under the desk and instant-ramen cups
+- Row 2: plant-lover cubicle with a bonsai and a maneki-neko | empty cubicle with moving boxes (someone quit) | lucky cubicle with a red daruma and paper charms
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_cubicles_b.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Six more office workplaces, same scale and style as a set.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: two desks pushed together facing each other (Japanese island desks) | tiny intern desk with a single stool | caffeine addict desk covered in coffee cans
+- Row 2: desk buried in sticky notes | THE PLAYER'S OWN DESK: messy, beige CRT monitor, cold coffee, a little rabbit figurine | the same player's desk with the monitor glowing bright gold (new email)
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_manager.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Furniture for the manager's corner.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: large dark wooden manager desk | high-backed leather chair | big bonsai on a stand
+- Row 2: golden maneki-neko statue | trophy shelf with golden cups | small koi aquarium
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_kitchen.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Furniture for the office kitchen / break area.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: friendly working coffee machine with a warm golden glow and a steaming cup | water cooler with a big blue bottle | small fridge covered in magnets
+- Row 2: low kitchen table with two chairs, teapot and cups | drinks vending machine | counter with a rice cooker and an electric kettle
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_archive.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Furniture for the archive / print room.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: ordinary harmless beige office printer | ordinary fax machine | paper shredder with shreds
+- Row 2: grey metal filing cabinets | tall shelf full of binders | stack of cardboard archive boxes
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_meeting.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Furniture for the meeting room.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: long meeting table seen from above-front | office chair | whiteboard with scribbled arrows and boxes (no text)
+- Row 2: overhead projector on a cart | wall clock on a stand | tall potted plant
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_server.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Equipment for the server closet.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: server rack with tiny green and red lights | server rack with an open door and cables | tangle of cables on the floor
+- Row 2: big standing fan | stack of beige computer towers | small Shinto kamidana shelf with offerings (protecting the servers)
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+### `props_misc.png` — frames 48×48 · grid 3×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: classic Japanese top-down RPG view (three-quarter view from above and in front): you see the top and the front of things; characters show their face when they face down.
+
+Subject: Miscellaneous office objects.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 3 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows a different object, all drawn at the same scale as if standing on the same office floor (a person would be about 32 pixels tall), each centred in its cell and resting on the bottom of the cell. Each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: wooden coat rack with a raincoat and umbrella | umbrella stand | wooden shoe locker
+- Row 2: small potted bonsai | red paper lantern on a stand | closed brass art-deco lift door with a floor dial above it
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
+
+## Pickups, projectiles and effects
+
+### `fx_items.png` — frames 16×16 · grid 4×2
+
+```text
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
+
+Camera: seen from directly above, completely flat.
+
+Subject: Small game items and effects.
+
+Layout: a sprite sheet on a solid flat magenta background (#FF00FF, one single pure colour, no shading, no checkerboard). An evenly spaced grid of 4 columns and 2 rows of equal-sized cells with wide plain magenta gaps between the cells. Each cell shows one small item, centred, drawn at about 16×16 pixel-art resolution so each pixel is a big visible square block. No grid lines, borders, labels or numbers. Never use magenta or purple on the subjects themselves.
+
+Cells, left to right, top to bottom:
+- Row 1: round pink mochi | the same mochi with a gold sparkle | crumpled ball of paper | small poisonous pink heart projectile with a green drip
+- Row 2: the same heart projectile, glowing brighter | white-and-gold hit spark burst | small grey smoke puff | golden star
+
+Output: PNG, Wide landscape image, 1536×1024.
+```
 
 ## Full-screen backgrounds
 
-### `title_bg.png` — in game 1280×720
+### `title_bg.png` — frames 320×180
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
 Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
 
-Subject: Title screen: a lone white rabbit in a navy suit, small and seen from behind, standing on a hill in front of a tall stylised office tower at golden dawn. Large empty sky in the centre for the game title.
+Subject: Title screen: a lone white rabbit in a navy suit, small and seen from behind, standing on a hill in front of a tall office tower at golden dawn, Mount Fuji far away. Large empty sky in the centre for the game title.
+
+Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
 
 Output: the scene fills the whole image edge to edge, no border, no vignette, no text. Wide landscape image, 1536×1024 (it will be cropped to 16:9, so keep important things away from the top and bottom edges).
 ```
 
-### `intro_flat.png` — in game 1280×720
+### `intro_flat.png` — frames 320×180
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
 Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
 
-Subject: The inside of a tiny Tokyo apartment at dawn: a futon bed on the left, a window in the middle with the sun rising outside, a door on the right. Keep the bottom sixth of the image as plain floor.
+Subject: The inside of a tiny Tokyo apartment at dawn: a futon on the floor on the left, a window in the middle with the sun rising, a door on the right. Keep the bottom sixth of the image as plain floor.
+
+Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
 
 Output: the scene fills the whole image edge to edge, no border, no vignette, no text. Wide landscape image, 1536×1024 (it will be cropped to 16:9, so keep important things away from the top and bottom edges).
 ```
 
-### `intro_metro.png` — in game 1280×720
+### `intro_metro.png` — frames 320×180
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
 Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
 
-Subject: A 1990s Tokyo metro station platform: tiled walls, pillars, a ticket turnstile, hanging station signs (symbols only, no readable text). Keep the bottom sixth of the image as plain floor.
+Subject: A 1990s Tokyo metro station platform: tiled walls, pillars, a ticket turnstile, hanging station signs (symbols only). Keep the bottom sixth of the image as plain floor.
+
+Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
 
 Output: the scene fills the whole image edge to edge, no border, no vignette, no text. Wide landscape image, 1536×1024 (it will be cropped to 16:9, so keep important things away from the top and bottom edges).
 ```
 
-### `intro_entrance.png` — in game 1280×720
+### `intro_entrance.png` — frames 320×180
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
 Camera: plain side view of a 2D side-scrolling game stage, horizon level, no characters in the scene.
 
-Subject: The street outside a corporate office building in the morning, glass entrance doors on the right side. Keep the bottom sixth of the image as plain pavement.
+Subject: The street outside a corporate office building in the morning, cherry trees, glass entrance doors on the right side. Keep the bottom sixth of the image as plain pavement.
+
+Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
 
 Output: the scene fills the whole image edge to edge, no border, no vignette, no text. Wide landscape image, 1536×1024 (it will be cropped to 16:9, so keep important things away from the top and bottom edges).
 ```
 
-### `lift_interior.png` — in game 1280×720
+### `lift_interior.png` — frames 320×180
 
 ```text
-Art style: a 1990s Japanese office world drawn as if by a medieval artist — Japanese woodblock prints (ukiyo-e) and picture scrolls fused with European illuminated manuscripts. Bold carved ink outlines, flat historical pigments (indigo, vermilion, ochre, celadon), touches of gold leaf, aged paper texture, satirical anthropomorphic animals in the spirit of the Chōjū-giga scrolls. Palette from night indigo to hopeful golden dawn. Clean, readable silhouette; this is a game asset. No text, no letters, no watermark, no signature, no frame.
+Art style: retro 8-bit pixel art, like a Japanese console game from around 1990, set in a 1990s Japanese office. Chunky square pixels with hard edges: no anti-aliasing, no blur, no soft shading, no gradients, no painterly or paper texture. Every character and object has a 1-pixel dark ink outline. Flat colours from one small palette only: ink black, night indigo, slate blue, paper cream, warm grey, vermilion red, deep red, gold, ochre, wood brown, celadon green, moss green, sakura pink, peach. Subtle Japanese touches where they fit (seigaiha wave patterns, shoji paper screens, paper lanterns, hanko stamps, maneki-neko, daruma, bonsai). Satirical anthropomorphic animals. Clean, readable game asset. No text, letters, numbers, watermark, signature or frame.
 
 Camera: straight-on front view, no characters in the scene.
 
-Subject: The empty interior of an old brass and polished-wood lift (elevator), seen from inside, a floor indicator dial above the closed doors, warm halogen light.
+Subject: The empty interior of an old brass and polished-wood lift (elevator), seen from inside, a floor indicator dial above the closed doors, warm light.
+
+Draw it as low-resolution pixel art, as if the whole picture were only 320×180 pixels scaled up, so each pixel is a big visible square block.
 
 Output: the scene fills the whole image edge to edge, no border, no vignette, no text. Wide landscape image, 1536×1024 (it will be cropped to 16:9, so keep important things away from the top and bottom edges).
 ```

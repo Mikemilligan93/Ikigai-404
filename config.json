@@ -1,38 +1,81 @@
 {
   "_readme": "All tunable numbers live here. Times are in seconds, speeds in pixels/second, distances in pixels. Reload the page after editing.",
-
   "visuals": {
-    "_comment": "floorDim: 0 = carpet at full contrast, 1 = black. Calms a busy floor texture so characters stand out.",
-    "floorDim": 0.35
+    "_comment": "floorDim: 0 = floor tiles at full contrast, 1 = black. Calms a busy floor so characters stand out.",
+    "floorDim": 0.1
   },
-
+  "animation": {
+    "_comment": "walkStride = pixels walked per walk frame (frames follow distance, so feet never slide). fps = frames per second. idleBreath = seconds per breathing step.",
+    "walkStride": 20,
+    "idleBreath": 0.6,
+    "idleFps": 2,
+    "flyFps": 10,
+    "minionFps": 8,
+    "minibossAngryFps": 5,
+    "bossFps": 3,
+    "npcActionFps": 4,
+    "swingTime": 0.22,
+    "throwTime": 0.16,
+    "sideWalkStride": 26,
+    "talkFps": 8,
+    "typeSpeed": 45
+  },
   "debug": {
     "showHitboxes": false,
     "startScene": "title",
     "godMode": false
   },
-
   "player": {
     "speed": 230,
     "radius": 20,
     "mentalMax": 100,
     "invulnerableAfterHit": 0.7,
-    "postureThresholds": { "tired": 0.66, "burntOut": 0.33 },
-    "melee": { "damage": 4, "range": 70, "arcDegrees": 110, "cooldown": 0.35 },
-    "ranged": { "damage": 1.5, "speed": 560, "cooldown": 0.4, "lifetime": 1.1, "radius": 8 }
+    "postureThresholds": {
+      "tired": 0.66,
+      "burntOut": 0.33
+    },
+    "melee": {
+      "damage": 4,
+      "range": 70,
+      "arcDegrees": 110,
+      "cooldown": 0.35
+    },
+    "ranged": {
+      "damage": 1.5,
+      "speed": 560,
+      "cooldown": 0.4,
+      "lifetime": 1.1,
+      "radius": 8
+    }
   },
-
   "recovery": {
-    "coffeeMachine": { "restore": 30, "cooldown": 25 },
-    "mochi": { "restore": 15, "count": 6, "respawnTime": 30 }
+    "coffeeMachine": {
+      "restore": 30,
+      "cooldown": 25
+    },
+    "mochi": {
+      "restore": 15,
+      "count": 6,
+      "respawnTime": 30
+    }
   },
-
   "enemies": {
-    "weak":   { "hp": 3,  "speed": 150, "radius": 14, "contactDamage": 6,  "score": 10 },
-    "strong": { "hp": 10, "speed": 95,  "radius": 22, "contactDamage": 14, "score": 30 }
+    "weak": {
+      "hp": 3,
+      "speed": 150,
+      "radius": 14,
+      "contactDamage": 6,
+      "score": 10
+    },
+    "strong": {
+      "hp": 10,
+      "speed": 95,
+      "radius": 22,
+      "contactDamage": 14,
+      "score": 30
+    }
   },
   "maxEnemiesAlive": 45,
-
   "minibosses": {
     "hp": 40,
     "radius": 46,
@@ -46,33 +89,62 @@
       "spawnIntervalMultiplier": 0.7,
       "minionsPerSpawnAdd": 1,
       "strongChanceAdd": 0.2
+    },
+    "walkSpeed": 55,
+    "leashTiles": 7,
+    "talkInterval": 7,
+    "minionOf": {
+      "client": "email",
+      "printer": "paper",
+      "coffee": "coffee",
+      "ac": "ice"
     }
   },
-
   "boss": {
     "hp": 160,
     "radius": 62,
     "speed": 85,
     "score": 1000,
     "contactDamage": 18,
-    "fireRing": { "interval": 4.5, "projectiles": 14, "speed": 260, "damage": 10 },
-    "charge": { "interval": 7, "speed": 620, "duration": 0.7, "windup": 0.8 },
-    "summon": { "interval": 9, "count": 4, "strongChance": 0.3 }
+    "fireRing": {
+      "interval": 4.5,
+      "projectiles": 14,
+      "speed": 260,
+      "damage": 10
+    },
+    "charge": {
+      "interval": 7,
+      "speed": 620,
+      "duration": 0.7,
+      "windup": 0.8
+    },
+    "summon": {
+      "interval": 9,
+      "count": 4,
+      "strongChance": 0.3
+    },
+    "minion": "heart",
+    "talkInterval": 6
   },
-
   "friendlyNpcs": {
-    "_comment": "Effect types: speed (multiplier), slow (multiplier), weaponBlock, damage (multiplier). dwellTime = seconds the player must stay in the aura before the effect triggers.",
-    "auraRadius": 120,
-    "dwellTime": 2.5,
+    "_comment": "Effect types: speed / slow (multiplier), damage (multiplier), weaponBlock, heal (+mental health, value = amount), drain (-mental health, value = amount). dwellTime = seconds the player must stay in the aura. boost = energy-boost colleague, vampire = energy vampire (from the team's sheet).",
+    "auraRadius": 110,
+    "dwellTime": 2,
     "rearmTime": 15,
+    "bubbleTime": 4,
     "types": {
-      "motivator":  { "effect": "speed",       "value": 1.4, "duration": 8 },
-      "mentor":     { "effect": "damage",      "value": 1.5, "duration": 10 },
-      "complainer": { "effect": "slow",        "value": 0.6, "duration": 6 },
-      "meetinger":  { "effect": "weaponBlock", "value": 1,   "duration": 4 }
+      "dog": { "group": "boost", "effect": "heal", "value": 15, "duration": 0 },
+      "bestie": { "group": "boost", "effect": "speed", "value": 1.4, "duration": 8 },
+      "baker": { "group": "boost", "effect": "heal", "value": 25, "duration": 0 },
+      "expert": { "group": "boost", "effect": "damage", "value": 1.5, "duration": 10 },
+      "meeting_saver": { "group": "boost", "effect": "speed", "value": 1.3, "duration": 10 },
+      "shouter": { "group": "vampire", "effect": "drain", "value": 12, "duration": 0 },
+      "karen": { "group": "vampire", "effect": "weaponBlock", "value": 1, "duration": 4 },
+      "lazy": { "group": "vampire", "effect": "slow", "value": 0.6, "duration": 6 },
+      "photos": { "group": "vampire", "effect": "slow", "value": 0.7, "duration": 5 },
+      "hobby": { "group": "vampire", "effect": "drain", "value": 8, "duration": 0 }
     }
   },
-
   "scoring": {
     "_comment": "Placeholder rules - to be decided after the first playtest.",
     "pointsLostPerMentalDamage": 1,
@@ -80,20 +152,17 @@
     "timeBonusLostPerSecond": 10,
     "burnoutKeepsScore": true
   },
-
   "intro": {
     "walkSpeed": 260,
     "nightmareDuration": 2.2,
     "sunriseDuration": 3,
     "shakeDuration": 1.2
   },
-
   "leaderboard": {
     "apiUrl": "/api/scores",
     "showTop": 10,
     "nameMaxLength": 16
   },
-
   "audio": {
     "musicVolume": 0.5,
     "sfxVolume": 0.8

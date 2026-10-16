@@ -1,4 +1,5 @@
-import { W, H, COLORS, text, pick, roundRect } from '../engine.js';
+import { W, H, PX, PAL, COLORS, text, pick, windowBox, drawFrame } from '../engine.js';
+import { walkFrame } from '../sprites.js';
 
 // Win ("Level 2 coming soon") or burnout screen + score + leaderboard.
 export class EndScene {
@@ -28,47 +29,54 @@ export class EndScene {
 
   draw(ctx) {
     const win = this.r.outcome === 'win';
-    const grd = ctx.createLinearGradient(0, 0, 0, H);
-    grd.addColorStop(0, win ? COLORS.indigo : '#111');
-    grd.addColorStop(1, win ? COLORS.dawn : '#3b2a26');
-    ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+    const bands = win ? [PAL.indigo, PAL.slate, PAL.pink, PAL.peach] : [PAL.ink, PAL.ink, PAL.dgrey, PAL.dred];
+    bands.forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(0, i * 180, W, 180); });
 
     if (win) {
-      text(ctx, this.T.winTitle, W / 2, 80, { size: 52, color: COLORS.gold, bold: true });
-      text(ctx, this.T.comingSoon, W / 2, 140, { size: 26, color: COLORS.paper });
+      text(ctx, this.T.winTitle, W / 2, 72, { size: 52, color: PAL.gold });
+      text(ctx, this.T.comingSoon, W / 2, 132, { size: 26, color: PAL.cream });
     } else {
-      text(ctx, this.T.burnoutTitle, W / 2, 80, { size: 52, color: COLORS.vermilion, bold: true });
-      text(ctx, `“${this.quote}”`, W / 2, 145, { size: 32, color: COLORS.paper });
+      text(ctx, this.T.burnoutTitle, W / 2, 72, { size: 52, color: PAL.red });
+      text(ctx, `“${this.quote}”`, W / 2, 136, { size: 30, color: PAL.cream });
+    }
+
+    // the bunny: walking home happily, or sitting there burnt out with smoke
+    const a = this.g.assets;
+    if (win) drawFrame(ctx, a, 'player_ok', walkFrame(this.t * 50, 22), 0, 350, 660, { scale: PX * 2, kind: 'player', ph: [16, 26] });
+    else {
+      drawFrame(ctx, a, 'player_burnt', 1, 0, 350, 660, { scale: PX * 2, kind: 'player', color: PAL.grey, ph: [16, 26] });
+      const k = this.t % 1.2;
+      drawFrame(ctx, a, 'fx_items', 2, 1, 350 + Math.floor(k * 3) * 6, 440 - k * 60, { scale: PX * 2, anchor: 'center', alpha: 1 - k / 1.2, kind: 'fx', color: PAL.grey, ph: [6, 6], eyes: false });
     }
 
     // score panel
-    ctx.fillStyle = 'rgba(13,15,31,0.75)'; roundRect(ctx, 120, 200, 460, 300, 14); ctx.fill();
-    text(ctx, `${this.T.scoreLabel}: ${this.r.score}`, 350, 240, { size: 36, color: COLORS.gold, bold: true });
+    windowBox(ctx, 120, 190, 460, 240);
+    text(ctx, `${this.T.scoreLabel}: ${this.r.score}`, 350, 228, { size: 34, color: PAL.gold });
     const b = this.r.breakdown || {};
     const rows = [[this.T.breakdown.kills, b.kills], [this.T.breakdown.damage, b.damage], [this.T.breakdown.timeBonus, b.timeBonus]];
     rows.forEach(([label, v], i) => {
-      text(ctx, label, 150, 300 + i * 40, { size: 20, align: 'left' });
-      text(ctx, String(v ?? 0), 550, 300 + i * 40, { size: 20, align: 'right' });
+      text(ctx, label, 150, 284 + i * 38, { size: 20, align: 'left' });
+      text(ctx, String(v ?? 0), 550, 284 + i * 38, { size: 20, align: 'right' });
     });
     const t = Math.round(this.r.seconds || 0);
-    text(ctx, `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`, 350, 450, { size: 20, color: COLORS.paperDark });
+    text(ctx, `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`, 350, 404, { size: 20, color: PAL.grey });
 
     // leaderboard
-    ctx.fillStyle = 'rgba(13,15,31,0.75)'; roundRect(ctx, 640, 200, 520, 400, 14); ctx.fill();
-    text(ctx, this.g.texts.title.leaderboardTitle, 900, 235, { size: 24, color: COLORS.gold, bold: true });
-    if (!this.scores) text(ctx, this.T.submitting, 900, 300, { size: 20 });
+    windowBox(ctx, 640, 190, 520, 420);
+    text(ctx, this.g.texts.title.leaderboardTitle, 900, 226, { size: 24, color: PAL.gold });
+    if (!this.scores) text(ctx, this.T.submitting, 900, 290, { size: 20 });
     else {
       let marked = false;
       this.scores.forEach((s, i) => {
         const mine = !marked && s.name === this.myEntry.name && s.score === this.myEntry.score;
         if (mine) marked = true;
-        const c = mine ? COLORS.gold : COLORS.paper;
-        text(ctx, `${i + 1}. ${s.name}`, 670, 275 + i * 30, { size: 20, align: 'left', color: c, bold: mine });
-        text(ctx, String(s.score), 1130, 275 + i * 30, { size: 20, align: 'right', color: c, bold: mine });
+        const c = mine ? PAL.gold : PAL.cream;
+        text(ctx, `${i + 1}. ${s.name}`, 676, 266 + i * 30, { size: 20, align: 'left', color: c });
+        text(ctx, String(s.score), 1124, 266 + i * 30, { size: 20, align: 'right', color: c });
       });
-      if (this.g.leaderboard.online === false) text(ctx, this.T.localOnly, 900, 580, { size: 15, color: COLORS.paperDark });
+      if (this.g.leaderboard.online === false) text(ctx, this.T.localOnly, 900, 584, { size: 15, color: PAL.grey });
     }
 
-    if (this.t > 1) text(ctx, this.T.playAgain, W / 2, H - 50, { size: 24, color: COLORS.paper });
+    if (this.t > 1 && Math.floor(this.t * 2) % 2) text(ctx, this.T.playAgain, W / 2 + 160, H - 44, { size: 24, color: PAL.cream });
   }
 }

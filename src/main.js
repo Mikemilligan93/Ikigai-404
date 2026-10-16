@@ -18,7 +18,9 @@ async function boot() {
       loadJson('config.json'), loadJson('texts.json'), loadJson('assets/manifest.json'),
     ]);
     const assets = new Assets();
-    await assets.load(manifest);
+    // pixel font from Google Fonts; carry on with the fallback font if it does not arrive in time
+    const font = document.fonts ? Promise.race([document.fonts.load('24px "DotGothic16"'), new Promise((r) => setTimeout(r, 2500))]).catch(() => {}) : null;
+    await Promise.all([assets.load(manifest), font]);
     const canvas = document.getElementById('game');
     const game = new Game(canvas, {
       config, texts, assets,
