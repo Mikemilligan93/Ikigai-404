@@ -406,5 +406,10 @@
       "Stand up and stretch. We'll keep your place.",
       "Real life tip: it's okay to say no to one more thing."
     ]
+  },
+  "splash": {
+    "studio": "Toxiconsulting2000",
+    "presents": "presents…",
+    "pressKey": "Press any key"
   }
 }

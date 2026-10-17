@@ -503,6 +503,12 @@
       "cell": [24, 24],
       "align": "center"
     },
+    "cover": {
+      "file": "img/cover.jpg",
+      "type": "background",
+      "size": [1536, 1024],
+      "_note": "Splash cover art (ChatGPT, not pixel-processed: drawn smooth-scaled). Original: assets/originals/cover_big.png"
+    },
     "title_bg": {
       "file": "img/title_bg.png",
       "type": "background",

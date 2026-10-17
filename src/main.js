@@ -6,6 +6,7 @@ import { OfficeScene } from './scenes/office.js';
 import { LiftScene } from './scenes/lift.js';
 import { EndScene } from './scenes/end.js';
 import { PauseMenu } from './scenes/pause.js';
+import { SplashScene } from './scenes/splash.js';
 
 const loadJson = (url) => fetch(url, { cache: 'no-store' }).then((r) => {
   if (!r.ok) throw new Error(`Could not load ${url}`);
@@ -31,6 +32,7 @@ async function boot() {
       leaderboard: new Leaderboard(config.leaderboard),
     });
     game.scenes = {
+      splash: () => new SplashScene(game),
       title: () => new TitleScene(game),
       intro: () => new IntroScene(game),
       office: () => new OfficeScene(game),
@@ -41,8 +43,9 @@ async function boot() {
     window.game = game; // handy for debugging in the browser console
     boot.remove();
     canvas.focus();
-    const first = config.debug?.startScene || 'title';
-    if (first !== 'title' && !game.session.name) game.session.name = 'Debug Bunny';
+    // the game opens with the studio card + cover art (startScene 'title' or unset), then the title screen
+    const first = !config.debug?.startScene || config.debug.startScene === 'title' ? 'splash' : config.debug.startScene;
+    if (first !== 'title' && first !== 'splash' && !game.session.name) game.session.name = 'Debug Bunny';
     game.go(first === 'end' ? game.scenes.end({ outcome: 'win', score: 1234, breakdown: {}, seconds: 100 }) : game.scenes[first]());
     game.start();
   } catch (err) {
