@@ -610,7 +610,7 @@
     "music_intro": "audio/music_ambient.mp3",
     "music_office": "audio/music_ambient.mp3",
     "music_wave": "audio/music_fight.mp3",
-    "music_boss": "audio/music_fight.mp3",
+    "music_boss": "audio/music_boss.mp3",
     "music_lift": "audio/music_ambient.mp3",
     "music_end": "audio/music_ambient.mp3",
     "sfx_melee": ["audio/sfx_melee_1.mp3", "audio/sfx_melee_2.mp3", "audio/sfx_melee_3.mp3", "audio/sfx_melee_4.mp3"],
