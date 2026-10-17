@@ -74,7 +74,7 @@ export class OfficeScene {
 
   // pause menu (P or ESC): retry restarts the office day from the start
   get pausable() { return this.state !== 'burnout'; }
-  get pauseKeys() { return ['p', 'Escape']; }
+  get pauseKeys() { return this.photoView ? ['p'] : ['p', 'Escape']; }   // ESC closes the photo instead
   retry() { return this.g.scenes.office(); }
 
   // ---------------------------------------------------------------- map
@@ -439,6 +439,11 @@ export class OfficeScene {
       if (inp.wasPressed('e', ' ', 'Enter') && this.stateT > 0.3) this.startWave();
       return;
     }
+    if (this.photoView) {   // easter egg: the world waits while you look at the team photo
+      this.photoView.t += dt;
+      if (inp.wasPressed('e', ' ', 'Enter', 'Escape') && this.photoView.t > 0.25) { this.photoView = null; this.g.audio.sfx('sfx_ui'); }
+      return;
+    }
     if (this.state === 'burnout') {
       if (Math.random() < dt * 6) this.fx('smoke', this.player.x + rand(-20, 20), this.player.y - 40, 0.8, -50);
       if (this.stateT > 2.2) this.finish('burnout');
@@ -623,6 +628,16 @@ export class OfficeScene {
       if (near(zone, 50)) {
         this.prompt = this.T.liftPrompt;
         if (inp.wasPressed('e')) this.finish('win');
+      }
+    }
+    // easter egg: the framed photo on the manager's wall (the 'photo' face in levels/office.js) opens the team photo
+    const ph = this.photoSpot ??= (() => { const f = this.L.faces.find(([, , k]) => k === 'photo'); return f ? { x: f[0] * t, y: f[1] * t, w: t, h: t } : false; })();
+    if (ph && (this.state === 'explore' || this.state === 'cleared') && near(ph, 46)) {
+      this.prompt = this.T.photoPrompt;
+      if (inp.wasPressed('e')) {
+        this.photoView = { t: 0 };
+        this.g.audio.sfx('sfx_ui');
+        if (!this.photoFound) { this.photoFound = true; this.banner(this.T.photo.found, 2.5); }
       }
     }
 
@@ -1305,6 +1320,7 @@ export class OfficeScene {
       ctx.globalAlpha = 1;
     });
     // interaction prompt
+    if (this.photoView) { this.drawPhoto(ctx); return; }
     if (this.prompt && this.state !== 'email') {
       windowBox(ctx, W / 2 - 200, H - 120, 400, 52);
       text(ctx, this.prompt, W / 2, H - 94, { size: 20 });
@@ -1313,6 +1329,30 @@ export class OfficeScene {
     if (this.state === 'burnout') {
       ctx.fillStyle = `rgba(27,26,46,${Math.min(0.7, this.stateT * 0.5)})`; ctx.fillRect(0, 0, W, H);
     }
+  }
+
+  // Easter egg popup: the team photo in a wooden frame with a cream mat, like the one on the manager's wall.
+  drawPhoto(ctx) {
+    const P = this.T.photo, img = this.g.assets.get('team_group'), k = Math.min(1, this.photoView.t / 0.18);
+    ctx.fillStyle = `rgba(15,16,38,${0.78 * k})`; ctx.fillRect(0, 0, W, H);
+    const iw = img ? img.width : 4, ih = img ? img.height : 3;
+    const s = Math.min(760 / iw, 440 / ih) * (0.92 + 0.08 * k);
+    const w = Math.round(iw * s), h = Math.round(ih * s), x = Math.round(W / 2 - w / 2), y = Math.round(H / 2 - h / 2 + 12);
+    ctx.globalAlpha = k;
+    const M = 18, F = 14;   // mat and frame widths
+    ctx.fillStyle = PAL.ink; ctx.fillRect(x - M - F - 3, y - M - F - 3, w + 2 * (M + F) + 6, h + 2 * (M + F) + 6);
+    ctx.fillStyle = PAL.wood; ctx.fillRect(x - M - F, y - M - F, w + 2 * (M + F), h + 2 * (M + F));
+    ctx.fillStyle = PAL.ochre; ctx.fillRect(x - M - F, y - M - F, w + 2 * (M + F), 4); ctx.fillRect(x - M - F, y - M - F, 4, h + 2 * (M + F));
+    ctx.fillStyle = PAL.cream; ctx.fillRect(x - M, y - M, w + 2 * M, h + 2 * M);
+    if (img) {
+      ctx.save(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, x, y, w, h); ctx.restore();
+    }
+    ctx.fillStyle = PAL.ink; ctx.fillRect(x, y, w, 2); ctx.fillRect(x, y, 2, h);   // the photo sits under the mat
+    text(ctx, P.title, W / 2, y - M - F - 34, { size: 30, color: PAL.gold });
+    text(ctx, P.caption, W / 2, y + h + M + F + 30, { size: 20, color: PAL.cream });
+    if (this.photoView.t > 0.6 && Math.floor(this.photoView.t * 2) % 2 === 0) text(ctx, P.close, W / 2, H - 24, { size: 16, color: PAL.grey, plate: true });
+    ctx.globalAlpha = 1;
   }
 
   drawEmail(ctx) {

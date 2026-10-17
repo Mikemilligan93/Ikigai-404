@@ -91,6 +91,13 @@
     "bossName": "The CEO — \"We're a family\"",
     "bossDown": "The CEO is down. The lift is open.",
     "liftPrompt": "E — enter the lift",
+    "photoPrompt": "E — look at the photo",
+    "photo": {
+      "title": "Employees of the Month",
+      "caption": "The Ikigai 404 team · Mito Hackathon 2026",
+      "close": "E — back to work",
+      "found": "Easter egg found!"
+    },
     "coffeePrompt": "E — have a coffee",
     "coffeeCooldown": "Coffee machine is brewing…",
     "mochiPickup": "+mochivation",

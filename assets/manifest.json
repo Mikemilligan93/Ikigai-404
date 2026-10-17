@@ -509,6 +509,12 @@
       "size": [1536, 1024],
       "_note": "Splash cover art (ChatGPT, not pixel-processed: drawn smooth-scaled). Original: assets/originals/cover_big.png"
     },
+    "team_group": {
+      "file": "img/team_group.jpg",
+      "type": "background",
+      "size": [1200, 885],
+      "_note": "Easter egg: the team photo behind the manager's desk (E on the framed photo). Drawn smooth-scaled. Original: assets/originals/team_group.jpg"
+    },
     "title_bg": {
       "file": "img/title_bg.png",
       "type": "background",
