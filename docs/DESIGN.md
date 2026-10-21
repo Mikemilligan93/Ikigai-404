@@ -151,7 +151,7 @@ random line · end screen with score · online leaderboard · config.json + text
 3. **Carry.** Taking the tray wakes the **Ramen Bowl** miniboss (walks the hall on a leash, shoots tempura shrimp — single aimed shot, then a fan of 3; below half HP a noodle whip; spawns rolling narutomaki and bouncing eggs). With the tray in your hands you are slower and can't attack; a hit spills a dish (one spill per 3 s). Put the tray down on any table (E) to fight, pick it up again (E). The defeated Ramen Bowl becomes a healing bowl of ramen.
 4. **Sit.** Free seats show an empty stool (gold arrows once the Ramen Bowl is beaten). Seats: plain · next to a kind colleague (bonus) · with the lonely intern (bonus, they cheer up) · window counter · rooftop bench through the stair door (big bonus) · tatami next to the managers (penalty, the boss comes immediately).
 5. **Eat:** hold E, dish by dish (each heals). Halfway through, **Rokurokubi** (long-necked department head) cranes his neck over the table — "Quick sync?" — and you stand up. His head strikes along a telegraphed red line, he summons calendar invites, "quick question" spirits and pagers (ranged pings); below half HP his neck coils round the hall after a red ring warning. The head can be hit while it is out.
-6. **Back:** sit down again and finish your lunch → end screen ("Level 3 — coming soon").
+6. **Back to work:** once he's beaten, head for the canteen door (bottom left, glowing EXIT) and press E → end screen ("Level 3 — coming soon"). Sitting back down to finish the tray first is optional and earns the dish points.
 
 **Clock:** 12:00 → 13:00 in `clockMinutes` real minutes (5). Missing 13:00 doesn't burn you out — it costs the on-time bonus and gives a funny line.
 **Hazards:** rice-cooker steam bursts (warning puffs, then a blast) and the tray-return conveyor that pushes you along.
@@ -165,5 +165,7 @@ random line · end screen with score · online leaderboard · config.json + text
 `?scene=canteen` · `&step=collect|carry|eat|boss|back` · `&meal=curry|miso|onigiri|ramen` · `&seat=plain|company|intern|window|rooftop|manager` · `&god=1` · `&hitboxes=1` · `&clock=1` (a 1-minute lunch).
 
 **Art:** 31 sheets from `docs/ikigai404_canteen_art_prompts.xlsx` (canteen tiles and walls, props, Health Week leftovers, rooftop, Ramen Bowl + minions, Rokurokubi body / head / neck, obachan, intern, colleagues eating, the bunny with a tray and eating, food icons, effects, ticket-machine close-up). Frame meanings: `src/sprites.js` (Level 2 section).
+
+**Changed 2026-10-21:** after Rokurokubi you leave through the door instead of having to sit back down.
 
 **Open:** final texts (all canteen lines are drafts) · the lift dialogue still says "It's 16:58" although lunch follows it · balance pass after a playtest · canteen music (reuses the office tracks) · `canteen_title` card is not used yet.

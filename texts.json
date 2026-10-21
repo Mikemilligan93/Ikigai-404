@@ -403,7 +403,7 @@
       "collect": "Take your ticket to the obachan at the counter.",
       "seat": "Find a free seat and sit down to eat.",
       "boss": "Your lunch is on the table. It'll wait. Deal with him first.",
-      "back": "Go back to your seat and finish your lunch."
+      "back": "Lunch break's over — head for the door. (Or finish your tray first.)"
     },
     "goals": {
       "order": "Buy a meal ticket",
@@ -412,7 +412,7 @@
       "seat": "Pick a seat (E)",
       "eat": "Hold E to eat",
       "boss": "Beat Rokurokubi",
-      "back": "Back to your seat — finish lunch"
+      "back": "Head for the door (or finish your tray first)"
     },
     "prompts": {
       "ticket": "E — Buy a meal ticket",
@@ -426,7 +426,9 @@
       "eat": "Hold E — eat",
       "sitBack": "E — Sit back down",
       "notNow": "He's still here. Lunch can wait a minute.",
-      "bowl": "E — Eat the defeated ramen"
+      "bowl": "E — Eat the defeated ramen",
+      "leave": "E — Back to work",
+      "standUp": "Lunch finished — walk to the door"
     },
     "menuTitle": "Meal tickets",
     "menuHint": "← → choose · E buy · Esc back",
@@ -535,6 +537,8 @@
       ]
     },
     "rokuDown": "Rokurokubi retracts. The canteen breathes again.",
+    "finished": "Every last grain of rice. Well done.",
+    "exitLabel": "EXIT",
     "handsFull": "Hands full!",
     "spilled": "Spilled!",
     "eatLines": [
@@ -640,7 +644,7 @@
         "canteen_carry": "Canteen — carry / Ramen Bowl",
         "canteen_eat": "Canteen — seated, eating",
         "canteen_boss": "Canteen — Rokurokubi",
-        "canteen_back": "Canteen — back to seat",
+        "canteen_back": "Canteen — head for the door",
         "endWin": "End — Level 1 win",
         "endLevel2": "End — Level 2 win",
         "endBurnout": "End — burnout"

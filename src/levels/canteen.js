@@ -134,6 +134,7 @@ export const CANTEEN = {
   walkers: WALKERS,
   clutter: [],
   playerStart: { x: 3.5, y: 27.5 },
+  exit: { x: 3.5, y: 28.4 },        // the canteen door (bottom left): after Rokurokubi, back to work from here
   obachan: { x: 6.5, y: 3.6 },
   intern: { x: 26.5, y: 16.4 },
   // the Ramen Bowl walks the hall on a leash around its home; Rokurokubi stands on the tatami

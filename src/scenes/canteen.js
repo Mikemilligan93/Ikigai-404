@@ -15,7 +15,7 @@ import {
 //   carry   → the Ramen Bowl wakes up; carry the tray (slow, hands full) or set it down on a table and fight
 //   eat     → sit on a free seat and hold E to eat, dish by dish
 //   boss    → halfway through lunch Rokurokubi cranes his neck over the table ("Quick sync?")
-//   back    → beat him, sit back down and finish your lunch → Level 3 coming soon
+//   back    → beat him, then head for the door (finish the tray first for more points) → Level 3 coming soon
 // Tuning: config.json → canteen. Texts: texts.json → canteen. Layout: src/levels/canteen.js.
 // Reuses the office scene's map, colleagues, enemies-chasing, drawing and HUD helpers.
 
@@ -29,7 +29,7 @@ export class CanteenScene extends OfficeScene {
     const C = this.C.canteen, t = this.tile, L = this.L;
     this.CC = C;
     this.state = 'play';
-    this.phase = 'order';           // order → collect → carry → eat → boss → back → done
+    this.phase = 'order';           // order → collect → carry → eat → boss → back (head for the door) → done
     this.carry = game.session.result?.score ?? 0;   // the Level 1 score comes along
     this.stats = { ...this.stats, morning: 0, dishes: 0, spilled: 0, lunchOnTime: false, seatTag: null, company: false, bowl: false };
     this.clockT = 0;
@@ -91,7 +91,7 @@ export class CanteenScene extends OfficeScene {
       const s = this.freeSeats.find((q) => q.tag === (d.seat || 'plain')) || this.freeSeats[0];
       this.sit(s);
       if (k >= 4) { this.tray.dishes[0].eaten = true; this.startRoku(); }
-      if (k >= 5) { this.roku.alive = false; this.roku.hp = 0; this.phase = 'back'; this.unseat(); this.player.x = s.px; this.player.y = s.py + 60; }
+      if (k >= 5) { this.roku.alive = false; this.roku.hp = 0; this.phase = 'back'; this.unseat(); this.player.x = s.px; this.player.y = s.py + 60; this.roku.ext = 0; }
     } else {
       this.player.x = this.obachan.x; this.player.y = this.obachan.y + 2.4 * t;
     }
@@ -273,6 +273,11 @@ export class CanteenScene extends OfficeScene {
       }
     }
 
+    // the way out, once Rokurokubi is beaten
+    if (this.phase === 'back' && !this.seated && near(this.L.exit.x * t, this.L.exit.y * t, 1.8 * t)) {
+      this.prompt = T.prompts.leave;
+      if (e) { this.lunchDone(); return; }
+    }
     if (this.tray) this.updateTray(e);
     this.updateNpcs(dt);
   }
@@ -289,12 +294,13 @@ export class CanteenScene extends OfficeScene {
     // back at your seat after the boss
     if (tray.where === 'seat' && !this.seated && this.seat && dist(p.x, p.y, this.seat.px, this.seat.py) < 1.4 * t) {
       if (this.roku?.alive) { this.prompt = T.prompts.notNow; return; }
+      if (!this.dishesLeft) return;
       this.prompt = T.prompts.sitBack;
       if (e) this.sit(this.seat);
       return;
     }
     if (this.seated) {
-      this.prompt = this.dishesLeft ? T.prompts.eat : null;
+      this.prompt = this.dishesLeft ? T.prompts.eat : this.phase === 'back' ? T.prompts.standUp : null;
       return;
     }
     if (!this.carrying) return;
@@ -369,7 +375,7 @@ export class CanteenScene extends OfficeScene {
       const total = this.tray.dishes.length;
       const at = this.seat.tag === 'manager' ? C.managerBossAt : C.bossAt;
       if (!this.roku && this.dishesEaten >= Math.max(1, Math.ceil(total * at))) this.startRoku();
-      else if (!this.dishesLeft && this.roku && !this.roku.alive) this.lunchDone();
+      else if (!this.dishesLeft && this.roku && !this.roku.alive) this.phaseBanner(this.T.finished, this.T.hints.back);
     }
   }
 
@@ -628,8 +634,9 @@ export class CanteenScene extends OfficeScene {
     this.phaseBanner(this.T.rokuDown);
     this.g.audio.sfx('sfx_lift_ding');
     this.g.audio.playMusic('music_office');
-    if (this.seated && !this.dishesLeft) this.lunchDone();
-    else { this.phase = 'back'; this.banner(this.T.hints.back, 3.5); }
+    // lunch break is over: head for the door (sitting back down to finish the tray is optional, for points)
+    this.phase = 'back';
+    this.banner(this.T.hints.back, 4);
   }
 
   // ---------------------------------------------------------------- minions
@@ -820,6 +827,14 @@ export class CanteenScene extends OfficeScene {
   // over the y-sorted world: Rokurokubi's neck and head, the obachan's and the intern's speech bubbles
   drawOverWorld(ctx) {
     this.drawRokuNeck(ctx);
+    if (this.phase === 'back' || this.phase === 'done') {
+      // the way out glows, like the lift in the office
+      const t = this.tile, ex = this.L.exit;
+      ctx.globalAlpha = 0.3 + (Math.floor(this.time * 4) % 2) * 0.25;
+      ctx.fillStyle = PAL.gold; ctx.fillRect((ex.x - 1.5) * t, (ex.y - 0.5) * t, 3 * t, t);
+      ctx.globalAlpha = 1;
+      text(ctx, this.T.exitLabel, ex.x * t, (ex.y - 1.1) * t + (Math.floor(this.time * 3) % 2) * 3, { size: 22, color: PAL.gold });
+    }
     if (this.obachan.say) this.drawBubble(ctx, { x: this.obachan.x + 240, say: this.obachan.say }, this.obachan.y + 10);
     if (this.intern.say) this.drawBubble(ctx, this.intern, this.intern.y - 60);
     const r = this.roku;
@@ -1156,7 +1171,7 @@ export class CanteenScene extends OfficeScene {
     if (this.phase === 'order' && this.special.tickets) { const k = this.special.tickets; goal = { x: (k.x + 1) * t, y: (k.y + 1.6) * t }; }
     else if (this.phase === 'collect') goal = { x: this.obachan.x, y: this.obachan.y + 2 * t };
     else if (this.phase === 'carry' && this.tray?.where === 'table') goal = { x: this.tray.x, y: this.tray.y + t };
-    else if (this.phase === 'back' && this.seat) goal = { x: this.seat.px, y: this.seat.py };
+    else if (this.phase === 'back') goal = { x: this.L.exit.x * t, y: this.L.exit.y * t };
     else if (this.bowl && this.player.mental < 70) goal = { x: this.bowl.x, y: this.bowl.y };
     if (!goal) return;
     this.state = 'explore'; const desk = this.special.desk;
