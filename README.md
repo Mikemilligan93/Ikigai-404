@@ -23,7 +23,7 @@ WASD move · J / Space briefcase strike · K paper ball · E interact · Esc ski
 
 | File | What |
 |---|---|
-| `config.json` | All numbers: speeds, damage, HP, spawn rates, escalation, NPC effects, scoring. `debug.startScene` (`title`, `intro`, `office`, `lift`, `end`), `debug.showHitboxes`, `debug.godMode` help testing. |
+| `config.json` | All numbers: speeds, damage, HP, spawn rates, escalation, NPC effects, scoring (`canteen` = Level 2). `debug.startScene` (`title`, `intro`, `office`, `lift`, `canteen`, `end`), `debug.showHitboxes`, `debug.godMode` help testing. |
 | `texts.json` | All on-screen text (English). Lines marked PLACEHOLDER need the team's texts. |
 | `assets/manifest.json` | Sprite sheets (grid size, frame size) and audio file names. Drop a file with that name into `assets/img` or `assets/audio` — no code change needed. |
 | `docs/PROMPTS.md` | ChatGPT prompts for every sprite sheet (8-bit pixel style). |
@@ -32,6 +32,15 @@ WASD move · J / Space briefcase strike · K paper ball · E interact · Esc ski
 | `config.json → animation` | Walk stride, frame rates, typewriter speed. |
 | `docs/DESIGN.md` | Design document (living). |
 | `src/levels/office.js` | Office floor plan on a tile grid: zones, walls, doors, props, miniboss / NPC / mochi positions. |
+| `src/levels/canteen.js` | Level 2 floor plan: canteen zones, tables, free seats (and what each seat is worth), colleague positions, hazards. |
+
+## Testing
+
+URL parameters jump straight to a part of the game (they never show in normal play):
+
+- `?scene=office` / `?scene=lift` / `?scene=canteen` — start in that scene
+- `?scene=canteen&step=collect|carry|eat|boss|back` — a step of the canteen level, with `&meal=curry|miso|onigiri|ramen` and `&seat=plain|company|intern|window|rooftop|manager`
+- `&god=1` — no damage · `&hitboxes=1` — collision boxes · `&clock=1` — a 1-minute lunch clock
 
 ## Project structure
 
@@ -45,7 +54,8 @@ src/sprites.js        frame map for every sheet + animation helpers
 src/main.js           boot
 src/leaderboard.js    leaderboard client (API + local fallback)
 src/levels/office.js  level 1 layout
-src/scenes/           title, intro, office, lift, end
+src/levels/canteen.js level 2 layout
+src/scenes/           title, intro, office, lift, canteen, end
 worker/index.js       Cloudflare Worker entry (serves the game + /api/scores)
 worker/scores.js      leaderboard API
 wrangler.jsonc        Cloudflare config (no build step)

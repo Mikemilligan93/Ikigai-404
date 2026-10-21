@@ -615,6 +615,259 @@
       "size": [640, 360],
       "palette": false,
       "colors": 48
+    },
+    "player_tray": {
+      "file": "img/player_tray.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "player_eat": {
+      "file": "img/player_eat.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "boss_rokurokubi": {
+      "file": "img/boss_rokurokubi.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [96, 96],
+      "align": "bottom"
+    },
+    "rokurokubi_head": {
+      "file": "img/rokurokubi_head.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [48, 48],
+      "align": "center"
+    },
+    "rokurokubi_neck": {
+      "file": "img/rokurokubi_neck.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [24, 24],
+      "align": "center"
+    },
+    "rokurokubi_portrait": {
+      "file": "img/rokurokubi_portrait.png",
+      "type": "sheet",
+      "cols": 2,
+      "rows": 1,
+      "cell": [96, 96],
+      "align": "bottom"
+    },
+    "miniboss_ramen": {
+      "file": "img/miniboss_ramen.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "minion_naruto_weak": {
+      "file": "img/minion_naruto_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "center"
+    },
+    "minion_egg_strong": {
+      "file": "img/minion_egg_strong.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "center"
+    },
+    "minion_question_weak": {
+      "file": "img/minion_question_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "center"
+    },
+    "minion_pager_weak": {
+      "file": "img/minion_pager_weak.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [36, 36],
+      "align": "center"
+    },
+    "minion_invite_strong": {
+      "file": "img/minion_invite_strong.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_obachan": {
+      "file": "img/npc_obachan.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_intern": {
+      "file": "img/npc_intern.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 1,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "npc_eaters_down": {
+      "file": "img/npc_eaters_down.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 4,
+      "cell": [48, 48],
+      "align": "bottom",
+      "palette": false,
+      "colors": 32
+    },
+    "npc_eaters_up": {
+      "file": "img/npc_eaters_up.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 4,
+      "cell": [48, 48],
+      "align": "bottom",
+      "palette": false,
+      "colors": 32
+    },
+    "npc_walker_tray": {
+      "file": "img/npc_walker_tray.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 3,
+      "cell": [48, 48],
+      "align": "bottom"
+    },
+    "tiles_canteen_floor": {
+      "file": "img/tiles_canteen_floor.png",
+      "type": "tiles",
+      "cols": 4,
+      "rows": 4,
+      "cell": [24, 24],
+      "palette": false,
+      "colors": 24
+    },
+    "tiles_canteen_wall": {
+      "file": "img/tiles_canteen_wall.png",
+      "type": "tiles",
+      "cols": 4,
+      "rows": 4,
+      "cell": [24, 24],
+      "palette": false,
+      "colors": 24
+    },
+    "wall_decor_canteen": {
+      "file": "img/wall_decor_canteen.png",
+      "type": "tiles",
+      "cols": 4,
+      "rows": 2,
+      "cell": [24, 24],
+      "palette": false,
+      "colors": 24
+    },
+    "props_canteen_counter": {
+      "file": "img/props_canteen_counter.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_canteen_tables": {
+      "file": "img/props_canteen_tables.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_canteen_misc": {
+      "file": "img/props_canteen_misc.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_canteen_anim": {
+      "file": "img/props_canteen_anim.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_rooftop": {
+      "file": "img/props_rooftop.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_healthweek": {
+      "file": "img/props_healthweek.png",
+      "type": "sheet",
+      "cols": 3,
+      "rows": 2,
+      "cell": [72, 72],
+      "align": "bottom"
+    },
+    "props_trays": {
+      "file": "img/props_trays.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 3,
+      "cell": [36, 36],
+      "align": "center"
+    },
+    "food_icons": {
+      "file": "img/food_icons.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [24, 24],
+      "align": "center"
+    },
+    "fx_canteen": {
+      "file": "img/fx_canteen.png",
+      "type": "sheet",
+      "cols": 4,
+      "rows": 2,
+      "cell": [24, 24],
+      "align": "center"
+    },
+    "ticket_machine_closeup": {
+      "file": "img/ticket_machine_closeup.png",
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48
+    },
+    "canteen_title": {
+      "file": "img/canteen_title.png",
+      "type": "background",
+      "size": [640, 360],
+      "palette": false,
+      "colors": 48
     }
   },
   "audio": {

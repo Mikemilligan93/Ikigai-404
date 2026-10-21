@@ -370,6 +370,224 @@
     "careLine": "{breaks} breaks · {mochi} mochi · {helped} kind colleagues",
     "_positivityNote": "burnoutSincere: one sincere line under the joke. winClosing: shown on the win screen. Self-care = breaks + mochi + helpful colleagues (points in config.json → scoring.selfCarePoints)."
   },
+  "canteen": {
+    "_note": "Level 2 texts. DRAFT lines written by Claude so the level is playable — rewrite freely, keep the keys. {meal}, {where}, {dishes}, {spilled}, {clock} are filled in by the game.",
+    "levelName": "12:00 — The Canteen",
+    "hints": {
+      "order": "Lunch! Buy a meal ticket at the machine.",
+      "collect": "Take your ticket to the obachan at the counter.",
+      "seat": "Find a free seat and sit down to eat.",
+      "boss": "Your lunch is on the table. It'll wait. Deal with him first.",
+      "back": "Go back to your seat and finish your lunch."
+    },
+    "goals": {
+      "order": "Buy a meal ticket",
+      "collect": "Collect your tray from the counter",
+      "carry": "Get your tray past the Ramen Bowl",
+      "seat": "Pick a seat (E)",
+      "eat": "Hold E to eat",
+      "boss": "Beat Rokurokubi",
+      "back": "Back to your seat — finish lunch"
+    },
+    "prompts": {
+      "ticket": "E — Buy a meal ticket",
+      "greet": "E — Say hello to the obachan",
+      "ticketFirst": "Ticket first, dear",
+      "collect": "E — Hand over your ticket",
+      "putDown": "E — Put the tray down",
+      "pickUp": "E — Pick up your tray",
+      "sit": "E — Sit here {where}",
+      "cantSit": "Not with a ramen bowl shooting shrimp at you (E — put the tray down)",
+      "eat": "Hold E — eat",
+      "sitBack": "E — Sit back down",
+      "notNow": "He's still here. Lunch can wait a minute.",
+      "bowl": "E — Eat the defeated ramen"
+    },
+    "menuTitle": "Meal tickets",
+    "menuHint": "← → choose · E buy · Esc back",
+    "meals": {
+      "curry": {
+        "name": "Curry rice",
+        "buff": "Spicy: your briefcase hits harder"
+      },
+      "miso": {
+        "name": "Miso soup set",
+        "buff": "Warm: mental health slowly refills"
+      },
+      "onigiri": {
+        "name": "Onigiri set",
+        "buff": "Light: you move faster"
+      },
+      "ramen": {
+        "name": "Ramen",
+        "buff": "Hearty: dishes heal twice as much, eat slowly"
+      }
+    },
+    "ordered": "{meal} — good choice.",
+    "seatNames": {
+      "plain": "",
+      "company": "(nice company)",
+      "intern": "(with the intern)",
+      "window": "(window counter)",
+      "rooftop": "(rooftop — fresh air)",
+      "manager": "(tatami — next to the managers…)"
+    },
+    "seatLines": {
+      "plain": "A seat. A real lunch. Imagine that.",
+      "company": "Good company makes rice taste better.",
+      "intern": "You sat with the new intern. Their whole week just got better.",
+      "window": "Window seat. Just you, your rice and the sky.",
+      "rooftop": "The rooftop. Sun, wind, no pagers. This is a real break.",
+      "manager": "The tatami section. Bold. Very bold."
+    },
+    "obachan": {
+      "greet": [
+        "Ah, you look tired, dear. I'll put something extra on your tray.",
+        "Hello hello! Eat properly today, ne?"
+      ],
+      "ticketFirst": [
+        "Ticket first, dear. The machine is by the door.",
+        "No ticket, no rice. Rules are rules."
+      ],
+      "tray": [
+        "Here you go. Sit down and EAT it, no laptop.",
+        "One tray. Mind the ramen, it's in a mood today."
+      ],
+      "bonus": [
+        "And a little egg for you. Shh, don't tell the others.",
+        "Extra side dish. You said hello — nobody says hello."
+      ]
+    },
+    "internLines": {
+      "joined": [
+        "Oh! You're sitting… with me? Thank you!",
+        "Nobody's sat here all week. Thanks."
+      ]
+    },
+    "ramenName": "Ramen Bowl",
+    "ramenWakes": "The Ramen Bowl doesn't like you carrying lunch.",
+    "ramenLines": {
+      "wake": [
+        "THAT TRAY. GIVE IT.",
+        "Slurp first, ask questions later!"
+      ],
+      "fight": [
+        "Tempura incoming!",
+        "Extra noodles! EXTRA PAIN!",
+        "You call that a lunch break?",
+        "I'm 40% broth and 60% rage!"
+      ]
+    },
+    "ramenDown": "The Ramen Bowl is just a bowl of ramen again.",
+    "ramenDownMine": "Wait… is that my lunch?",
+    "bowlPickup": "Hot ramen!",
+    "bowlLines": [
+      "Warm food, eaten slowly. Revolutionary."
+    ],
+    "rokuName": "Rokurokubi, Department Head",
+    "rokuIncoming": "A long neck stretches over your table…",
+    "rokuLines": {
+      "entry": [
+        "Quick sync? Won't take a minute.",
+        "Don't get up. I'll just… lean in."
+      ],
+      "strike": [
+        "What are you working on?",
+        "Just checking in!",
+        "Got a sec?"
+      ],
+      "summon": [
+        "I've sent you an invite.",
+        "Working lunch, 12:15. Mandatory.",
+        "Can you take a quick question?"
+      ],
+      "coil": [
+        "I see EVERYTHING in this canteen.",
+        "My door is always open. My neck too."
+      ],
+      "defeat": [
+        "…Fine. Enjoy your lunch. We'll circle back."
+      ]
+    },
+    "rokuDown": "Rokurokubi retracts. The canteen breathes again.",
+    "handsFull": "Hands full!",
+    "spilled": "Spilled!",
+    "eatLines": [
+      "Chew. Taste. Breathe.",
+      "Food tastes better without a screen.",
+      "One dish at a time. No multitasking."
+    ],
+    "late": "13:00. Lunch break's over… technically.",
+    "lateLines": [
+      "Ate it at my desk. Again.",
+      "Lunch is not optional. Your body didn't get the memo you wrote."
+    ],
+    "done": "Lunch eaten. Properly. On time.",
+    "doneLate": "Lunch eaten. A bit late, but you ate.",
+    "npcLines": {
+      "dog": [
+        "*sniffs your tray hopefully*",
+        "Woof. (Translation: sit with us.)"
+      ],
+      "bestie": [
+        "Sit with me! I saved you a seat.",
+        "Finally, lunch! Tell me everything."
+      ],
+      "baker": [
+        "I brought dessert for the table.",
+        "Try the curry, it's Tuesday curry."
+      ],
+      "expert": [
+        "Proper lunch? Good. Your afternoon self says thanks.",
+        "No shop talk at the table, deal?"
+      ],
+      "meeting_saver": [
+        "I moved your 12:15. Eat.",
+        "Nobody books meetings over lunch on my watch."
+      ],
+      "shouter": [
+        "LUNCH? IN THIS ECONOMY?",
+        "I eat at my desk. That's why I'm SUCCESSFUL."
+      ],
+      "karen": [
+        "Actually, the salad bar is healthier.",
+        "You're holding your chopsticks wrong."
+      ],
+      "lazy": [
+        "Wake me up at 13:00. Or don't.",
+        "Is it lunch or is it nap time? Both?"
+      ],
+      "photos": [
+        "Look, I photographed my lunch. And yesterday's.",
+        "Want to see 200 photos of my noodles?"
+      ],
+      "hobby": [
+        "Did I tell you about my sourdough starter? It has a name.",
+        "Let me explain fermentation…"
+      ]
+    },
+    "hud": {
+      "mental": "Mental health",
+      "score": "Score",
+      "time": "Time",
+      "clock": "Clock"
+    },
+    "end": {
+      "winTitle": "You had lunch.",
+      "comingSoon": "Level 3 — coming soon",
+      "winClosing": "A real break, in the middle of a real workday.",
+      "rows": {
+        "carry": "Morning (Level 1)",
+        "work": "Defeated work",
+        "lunch": "Lunch eaten",
+        "onTime": "Back by 13:00",
+        "seat": "Where you sat",
+        "care": "Self-care",
+        "damage": "Mental damage taken"
+      },
+      "careLine": "{dishes} dishes eaten · {spilled} spilled · finished at {clock}"
+    }
+  },
   "pause": {
     "title": "Paused",
     "resume": "Resume",

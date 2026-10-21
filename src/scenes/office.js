@@ -15,12 +15,13 @@ const chanceRound = (x) => Math.floor(x) + (Math.random() < x - Math.floor(x) ? 
 const hash = (x, y) => { let h = (x * 374761393 + y * 668265263) ^ 0x5bd1e995; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
 export class OfficeScene {
-  constructor(game) {
+  // opts.level / opts.texts let another level (the canteen) reuse this scene's map, drawing and combat code.
+  constructor(game, opts = {}) {
     this.g = game;
     this.C = game.config;
     this.A = game.config.animation;
-    this.T = game.texts.office;
-    this.L = OFFICE;
+    this.T = opts.texts || game.texts.office;
+    this.L = opts.level || OFFICE;
     const t = this.L.T;
     this.tile = t;
 
@@ -66,8 +67,10 @@ export class OfficeScene {
     this.updateCamera();
     this.fieldT = 0;
     this.updateFields();
-    this.banner(this.T.levelName, 3);
-    this.banner(this.T.exploreHint, 5);
+    if (!opts.level) {
+      this.banner(this.T.levelName, 3);
+      this.banner(this.T.exploreHint, 5);
+    }
   }
 
   enter() { this.g.audio.playMusic('music_office'); }
@@ -233,14 +236,16 @@ export class OfficeScene {
   // Pre-render floors and walls once into a big offscreen canvas (tiles from tiles_floor / tiles_wall, or placeholders).
   renderStatic() {
     const L = this.L, t = this.tile, a = this.g.assets;
+    // a level can bring its own tile sheets and tile maps (levels/canteen.js); the office uses the defaults
+    const S = L.sheets || {}, FT = L.floorTypes || FLOOR, WT = L.wallKeys || WALL, DT = L.decorKeys || WALL_DECOR;
     const c = document.createElement('canvas');
     c.width = L.width; c.height = L.height;
     const ctx = c.getContext('2d');
     ctx.imageSmoothingEnabled = false;
-    const floorImg = a.get('tiles_floor'), wallImg = a.get('tiles_wall'), decorImg = a.get('wall_decor');
+    const floorImg = a.get(S.floor || 'tiles_floor'), wallImg = a.get(S.wall || 'tiles_wall'), decorImg = a.get(S.decor || 'wall_decor');
     const sheetImg = (k) => (k ? a.get(k) : floorImg);
     const faces = new Map(L.faces.map(([x, y, k]) => [this.at(x, y), k]));
-    const ts = a.cell('tiles_floor')[0];
+    const ts = a.cell(S.floor || 'tiles_floor')[0];
     const tileAt = (img, col, row, x, y) => ctx.drawImage(img, col * ts, row * ts, ts, ts, x * t, y * t, t, t);
 
     for (let y = 0; y < L.MAP_H; y++) for (let x = 0; x < L.MAP_W; x++) {
@@ -248,7 +253,7 @@ export class OfficeScene {
       let type = this.floor[i];
       if (type && !this.wall[i] && this.worn.has(i)) type = this.worn.get(i);
       if (type && !this.wall[i]) {
-        const f = FLOOR[type];
+        const f = FT[type];
         let [col, row] = f.checker ? f.cells[(x + y) % f.cells.length] : f.cells[0];
         let img = sheetImg(f.sheet);
         const h = hash(x, y);
@@ -282,9 +287,9 @@ export class OfficeScene {
         const l = x > 0 && this.wall[this.at(x - 1, y)] === 2, r = x + 1 < L.MAP_W && this.wall[this.at(x + 1, y)] === 2;
         key = l && r ? 'partH' : 'partEnd';
       } else key = showsFace ? (faces.get(i) || 'face') : 'cap';
-      if (WALL_DECOR[key]) {
-        if (decorImg) { tileAt(decorImg, ...WALL_DECOR[key], x, y); continue; }
-        if (wallImg) tileAt(wallImg, ...WALL.face, x, y); else this.placeholderWall(ctx, 'face', x * t, y * t, t);
+      if (DT[key]) {
+        if (decorImg) { tileAt(decorImg, ...DT[key], x, y); continue; }
+        if (wallImg) tileAt(wallImg, ...WT.face, x, y); else this.placeholderWall(ctx, 'face', x * t, y * t, t);
         ctx.fillStyle = PAL.ink; ctx.fillRect(x * t + 12, y * t + 9, 24, 21);
         ctx.fillStyle = { extinguisher: PAL.red, exit: PAL.moss, safety: PAL.moss, hangplant: PAL.moss, clock: PAL.cream, tv: PAL.indigo, aircon: PAL.cream }[key] || PAL.ochre;
         ctx.fillRect(x * t + 15, y * t + 12, 18, 15);
@@ -298,8 +303,8 @@ export class OfficeScene {
         if (!(x > 0 && this.wall[this.at(x - 1, y)] === 1)) ctx.fillRect(x * t, y * t, 3, t);
         if (!(x + 1 < L.MAP_W && this.wall[this.at(x + 1, y)] === 1)) ctx.fillRect(x * t + t - 3, y * t, 3, t);
       } else if (wallImg) {
-        const [col, row] = WALL[key];
-        if (w === 2) tileAt(floorImg || wallImg, ...(floorImg ? FLOOR[this.floor[i] || 'carpet'].cells[0] : WALL.cap), x, y);
+        const [col, row] = WT[key] || WT.face;
+        if (w === 2) tileAt(floorImg || wallImg, ...(floorImg ? FT[this.floor[i] || L.defaultFloor || 'carpet'].cells[0] : WT.cap), x, y);
         tileAt(wallImg, col, row, x, y);
       } else this.placeholderWall(ctx, key, x * t, y * t, t);
     }
@@ -656,8 +661,13 @@ export class OfficeScene {
       }
     }
 
-    // colleagues: entering the aura makes them talk (speech bubble with a line from texts.json),
-    // staying inside for dwellTime triggers their effect (config.json → friendlyNpcs.types)
+    this.updateNpcs(dt);
+  }
+
+  // colleagues: entering the aura makes them talk (speech bubble with a line from texts.json),
+  // staying inside for dwellTime triggers their effect (config.json → friendlyNpcs.types)
+  updateNpcs(dt) {
+    const p = this.player;
     const fc = this.C.friendlyNpcs;
     for (const n of this.npcs) {
       n.rearm -= dt; n.cheer -= dt;
@@ -1001,7 +1011,9 @@ export class OfficeScene {
     for (const e of this.enemies) if (this.onScreen(e.x, e.y, 80)) list.push({ y: e.y, d: () => this.drawEnemy(ctx, e) });
     if (this.boss) list.push({ y: this.boss.y, d: () => this.drawBoss(ctx) });
     list.push({ y: this.player.y, d: () => this.drawPlayer(ctx) });
-    list.sort((p, q) => p.y - q.y).forEach((o) => o.d());
+    for (const o of this.worldExtras?.() || []) list.push(o);   // another level's own people and things (canteen)
+    list.sort((p, q) => p.y - q.y).forEach((o) => o.d(ctx));
+    this.drawOverWorld?.(ctx);
     this.drawSteam(ctx);
     for (const n of this.npcs) if (n.say && this.onScreen(n.x, n.y, 200)) this.drawBubble(ctx, n, n.y - 80);
     for (const m of this.minibosses) if (m.alive && m.say && this.onScreen(m.x, m.y, 200)) this.drawBubble(ctx, m, m.y - m.r - 116);
@@ -1033,13 +1045,10 @@ export class OfficeScene {
       const [k, c, r] = FX.paper, spin = Math.floor(this.time * 16) % 4;
       drawFrame(ctx, a, k, c, r, s.x, s.y, { anchor: 'center', flip: spin % 2 === 1, rot: spin >= 2 ? Math.PI : 0, kind: 'fx', color: PAL.cream, ph: [5, 5], eyes: false });
     }
-    for (const h of this.hostile) {
-      const [k, c, r] = Math.floor(this.time * 8) % 2 ? FX.heart1 : FX.heart2;
-      drawFrame(ctx, a, k, c, r, h.x, h.y, { anchor: 'center', kind: 'fx', color: PAL.pink, ph: [7, 7], eyes: false });
-    }
+    this.drawHostile(ctx);
     for (const f of this.particles) {
-      const [k, c, r] = FX[f.kind];
-      drawFrame(ctx, a, k, c, r, f.x, f.y, { anchor: 'center', alpha: clamp(f.t / f.life * 1.5, 0, 1), kind: 'fx', color: f.kind === 'smoke' ? PAL.grey : PAL.gold, ph: [5, 5], eyes: false });
+      const [k, c, r] = this.fxSprite(f.kind);
+      drawFrame(ctx, a, k, c, r, f.x, f.y, { anchor: 'center', flip: f.flip, alpha: clamp(f.t / f.life * 1.5, 0, 1), kind: 'fx', color: f.kind === 'smoke' ? PAL.grey : PAL.gold, ph: [5, 5], eyes: false });
     }
 
     for (const f of this.floaters) {
@@ -1056,6 +1065,16 @@ export class OfficeScene {
     ctx.restore();
 
     this.drawHud(ctx);
+  }
+
+  fxSprite(kind) { return FX[kind]; }
+
+  // the CEO's pink hearts
+  drawHostile(ctx) {
+    for (const h of this.hostile) {
+      const [k, c, r] = Math.floor(this.time * 8) % 2 ? FX.heart1 : FX.heart2;
+      drawFrame(ctx, this.g.assets, k, c, r, h.x, h.y, { anchor: 'center', kind: 'fx', color: PAL.pink, ph: [7, 7], eyes: false });
+    }
   }
 
   onScreen(x, y, m) {

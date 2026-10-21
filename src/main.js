@@ -3,6 +3,7 @@ import { Leaderboard } from './leaderboard.js';
 import { TitleScene } from './scenes/title.js';
 import { IntroScene } from './scenes/intro.js';
 import { OfficeScene } from './scenes/office.js';
+import { CanteenScene } from './scenes/canteen.js';
 import { LiftScene } from './scenes/lift.js';
 import { EndScene } from './scenes/end.js';
 import { PauseMenu } from './scenes/pause.js';
@@ -23,6 +24,13 @@ async function boot() {
     // pixel font from Google Fonts; carry on with the fallback font if it does not arrive in time
     const font = document.fonts ? Promise.race([document.fonts.load('24px "DotGothic16"'), new Promise((r) => setTimeout(r, 2500))]).catch(() => {}) : null;
     await Promise.all([assets.load(manifest), font]);
+    // test links: ?scene=canteen&step=carry&meal=ramen&god=1&hitboxes=1 (see README → Testing)
+    const q = new URLSearchParams(location.search);
+    const debug = { step: q.get('step'), meal: q.get('meal'), seat: q.get('seat') };
+    if (q.get('scene')) config.debug.startScene = q.get('scene');
+    if (q.get('god') === '1') config.debug.godMode = true;
+    if (q.get('hitboxes') === '1') config.debug.showHitboxes = true;
+    if (q.get('clock')) config.canteen.clockMinutes = Number(q.get('clock'));
     setTextConfig(config.text);
     const canvas = document.getElementById('game');
     const game = new Game(canvas, {
@@ -36,6 +44,7 @@ async function boot() {
       title: () => new TitleScene(game),
       intro: () => new IntroScene(game),
       office: () => new OfficeScene(game),
+      canteen: (opts) => new CanteenScene(game, opts || { debug }),
       lift: () => new LiftScene(game),
       end: (result) => new EndScene(game, result),
     };
@@ -47,6 +56,7 @@ async function boot() {
     const first = !config.debug?.startScene || config.debug.startScene === 'title' ? 'splash' : config.debug.startScene;
     if (first !== 'title' && first !== 'splash' && !game.session.name) game.session.name = 'Debug Bunny';
     game.go(first === 'end' ? game.scenes.end({ outcome: 'win', score: 1234, breakdown: {}, seconds: 100 }) : game.scenes[first]());
+    debug.step = null;   // a retry from the pause menu starts the level from the beginning
     game.start();
   } catch (err) {
     boot.textContent = 'Failed to start: ' + err.message +

@@ -1,4 +1,4 @@
-# Ikigai 404 — Design Document v0.3
+# Ikigai 404 — Design Document v0.4
 
 *Mito Hackathon 2026 · 24 hours to MVP · living document — decisions are updated here*
 
@@ -72,7 +72,8 @@ Reuse of earlier personal projects (e.g. the top-down tech demo) is allowed.
    - All 3 minibosses defeated → **final boss: the CEO, a dragon in a suit** appears.
 4. **Lift cutscene (after the boss fight):** meets the boss, dialogue, chest-up view.
    Content not decided yet; dialogue choices do not matter for now.
-5. **End cutscene:** "Level 2 is coming soon" + score → leaderboard.
+5. **Level 2 — the canteen** (lunch, same day): see section 14. The Level 1 score carries over.
+6. **End screen:** "Level 3 — coming soon" + total score → leaderboard. (Burning out in Level 1 still ends the run there.)
 6. **Burnout (mental health = 0):** no death — he burns out; random funny line
    ("I'd rather open a café", "I'll become a baker instead") → score → leaderboard.
 
@@ -110,7 +111,7 @@ random line · end screen with score · online leaderboard · config.json + text
 
 **Should:** lift dialogue scene · friendly NPC buffs/debuffs (final types) · real art · audio.
 
-**Could:** Level 2 (the canteen) · more enemy types · score rule polish · screen shake, juice.
+**Could:** ~~Level 2 (the canteen)~~ built, see section 14 · more enemy types · score rule polish · screen shake, juice.
 
 ## 12. Task breakdown
 
@@ -136,3 +137,29 @@ random line · end screen with score · online leaderboard · config.json + text
 - Lift scene content.
 - Scoring rules.
 - Fine-tune the floor plan once the real prop art is in (footprints in `src/sprites.js`).
+
+## 14. Level 2 — The Canteen (built 2026-10-21)
+
+*Surface joke:* you just want to eat your lunch, and the whole company won't let you.
+*Sincere message:* protect your break — eat properly, sit with people who are good for you, switch off for an hour.
+
+**Flow** (`src/scenes/canteen.js`, layout `src/levels/canteen.js`, numbers `config.json → canteen`, texts `texts.json → canteen`):
+
+1. **Order** at the ticket machine (bottom left). The meal is your buff for the whole level:
+   curry = harder briefcase · miso = slow mental-health regen · onigiri = faster · ramen = dishes heal ×2 but eat slowly.
+2. **Collect** the tray from the obachan at the counter. Say hello to her *before* buying the ticket → a bonus side dish.
+3. **Carry.** Taking the tray wakes the **Ramen Bowl** miniboss (walks the hall on a leash, shoots tempura shrimp — single aimed shot, then a fan of 3; below half HP a noodle whip; spawns rolling narutomaki and bouncing eggs). With the tray in your hands you are slower and can't attack; a hit spills a dish (one spill per 3 s). Put the tray down on any table (E) to fight, pick it up again (E). The defeated Ramen Bowl becomes a healing bowl of ramen.
+4. **Sit.** Free seats show an empty stool (gold arrows once the Ramen Bowl is beaten). Seats: plain · next to a kind colleague (bonus) · with the lonely intern (bonus, they cheer up) · window counter · rooftop bench through the stair door (big bonus) · tatami next to the managers (penalty, the boss comes immediately).
+5. **Eat:** hold E, dish by dish (each heals). Halfway through, **Rokurokubi** (long-necked department head) cranes his neck over the table — "Quick sync?" — and you stand up. His head strikes along a telegraphed red line, he summons calendar invites, "quick question" spirits and pagers (ranged pings); below half HP his neck coils round the hall after a red ring warning. The head can be hit while it is out.
+6. **Back:** sit down again and finish your lunch → end screen ("Level 3 — coming soon").
+
+**Clock:** 12:00 → 13:00 in `clockMinutes` real minutes (5). Missing 13:00 doesn't burn you out — it costs the on-time bonus and gives a funny line.
+**Hazards:** rice-cooker steam bursts (warning puffs, then a blast) and the tray-return conveyor that pushes you along.
+**Scoring** (added to the Level 1 score): defeated work, dishes eaten minus spilled, back by 13:00 + minutes left, where you sat, self-care, minus mental damage.
+
+**Test links** (`?debug` style URL parameters, handled in `src/main.js`):
+`?scene=canteen` · `&step=collect|carry|eat|boss|back` · `&meal=curry|miso|onigiri|ramen` · `&seat=plain|company|intern|window|rooftop|manager` · `&god=1` · `&hitboxes=1` · `&clock=1` (a 1-minute lunch).
+
+**Art:** 31 sheets from `docs/ikigai404_canteen_art_prompts.xlsx` (canteen tiles and walls, props, Health Week leftovers, rooftop, Ramen Bowl + minions, Rokurokubi body / head / neck, obachan, intern, colleagues eating, the bunny with a tray and eating, food icons, effects, ticket-machine close-up). Frame meanings: `src/sprites.js` (Level 2 section).
+
+**Open:** final texts (all canteen lines are drafts) · the lift dialogue still says "It's 16:58" although lunch follows it · balance pass after a playtest · canteen music (reuses the office tracks) · `canteen_title` card is not used yet.

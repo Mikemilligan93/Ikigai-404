@@ -212,6 +212,41 @@ export const PROPS = {
   putting: P('props_lounge', 0, 1, 3, 1, '#3E6B4F', { solid: false, flat: true }),
   coffee_table: P('props_lounge', 1, 1, 2, 1, '#6B4226'),
   sofa: P('props_lounge', 2, 1, 2, 1, '#8C2A2A'),
+
+  // ---- Level 2: the canteen
+  counter_l: P('props_canteen_counter', 0, 0, 3, 1, '#A39E93'),
+  counter_m: P('props_canteen_counter', 1, 0, 3, 1, '#A39E93'),
+  counter_r: P('props_canteen_counter', 2, 0, 3, 1, '#A39E93'),
+  samples: P('props_canteen_counter', 0, 1, 2, 1, '#F2E8D5'),
+  tray_rack: P('props_canteen_counter', 1, 1, 2, 1, '#6B4226'),
+  tea: P('props_canteen_counter', 2, 1, 2, 1, '#3E6B4F'),
+  table_l: P('props_canteen_tables', 0, 0, 3, 1, '#E8B84A', { table: true }),
+  table_m: P('props_canteen_tables', 1, 0, 3, 1, '#E8B84A', { table: true }),
+  table_r: P('props_canteen_tables', 2, 0, 3, 1, '#E8B84A', { table: true }),
+  window_counter: P('props_canteen_tables', 0, 1, 3, 1, '#E8B84A', { table: true }),
+  chabudai: P('props_canteen_tables', 1, 1, 3, 1, '#8C2A2A', { table: true }),
+  table_small: P('props_canteen_tables', 2, 1, 2, 1, '#E8B84A', { table: true }),
+  ticket_machine: P('props_canteen_misc', 0, 0, 2, 1, '#F2E8D5', { label: 'Tickets' }),
+  ticket_machine_on: P('props_canteen_misc', 1, 0, 2, 1, '#E8B84A', { label: 'Tickets' }),
+  vending_canteen: P('props_canteen_misc', 2, 0, 2, 1, '#D9412B'),
+  tray_return: P('props_canteen_misc', 0, 1, 2, 1, '#A39E93'),
+  bins: P('props_canteen_misc', 1, 1, 2, 1, '#5468A8'),
+  palm_canteen: P('props_canteen_misc', 2, 1, 1, 1, '#3E6B4F'),
+  rice_cooker: P('props_canteen_anim', 0, 0, 2, 1, '#F2E8D5', { anim: { sheet: 'props_canteen_anim', frames: [[0, 0], [1, 0], [2, 0], [3, 0]], fps: 2, pause: 0 } }),
+  conveyor: P('props_canteen_anim', 0, 1, 3, 1, '#A39E93', { anim: { sheet: 'props_canteen_anim', frames: [[0, 1], [1, 1], [2, 1], [3, 1]], fps: 4 } }),
+  napper: P('props_canteen_anim', 0, 2, 3, 1, '#6B4226', { anim: { sheet: 'props_canteen_anim', frames: [[0, 2], [1, 2], [2, 2], [3, 2]], fps: 1.2 } }),
+  cherry_tree: P('props_rooftop', 0, 0, 2, 1, '#F2A7B8'),
+  roof_bench: P('props_rooftop', 1, 0, 2, 1, '#6B4226'),
+  water_tank: P('props_rooftop', 2, 0, 2, 1, '#A39E93'),
+  ac_unit: P('props_rooftop', 0, 1, 2, 1, '#F2E8D5'),
+  roof_plants: P('props_rooftop', 1, 1, 2, 1, '#3E6B4F'),
+  stair_hut: P('props_rooftop', 2, 1, 2, 1, '#A39E93'),
+  salad_bar: P('props_healthweek', 0, 0, 3, 1, '#7FB3A0'),
+  fruit_basket: P('props_healthweek', 1, 0, 1, 1, '#B97A2E'),
+  yoga_mat: P('props_healthweek', 2, 0, 1, 1, '#5468A8'),
+  balloon_chair: P('props_healthweek', 0, 1, 1, 1, '#F2A7B8'),
+  pedometers: P('props_healthweek', 1, 1, 2, 1, '#B97A2E'),
+  blender: P('props_healthweek', 2, 1, 1, 1, '#F2E8D5'),
 };
 
 // Clutter on the floor (props_clutter): drawn flat under everything, walk over it. Placed at random by the level.
@@ -227,7 +262,7 @@ export const WORKER_SHEETS = ['npc_worker_mouse', 'npc_worker_beaver', 'npc_work
 export const WORKER_ROW = { up: 0, down: 1, left: 2, right: 2 };
 export const WORKER = { type: [0, 1], actions: [2, 3] };
 // npc_walker_*: same layout as the player sheets (rows down/left/up, cols step/stand/step).
-export const WALKER_SHEETS = { coffee: 'npc_walker_coffee', papers: 'npc_walker_papers' };
+export const WALKER_SHEETS = { coffee: 'npc_walker_coffee', papers: 'npc_walker_papers', tray: 'npc_walker_tray' };
 
 export const CUBICLE_VARIANTS = [
   'cubicle_tidy', 'cubicle_messy', 'cubicle_overtime', 'cubicle_plants', 'cubicle_empty', 'cubicle_lucky',
@@ -255,3 +290,55 @@ export function dirOf(fx, fy, prev = 'down') {
 export function rowOf(dir) {
   return dir === 'right' ? [DIR_ROW.left, true] : [DIR_ROW[dir], false];
 }
+
+// ---------------------------------------------------------------- Level 2: the canteen
+const CF = 'tiles_canteen_floor';
+// Canteen floors (tiles_canteen_floor): rows = linoleum, quarry tiles (kitchen), tatami, rooftop.
+export const CANTEEN_FLOOR = {
+  lino: { sheet: CF, cells: [[0, 0]], extra: [[2, 0, 0.012, CF], [3, 0, 0.004, CF]], ph: '#E9DFC6' },
+  linoWorn: { sheet: CF, cells: [[1, 0]], ph: '#DED3B8' },
+  quarry: { sheet: CF, cells: [[0, 1]], extra: [[1, 1, 0.12, CF], [3, 1, 0.06, CF]], ph: '#8C2A2A' },
+  drain: { sheet: CF, cells: [[2, 1]], ph: '#8C2A2A' },
+  tatami: { sheet: CF, cells: [[0, 2], [2, 2]], checker: true, extra: [[3, 2, 0.05, CF]], ph: '#C9B77A' },
+  tatamiEdge: { sheet: CF, cells: [[1, 2]], ph: '#B7A266' },
+  concrete: { sheet: CF, cells: [[0, 3]], extra: [[1, 3, 0.12, CF]], ph: '#A39E93' },
+  deck: { sheet: CF, cells: [[2, 3]], ph: '#6B4226' },
+  grass: { sheet: CF, cells: [[3, 3]], ph: '#3E6B4F' },
+};
+// Canteen walls (tiles_canteen_wall). partH / partEnd = the rooftop railing.
+export const CANTEEN_WALL = {
+  face: [0, 0], window: [1, 0], menu: [2, 0], bowlPhoto: [3, 0],
+  noren: [0, 1], hatch: [1, 1], steelDoor: [2, 1], stairDoor: [3, 1],
+  partH: [0, 2], partEnd: [0, 2], railH: [0, 2], railCorner: [2, 2], parapet: [3, 2],
+  cap: [0, 3], capInner: [1, 3], capOuter: [2, 3], pillar: [3, 3],
+};
+export const CANTEEN_DECOR = {
+  clock: [0, 0], tv: [1, 0], lantern: [2, 0], wallFan: [3, 0],
+  carrotPoster: [0, 1], saladPoster: [1, 1], kamidana: [2, 1], firstAid: [3, 1],
+};
+// npc_eaters_down / npc_eaters_up: one row per colleague (mouse, beaver, frog, cat); cols eat A, eat B, sip tea, chat
+export const EATERS = { type: [0, 1], actions: [2, 3] };
+// player_eat: row 0 seen from the front (seat above a table), row 1 from behind (seat below a table)
+export const PLAYER_EAT = { bite: 0, chew: 1, sip: 2, happy: 3, startled: 3, rowDown: 0, rowUp: 1 };
+// miniboss_ramen (4x3): row 0 idle A, idle B, shooting, hurt · row 1 walk · row 2 whip wind-up, whip, enraged idle, defeated bowl
+export const RAMEN = { idle: [0, 1], shoot: 2, hurt: 3, walkRow: 1, walk: [0, 1, 2, 3], windup: [0, 2], whip: [1, 2], angry: [2, 2], bowl: [3, 2] };
+// boss_rokurokubi (4x2): row 0 idle A, idle B, pointing, hurt · row 1 (enraged) idle A, idle B, shouting, defeated
+export const ROKU = { idle: [0, 1], point: 2, hurt: 3, defeated: [3, 1] };
+// rokurokubi_head (4x2): row 0 suspicious, peeking, talking, hurt · row 1 (enraged) glare, bite, talk, dizzy
+export const ROKU_HEAD = { look: 0, peek: 1, talk: 2, hurt: 3 };
+// rokurokubi_neck (4x1): vertical, horizontal, bend, collar
+export const ROKU_NECK = { segment: [0, 0], collar: [3, 0] };
+// npc_obachan: idle A, stirring, holding out a tray, talking · npc_intern: sad, poking food, waving, talking
+export const OBACHAN = { idle: [0, 1], tray: 2, talk: [3, 0] };
+export const INTERN = { sad: [0, 1], wave: 2, talk: [3, 2] };
+// props_trays (4x3, cell 36): row 0 full tray per meal, row 1 half eaten, row 2 empty / spilled / chopsticks / tea
+export const TRAY = { full: 0, half: 1, emptyRow: 2, empty: 0, spilled: 1 };
+// meal order on the ticket machine = column in food_icons row 0 and in props_trays
+export const MEALS = ['curry', 'miso', 'onigiri', 'ramen'];
+// food_icons: row 0 the four meals · row 1 pickles (side dish), ramen egg (bonus), green tea, empty bowl
+export const FOOD = { side: [0, 1], bonus: [1, 1], tea: [2, 1], empty: [3, 1] };
+// fx_canteen: shrimp, shrimp turned, pager ping, steam · broth splash, rice splat, noodle lash, sparkle
+export const FXC = {
+  shrimp: ['fx_canteen', 0, 0], shrimp2: ['fx_canteen', 1, 0], ping: ['fx_canteen', 2, 0], steam: ['fx_canteen', 3, 0],
+  splash: ['fx_canteen', 0, 1], rice: ['fx_canteen', 1, 1], lash: ['fx_canteen', 2, 1], sparkle: ['fx_canteen', 3, 1],
+};

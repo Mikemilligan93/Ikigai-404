@@ -14,7 +14,8 @@ export class LiftScene {
 
   enter() { this.g.audio.playMusic('music_lift'); this.g.audio.sfx('sfx_lift_ding'); }
 
-  done() { this.g.go(this.g.scenes.end(this.g.session.result)); }
+  // after the lift: lunch (Level 2, the canteen). The Level 1 score comes along in session.result.
+  done() { this.g.go(this.g.scenes.canteen ? this.g.scenes.canteen({}) : this.g.scenes.end(this.g.session.result)); }
 
   get line() { return this.T.lines[Math.min(this.i, this.T.lines.length - 1)]; }
 

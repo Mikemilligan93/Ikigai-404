@@ -34,10 +34,12 @@ export class EndScene {
     const bands = win ? [PAL.indigo, PAL.slate, PAL.pink, PAL.peach] : [PAL.ink, PAL.ink, PAL.dgrey, PAL.dred];
     bands.forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(0, i * 180, W, 180); });
 
+    // Level 2 (the canteen) brings its own titles: texts.json → canteen.end
+    const LT = this.r.level === 2 ? this.g.texts.canteen.end : this.T;
     if (win) {
-      text(ctx, this.T.winTitle, W / 2, 72, { size: 52, color: PAL.gold });
-      text(ctx, this.T.comingSoon, W / 2, 124, { size: 26, color: PAL.cream });
-      text(ctx, this.T.winClosing, W / 2, 162, { size: 18, color: PAL.gold });
+      text(ctx, LT.winTitle, W / 2, 72, { size: 52, color: PAL.gold });
+      text(ctx, LT.comingSoon, W / 2, 124, { size: 26, color: PAL.cream });
+      text(ctx, LT.winClosing, W / 2, 162, { size: 18, color: PAL.gold });
     } else {
       text(ctx, this.T.burnoutTitle, W / 2, 72, { size: 52, color: PAL.red });
       text(ctx, `“${this.quote}”`, W / 2, 128, { size: 30, color: PAL.cream });
@@ -58,20 +60,23 @@ export class EndScene {
     windowBox(ctx, 120, 190, 460, 278);
     text(ctx, `${this.T.scoreLabel}: ${this.r.score}`, 350, 228, { size: 34, color: PAL.gold });
     const b = this.r.breakdown || {};
-    const rows = [[this.T.breakdown.kills, b.kills], [this.T.breakdown.selfCare, b.selfCare], [this.T.breakdown.damage, b.damage], [this.T.breakdown.timeBonus, b.timeBonus]];
+    let rows = [[this.T.breakdown.kills, b.kills], [this.T.breakdown.selfCare, b.selfCare], [this.T.breakdown.damage, b.damage], [this.T.breakdown.timeBonus, b.timeBonus]];
     if (b.morning) rows.unshift([this.T.breakdown.morning, b.morning]);
+    if (this.r.rows) rows = this.r.rows;   // a level with its own score rows (the canteen)
+    const rowH = rows.length > 5 ? 25 : 32;
     rows.forEach(([label, v], i) => {
-      const care = label === this.T.breakdown.selfCare;
-      text(ctx, label, 150, 274 + i * 32, { size: 19, align: 'left', color: care ? PAL.celadon : PAL.cream });
-      text(ctx, String(v ?? 0), 550, 274 + i * 32, { size: 19, align: 'right', color: care ? PAL.celadon : PAL.cream });
+      const care = label === this.T.breakdown.selfCare || label === this.g.texts.canteen?.end?.rows?.care;
+      const sz = rows.length > 5 ? 17 : 19;
+      text(ctx, label, 150, 270 + i * rowH, { size: sz, align: 'left', color: care ? PAL.celadon : PAL.cream });
+      text(ctx, String(v ?? 0), 550, 270 + i * rowH, { size: sz, align: 'right', color: care ? PAL.celadon : PAL.cream });
     });
     // what the self-care was made of, plus the time
     const c = this.r.care || { mochi: 0, breaks: 0, helped: 0 }, t = Math.round(this.r.seconds || 0);
     const care = this.T.careLine.replace('{breaks}', c.breaks).replace('{mochi}', c.mochi).replace('{helped}', c.helped);
-    const careText = `${care} · ${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+    const careText = this.r.careLine || `${care} · ${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
     let cs = 15; ctx.font = fontOf(cs);
     while (cs > 11 && ctx.measureText(careText).width > 420) { cs--; ctx.font = fontOf(cs); }
-    text(ctx, careText, 350, 274 + rows.length * 32 + 10, { size: cs, color: PAL.grey, shadow: false });
+    text(ctx, careText, 350, 270 + rows.length * rowH + 6, { size: cs, color: PAL.grey, shadow: false });
 
     // leaderboard
     windowBox(ctx, 640, 190, 520, 420);
