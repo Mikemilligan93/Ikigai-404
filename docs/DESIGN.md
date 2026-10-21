@@ -157,6 +157,10 @@ random line · end screen with score · online leaderboard · config.json + text
 **Hazards:** rice-cooker steam bursts (warning puffs, then a blast) and the tray-return conveyor that pushes you along.
 **Scoring** (added to the Level 1 score): defeated work, dishes eaten minus spilled, back by 13:00 + minutes left, where you sat, self-care, minus mental damage.
 
+**Level briefing:** each level opens with a small task window (texts.json → `office.briefing`, `canteen.briefing`); E / Space closes it.
+
+**Test menu:** pause (P) → Test menu, when `config.json → debug.testMenu` is true: jump to any scene / step, canteen meal + seat, god mode, hitboxes, game speed, refill mental health, remove enemies.
+
 **Test links** (`?debug` style URL parameters, handled in `src/main.js`):
 `?scene=canteen` · `&step=collect|carry|eat|boss|back` · `&meal=curry|miso|onigiri|ramen` · `&seat=plain|company|intern|window|rooftop|manager` · `&god=1` · `&hitboxes=1` · `&clock=1` (a 1-minute lunch).
 

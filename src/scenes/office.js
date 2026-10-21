@@ -71,6 +71,41 @@ export class OfficeScene {
       this.banner(this.T.levelName, 3);
       this.banner(this.T.exploreHint, 5);
     }
+    // the level's task, in a small window before it starts (texts.json → office.briefing / canteen.briefing)
+    this.briefing = this.T.briefing ? { t: 0 } : null;
+  }
+
+  // returns true while the briefing window is open (the level waits behind it)
+  updateBriefing(dt) {
+    if (!this.briefing) return false;
+    this.briefing.t += dt;
+    if (this.briefing.t > 0.5 && this.g.input.wasPressed('e', ' ', 'Enter')) { this.briefing = null; this.g.audio.sfx('sfx_ui'); }
+    return true;
+  }
+
+  drawBriefing(ctx) {
+    const B = this.T.briefing, k = Math.min(1, this.briefing.t / 0.2);
+    ctx.globalAlpha = k;
+    ctx.fillStyle = 'rgba(15,16,38,0.7)'; ctx.fillRect(0, 0, W, H);
+    ctx.font = fontOf(20);
+    const lh = Math.round(20 * TEXT.scale * 1.35), maxW = 720;
+    const lineCounts = B.lines.map((l) => countWrapped(ctx, l, maxW));
+    const w = 840, h = 190 + lineCounts.reduce((s, n) => s + n * lh + 14, 0), x = (W - w) / 2, y = Math.max(20, (H - h) / 2);
+    windowBox(ctx, x, y, w, h);
+    text(ctx, B.title, W / 2, y + 46, { size: 30, color: PAL.gold });
+    text(ctx, B.subtitle, W / 2, y + 84, { size: 18, color: PAL.celadon });
+    let yy = y + 128;
+    B.lines.forEach((l, i) => {
+      ctx.fillStyle = PAL.gold; ctx.fillRect(x + 48, yy - 6, 10, 10);
+      ctx.fillStyle = PAL.cream; ctx.font = fontOf(20); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      wrapLeft(ctx, l, x + 72, yy, maxW, lh);
+      yy += lineCounts[i] * lh + 14;
+    });
+    let cs = 16; ctx.font = fontOf(cs);
+    while (cs > 11 && ctx.measureText(B.controls).width > w - 70) { cs--; ctx.font = fontOf(cs); }
+    text(ctx, B.controls, W / 2, y + h - 58, { size: cs, color: PAL.grey, shadow: false });
+    if (this.briefing.t > 0.5 && Math.floor(this.briefing.t * 2) % 2 === 0) text(ctx, B.start, W / 2, y + h - 26, { size: 18, color: PAL.gold });
+    ctx.globalAlpha = 1;
   }
 
   enter() { this.g.audio.playMusic('music_office'); }
@@ -429,6 +464,7 @@ export class OfficeScene {
   // ---------------------------------------------------------------- update
   update(dt) {
     const inp = this.g.input;
+    if (this.updateBriefing(dt)) return;
     this.stateT += dt; this.time += dt;
     for (const b of this.banners.slice(0, 2)) { b.t -= dt; b.age += dt; }   // queued banners wait their turn
     this.banners = this.banners.filter((b) => b.t > 0);
@@ -1065,6 +1101,7 @@ export class OfficeScene {
     ctx.restore();
 
     this.drawHud(ctx);
+    if (this.briefing) this.drawBriefing(ctx);
   }
 
   fxSprite(kind) { return FX[kind]; }
@@ -1393,6 +1430,13 @@ export class OfficeScene {
     wrapLeft(ctx, E.body, x + 28, y + 164, w - 56, Math.round(22 * TEXT.scale * 1.4));
     text(ctx, E.hint, x + w - 28, y + h - 30, { size: 16, align: 'right', color: PAL.dgrey, shadow: false });
   }
+}
+
+// how many lines a text wraps to (same rule as wrapLeft)
+function countWrapped(ctx, str, maxW) {
+  let line = '', n = 0;
+  for (const w of String(str).split(' ')) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { n++; line = w; } else line = t; }
+  return n + (line ? 1 : 0);
 }
 
 function pushOutCircle(c, o) {

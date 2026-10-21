@@ -36,7 +36,9 @@ WASD move · J / Space briefcase strike · K paper ball · E interact · Esc ski
 
 ## Testing
 
-URL parameters jump straight to a part of the game (they never show in normal play):
+**Test menu:** with `config.json → debug.testMenu` set to `true`, the pause menu (P) has a **Test menu**: jump to any scene or canteen step (with the meal and seat you pick), god mode, hitboxes, game speed ×0.5–×4, refill mental health, remove all enemies. Pause works in the intro, both levels and the lift. Set `testMenu` to `false` before showing the game to players.
+
+The same jumps work as URL parameters (they never show in normal play):
 
 - `?scene=office` / `?scene=lift` / `?scene=canteen` — start in that scene
 - `?scene=canteen&step=collect|carry|eat|boss|back` — a step of the canteen level, with `&meal=curry|miso|onigiri|ramen` and `&seat=plain|company|intern|window|rooftop|manager`

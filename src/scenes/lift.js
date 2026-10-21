@@ -14,6 +14,11 @@ export class LiftScene {
 
   enter() { this.g.audio.playMusic('music_lift'); this.g.audio.sfx('sfx_lift_ding'); }
 
+  // P pauses (the pause menu holds the test menu too); retry replays the dialogue
+  get pausable() { return true; }
+  get pauseKeys() { return ['p']; }
+  retry() { return this.g.scenes.lift(); }
+
   // after the lift: lunch (Level 2, the canteen). The Level 1 score comes along in session.result.
   done() { this.g.go(this.g.scenes.canteen ? this.g.scenes.canteen({}) : this.g.scenes.end(this.g.session.result)); }
 

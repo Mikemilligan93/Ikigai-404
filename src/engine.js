@@ -417,6 +417,7 @@ export class Game {
     this.fade = 0; this.fadeDir = 0; this.nextScene = null;
     this.session = { name: '', score: null };
     this.pause = null;   // the open pause menu (scenes with `pausable` set can be paused)
+    this.speed = 1;      // game speed (test menu: x0.5 / x1 / x2 / x4)
     this.resize();
     window.addEventListener('resize', () => this.resize());
     // leaving the tab pauses the game, so nobody burns out while looking elsewhere
@@ -471,7 +472,7 @@ export class Game {
         this.fadeDir = -1;
       } else if (this.fade <= 0 && this.fadeDir === -1) this.fadeDir = 0;
     } else if (this.scene) {
-      this.scene.update(dt);
+      this.scene.update(dt * this.speed);
     }
     const ctx = this.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);

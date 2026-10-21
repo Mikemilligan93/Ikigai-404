@@ -35,7 +35,9 @@
   "debug": {
     "showHitboxes": false,
     "startScene": "title",
-    "godMode": false
+    "godMode": false,
+    "testMenu": true,
+    "_testMenu": "testMenu: true = a 'Test menu' in the pause menu (P) to jump to any scene / step, god mode, hitboxes, game speed. Set to false before showing the game to players."
   },
   "player": {
     "speed": 230,

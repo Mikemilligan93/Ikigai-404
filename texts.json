@@ -76,6 +76,18 @@
   },
   "office": {
     "levelName": "Level 1 — The Office",
+    "briefing": {
+      "title": "Level 1 — The Office",
+      "subtitle": "09:00. Your task today:",
+      "lines": [
+        "Walk to your desk (follow the gold arrow) and open your email with E.",
+        "Four possessed office things wake up and send work at you: the client, the printer, the coffee machine and the air conditioner. Defeat all four.",
+        "Then the CEO comes out of the lift. Beat him, then take the lift.",
+        "Keep your mental health up: the coffee machine, mochi and kind colleagues (green aura) help. Red-aura colleagues drain you."
+      ],
+      "controls": "WASD move · J / SPACE briefcase · K paper ball · E use · P pause",
+      "start": "E / SPACE — start the day"
+    },
     "exploreHint": "Look around. Your desk is waiting… press E at your desk.",
     "deskPrompt": "E — open email",
     "email": {
@@ -373,6 +385,19 @@
   "canteen": {
     "_note": "Level 2 texts. DRAFT lines written by Claude so the level is playable — rewrite freely, keep the keys. {meal}, {where}, {dishes}, {spilled}, {clock} are filled in by the game.",
     "levelName": "12:00 — The Canteen",
+    "briefing": {
+      "title": "Level 2 — The Canteen",
+      "subtitle": "12:00. Lunch break. Your task:",
+      "lines": [
+        "Buy a meal ticket at the machine by the door. Your meal is your power-up for the level.",
+        "Take the ticket to the obachan at the counter. Say hello first — she might add something.",
+        "Carry your tray past the Ramen Bowl. Hands full: you can't fight and hits spill food. Put the tray on a table (E) to fight.",
+        "Pick a seat and hold E to eat. Deal with whoever interrupts, then finish your lunch.",
+        "Try to be done by 13:00."
+      ],
+      "controls": "WASD move · J / SPACE briefcase · K paper ball · E use / hold to eat · P pause",
+      "start": "E / SPACE — go to lunch"
+    },
     "hints": {
       "order": "Lunch! Buy a meal ticket at the machine.",
       "collect": "Take your ticket to the obachan at the counter.",
@@ -600,6 +625,50 @@
     "quit": "Quit to title",
     "confirm": "Press again to confirm",
     "hint": "W / S choose · E select · P resume",
+    "test": {
+      "title": "Test menu",
+      "jump": "Go to",
+      "targets": {
+        "title": "Title screen",
+        "intro": "Intro (morning)",
+        "office": "Office — start",
+        "officeWave": "Office — email opened",
+        "officeBoss": "Office — CEO fight",
+        "lift": "Lift dialogue",
+        "canteen": "Canteen — start",
+        "canteen_collect": "Canteen — collect tray",
+        "canteen_carry": "Canteen — carry / Ramen Bowl",
+        "canteen_eat": "Canteen — seated, eating",
+        "canteen_boss": "Canteen — Rokurokubi",
+        "canteen_back": "Canteen — back to seat",
+        "endWin": "End — Level 1 win",
+        "endLevel2": "End — Level 2 win",
+        "endBurnout": "End — burnout"
+      },
+      "meal": "Canteen meal",
+      "meals": {
+        "curry": "Curry",
+        "miso": "Miso",
+        "onigiri": "Onigiri",
+        "ramen": "Ramen"
+      },
+      "seat": "Canteen seat",
+      "seats": {
+        "plain": "Plain",
+        "company": "Good company",
+        "intern": "Intern",
+        "window": "Window",
+        "rooftop": "Rooftop",
+        "manager": "Tatami (managers)"
+      },
+      "god": "God mode",
+      "hitboxes": "Hitboxes",
+      "speed": "Game speed",
+      "heal": "Refill mental health",
+      "clear": "Remove all enemies",
+      "back": "Back",
+      "hint": "W / S choose · A / D change · E do · ESC back"
+    },
     "back": "E / P back",
     "controlLines": [
       [

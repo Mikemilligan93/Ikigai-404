@@ -59,6 +59,7 @@ export class CanteenScene extends OfficeScene {
     this.minibosses = [this.ramen];
 
     this.applyDebug(opts.debug || {});
+    if (opts.debug?.step && opts.debug.step !== 'order') this.briefing = null;   // test jumps skip the task window
     this.updateCamera();
     if (this.phase === 'order') {
       this.banner(this.T.levelName, 3);
@@ -122,6 +123,7 @@ export class CanteenScene extends OfficeScene {
   // ---------------------------------------------------------------- update
   update(dt) {
     const inp = this.g.input, C = this.CC;
+    if (this.updateBriefing(dt)) return;
     this.stateT += dt; this.time += dt;
     for (const b of this.banners.slice(0, 2)) { b.t -= dt; b.age += dt; }
     this.banners = this.banners.filter((b) => b.t > 0);
